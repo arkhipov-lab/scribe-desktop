@@ -1,0 +1,3 @@
+# Default install for local development.
+# Dist builds use requirements-runtime.txt only (see scripts/build-dist.sh).
+-r requirements-runtime.txt

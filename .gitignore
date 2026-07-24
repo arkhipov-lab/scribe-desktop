@@ -1,0 +1,54 @@
+# Python / venv
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.Python
+*.egg-info/
+.deps-installed
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+
+# Build & packaging outputs
+dist/
+build/
+native/build/
+.cache/
+*.app
+*.dmg
+*.spec
+
+# Icon intermediates (keep assets/AppIcon.icns)
+assets/AppIcon.iconset/
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+*.mobileprovision
+
+# Runtime / user data (if ever dropped in-repo)
+recordings/
+*.wav
+*.log
+models/
+.huggingface/
+huggingface/
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db

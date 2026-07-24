@@ -1,0 +1,3 @@
+# Dev / packaging extras (not embedded in the dist .app)
+-r requirements-runtime.txt
+pyinstaller>=6.0

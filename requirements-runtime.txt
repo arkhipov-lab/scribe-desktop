@@ -1,0 +1,4 @@
+# Runtime dependencies shipped inside Scribe.app
+mlx-whisper>=0.4.0
+mlx-lm>=0.22.0
+pywebview>=5.0
