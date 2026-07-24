@@ -1,53 +1,43 @@
-# Scribe Lite — System Requirements
+# Low-memory Macs — model guidance
 
-Lighter build for Macs with less memory (including M1 / 8 GB). Same UI and workflows as Standard, smaller models.
+> **Note:** There is no separate Scribe Lite product anymore. One `Scribe-<version>.dmg` ships for everyone; pick **Small / 1.5B** under Processing options for the old Lite footprint.
 
 ## Install
 
-- File: `Scribe-Lite-<version>.dmg` → app **Scribe Lite**
-- App size on disk: ~670 MB (same runtime; models differ and download separately)
+- File: `Scribe-<version>.dmg` → app **Scribe**
+- App size on disk: ~670 MB (models download separately)
 - DMG size: ~286 MB
 
 ## Hardware & OS
 
-| | Minimum | Recommended |
+| | Minimum | Comfortable for light models |
 |---|---|---|
-| CPU | Apple Silicon (M1 / M2 / M3 / M4), arm64 | **M1 or newer** |
+| CPU | Apple Silicon (M1 / M2 / M3 / M4), arm64 | M1 / M2 |
 | Memory (RAM) | **8 GB** | 8–16 GB |
 | macOS | 14 Sonoma or later | 14 Sonoma / 15 Sequoia |
-| Free disk space | ~2 GB (app + models) | 3+ GB with headroom |
+| Free disk space | ~2 GB (app + smaller models) | 3+ GB with headroom |
 
 **Not supported:** Intel Mac, Windows, Linux.
 
-## Models (downloaded on first use)
+## Models (Small / 1.5B)
 
 | Task | Model |
 |---|---|
-| Transcription | Whisper **small** (`mlx-community/whisper-small-mlx`) |
+| Transcription | Whisper **small** |
 | Summary | Qwen2.5-**1.5B**-Instruct-4bit |
 
-Models are stored in the Hugging Face cache (`~/.cache/huggingface`). Internet is required **only** for the first download of each model; after that everything works offline.
-
-Transcript and summary quality is lower than Standard, but peak RAM use is much lower. Memory is released between transcription and summary.
+On first launch, weaker Macs (M2 or older, or under ~12 GB RAM) get these defaults and **auto-summary off**. You can change them anytime in Processing options.
 
 ## macOS permissions
 
-To record a call on the same computer:
-
 1. **Microphone**
-2. **Screen & System Audio Recording** (system audio from Meet / Zoom / Teams, etc.)
+2. **Screen & System Audio Recording**
 
-Restart Scribe Lite after granting Screen Recording.
+Restart Scribe after granting Screen Recording.
 
 ## Network
 
 - Not required after models are downloaded
-- Recording and transcription do not use the cloud — everything runs locally
+- Recording and transcription do not use the cloud
 
-## Who this build is for
-
-- Macs with **8 GB** RAM (often base M1 / M2)
-- Stable runs without heavy swapping or freezes
-- Fine on stronger machines too if you prefer speed/lightness over max quality
-
-If you have **16 GB+** and want better quality, use [Scribe (Standard)](SYSTEM-REQUIREMENTS-STANDARD.md).
+For stronger defaults (medium / 3B), see [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDARD.md).

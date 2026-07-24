@@ -8,7 +8,7 @@ Read this file first. Then open the linked docs for depth.
 | --- | --- |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Understanding frontend / backend / native boundaries |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Local run, env vars, logs |
-| [BUILDING.md](BUILDING.md) | `.app` / DMG / Lite vs Standard packaging |
+| [BUILDING.md](BUILDING.md) | `.app` / DMG packaging |
 | [TESTING.md](TESTING.md) | How to validate changes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Change style, what not to commit |
 | [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md) | Local-only processing, permissions, logging rules |
@@ -20,7 +20,7 @@ Read this file first. Then open the linked docs for depth.
 
 ## What this project is
 
-- **Product name:** Scribe (Lite profile ships as **Scribe Lite**)
+- **Product name:** Scribe
 - **Platform:** macOS **arm64 only** (Apple Silicon). Not Windows, Linux, or Intel Mac.
 - **Stack:** React + Vite UI → pywebview JS bridge → Python backend → MLX Whisper + MLX LM, plus a Swift `AudioRecorder` helper (ScreenCaptureKit).
 - **Promise:** audio and text stay on-device. No cloud transcription/summary upload.
@@ -61,7 +61,9 @@ backend/                  Python desktop shell + ML pipeline
   transcriber.py          mlx-whisper transcription
   summarizer.py           mlx-lm summary (map-reduce for long text)
   recorder.py             AudioRecorder subprocess + ffmpeg mix
-  profile_config.py       standard vs lite models / app name
+  profile_config.py       model token presets (catalog source)
+  model_catalog.py        runtime Whisper / summary choices
+  hardware.py             local Mac probe for recommended defaults
   memory.py               unload models / clear MLX cache between stages
   logger.py               rotating file log (no transcript body)
   languages.py            Whisper language list
@@ -129,7 +131,7 @@ The React UI talks only through `window.pywebview.api` (`Api` in `backend/app.py
 | `start_recording` / `stop_recording` | Mic + system audio |
 | `start_transcription` / `cancel_transcription` | Whisper pipeline |
 | `start_summary` / `cancel_summary` | Local LLM notes |
-| `get_summary_presets` / `get_settings` / `update_settings` | Summary controls + local prefs |
+| `get_summary_presets` / `get_whisper_models` / `get_summary_models` / `get_settings` / `update_settings` | Processing options + local prefs |
 | `check_ffmpeg` / `get_app_info` / `get_languages` | Capability / metadata |
 
 Heavy work runs on **background threads**; the UI polls state. Do not block the pywebview main thread with long ML calls.
@@ -156,7 +158,7 @@ After meaningful changes, use [TESTING.md](TESTING.md). At least:
 | `USE_VITE_DEV=1` (default) | Dev UI from Vite `http://127.0.0.1:5173` |
 | `USE_VITE_DEV=0` | Build frontend, load `frontend/dist` |
 | `PYTHON_BIN` | Python used to create `.venv` (default `python3`) |
-| `SCRIBE_PROFILE` | `standard` or `lite` (dev override) |
+| `SCRIBE_PROFILE` | ignored (legacy) |
 | `SCRIBE_ROOT` | Resources root inside packaged `.app` |
 | `PROFILE` / `MAKE_DMG` / `FORCE_RUNTIME` | Dist build knobs — see [BUILDING.md](BUILDING.md) |
 

@@ -114,9 +114,9 @@ On-disk only (no cloud):
 
 ## Models & advanced settings
 
-- [ ] Safe preset picker (e.g. tiny / small / medium) with RAM warnings  
-- [ ] Heuristic Lite vs Standard suggestion from reported memory  
-- [ ] Advanced: Whisper model, summary model, chunk size, output tokens (hidden by default)  
+- [x] Safe preset picker (e.g. small / medium Whisper, 1.5B / 3B summary) with local persistence  
+- [x] Heuristic defaults from reported memory + Apple chip generation (M3+ strong; M2− / low RAM weak)  
+- [ ] Advanced: chunk size, raw output tokens (hidden by default)
 
 ---
 
@@ -135,7 +135,8 @@ On-disk only (no cloud):
 - [ ] Developer ID signing + notarization  
 - [ ] Privacy-preserving update feed (e.g. Sparkle), optional  
 - [ ] Smaller DMGs / further runtime pruning  
-- [ ] CI building Lite + Standard on arm64 runners  
+- [x] Single Scribe DMG (runtime model selection; Lite profile retired)  
+- [ ] CI building on arm64 runners  
 - [ ] Reproducible build attestations (profile, commit, Python tag)  
 
 ---

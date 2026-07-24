@@ -71,14 +71,14 @@ Run:
 
 ---
 
-## Manual smoke: profiles
+## Manual smoke: model defaults
 
-| Profile | How to run | Expect |
-| --- | --- | --- |
-| Standard | default, or `SCRIBE_PROFILE=standard` | Medium Whisper + 3B summary model ids in UI/info |
-| Lite | `SCRIBE_PROFILE=lite ./scripts/run-dev.sh` | Small Whisper + 1.5B; lower peak RAM |
+| Mac class | Expect on first launch |
+| --- | --- |
+| Strong (M3+ and enough RAM) | Whisper medium, summary 3B, auto-summary on |
+| Weak (M2− or &lt;12 GB RAM) | Whisper small, summary 1.5B, auto-summary off |
 
-On 8 GB hardware, prefer Lite for full-pipeline smoke to avoid swap thrash.
+Confirm values under **Processing options** and that they persist in `settings.json`.
 
 ---
 
@@ -98,13 +98,13 @@ open "dist/Scribe.app"
 ## Manual smoke: dist package (when packaging changed)
 
 ```bash
-PROFILE=lite MAKE_DMG=1 ./scripts/build-dist.sh
-# or standard — slower / heavier models on first use
+PROFILE=standard MAKE_DMG=1 ./scripts/build-dist.sh
+# PROFILE is ignored if set to anything else — one Scribe.app only
 ```
 
 1. Build finishes with smoke steps green (including post-prune).
-2. `dist/*.app` size is in the expected ballpark (~hundreds of MB for the app; models separate).
-3. DMG name includes `VERSION` (e.g. `Scribe-Lite-1.0.0.dmg`); `Info.plist` / `get_app_info().version` match.
+2. `dist/Scribe.app` size is in the expected ballpark (~hundreds of MB for the app; models separate).
+3. DMG name includes `VERSION` (e.g. `Scribe-1.2.0.dmg`); `Info.plist` / `get_app_info().version` match.
 4. Open the DMG, drag to Applications (or run from `dist/` directly).
 5. Gatekeeper: right-click → Open works.
 6. On a **clean** user (or after clearing HF cache if testing download): first Transcribe downloads models, second run is offline-capable.

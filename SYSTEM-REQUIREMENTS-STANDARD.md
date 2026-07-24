@@ -1,6 +1,6 @@
-# Scribe — System Requirements (Standard)
+# Scribe — System Requirements
 
-Higher-quality build for more capable Macs.
+Single app build for Apple Silicon. Model size is chosen in-app (Processing options) with hardware-based defaults.
 
 ## Install
 
@@ -10,25 +10,27 @@ Higher-quality build for more capable Macs.
 
 ## Hardware & OS
 
-| | Minimum | Recommended |
+| | Minimum | Recommended for medium / 3B |
 |---|---|---|
-| CPU | Apple Silicon (M1 / M2 / M3 / M4), arm64 | **M2 Pro / M3 or newer** |
-| Memory (RAM) | 16 GB | **16–32 GB** |
+| CPU | Apple Silicon (M1 / M2 / M3 / M4), arm64 | **M3 or newer** (or M-series with **16 GB+**) |
+| Memory (RAM) | 8 GB (use Small / 1.5B) | **16–32 GB** |
 | macOS | 14 Sonoma or later | 14 Sonoma / 15 Sequoia |
 | Free disk space | ~3 GB (app + models) | 5+ GB with headroom |
 
 **Not supported:** Intel Mac, Windows, Linux.
 
-## Models (downloaded on first use)
+## Models
 
-| Task | Model |
-|---|---|
-| Transcription | Whisper **medium** (`mlx-community/whisper-medium-mlx`) |
-| Summary | Qwen2.5-**3B**-Instruct-4bit |
+| Role | Options | Strong default | Weak default |
+|---|---|---|---|
+| Transcription | Whisper small / medium | medium | small |
+| Summary | Qwen2.5 1.5B / 3B (4-bit) | 3B | 1.5B |
 
-Models are stored in the Hugging Face cache (`~/.cache/huggingface`). Internet is required **only** for the first download of each model; after that everything works offline.
+Strong defaults (plus auto-summary on) apply on M3+ with enough RAM. Weaker Macs get Small / 1.5B and auto-summary off. See also [SYSTEM-REQUIREMENTS-LITE.md](SYSTEM-REQUIREMENTS-LITE.md).
 
-Peak RAM use is higher than Lite: the models are larger (the app unloads them between stages, but spare memory is still recommended).
+Models are stored in the Hugging Face cache (`~/.cache/huggingface`). Internet is required **only** for the first download of each selected model.
+
+Peak RAM use depends on the selected models — the app unloads them between stages, but spare memory is still recommended for medium / 3B.
 
 ## macOS permissions
 

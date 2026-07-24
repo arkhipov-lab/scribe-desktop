@@ -45,7 +45,7 @@ Do **not** regenerate or commit bundled dist artifacts unless the maintainer exp
 
 - Public JS bridge methods live on `Api` in `backend/app.py` and must remain callable from the WebView.
 - Long ML / IO work stays on background threads; update shared state under the existing lock.
-- Model IDs and app naming come from `profile_config` / `profile.json`, not scattered literals.
+- Model catalog lives in `model_catalog`; hardware defaults in `hardware`. Do not scatter HF ids in the UI.
 - After transcription, rely on `release_ml_memory` so summary can load on smaller Macs.
 - Log metadata only: paths, model ids, durations, status, exception types.
 
@@ -75,7 +75,7 @@ When PRs are used:
 
 1. Describe *why* the change exists.
 2. Note which smoke checks from [TESTING.md](TESTING.md) you ran.
-3. Call out profile impact (`standard` / `lite`) and any first-run download implications.
+3. Call out model-size impact (small/medium, 1.5B/3B) and any first-run download implications.
 4. Link related ROADMAP items only if intentionally advancing them.
 
 ## Commit messages
@@ -97,7 +97,7 @@ Do not create commits unless the maintainer asks you to.
 - Source of truth: repo-root `VERSION` (also synced to `frontend/package.json`).
 - After a merge into `main`, `.githooks/post-merge`:
   1. runs `scripts/bump-version.sh --commit`
-  2. if the version/tag changed, runs `scripts/release-build-local.sh` (standard + lite `.app` + DMG into `dist/`)
+  2. if the version/tag changed, runs `scripts/release-build-local.sh` (Scribe `.app` + DMG into `dist/`)
 - Hook install: `scripts/install-git-hooks.sh` (`run-dev.sh` does this automatically).
 - On GitHub, `.github/workflows/version-bump.yml` still bumps on push to `main`; `.github/workflows/release-build.yml` can publish GitHub Release assets from tags (optional).
 - Manual bump: `./scripts/bump-version.sh` (plan), `--apply`, `--commit`, or `--force patch|minor|major`.
@@ -110,5 +110,5 @@ Do not create commits unless the maintainer asks you to.
 
 | Artifact | Example |
 | --- | --- |
-| Relocatable `.app` | `dist/Scribe.app`, `dist/Scribe Lite.app` |
-| DMG | `dist/Scribe-1.2.3.dmg`, `dist/Scribe-Lite-1.2.3.dmg` |
+| Relocatable `.app` | `dist/Scribe.app` |
+| DMG | `dist/Scribe-1.2.3.dmg` |

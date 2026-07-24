@@ -52,21 +52,23 @@ chmod +x scripts/*.sh
 | `USE_VITE_DEV` | `1` | `1` = Vite URL; `0` = build + load `frontend/dist` |
 | `DEV_URL` | `http://127.0.0.1:5173` | UI URL when Vite mode is on |
 | `PYTHON_BIN` | `python3` | Interpreter used to create `.venv` |
-| `SCRIBE_PROFILE` | unset → `standard` | Force `standard` or `lite` model set in dev |
+| `SCRIBE_PROFILE` | ignored | Legacy; branding is always Scribe. Models are chosen in Processing options. |
 | `SCRIBE_ROOT` | unset | Set inside packaged apps to Resources root |
 | `MACOSX_DEPLOYMENT_TARGET` | `14.0` | Native compile target (Sonoma+) |
 | `PATH` | — | Dev script prepends `/opt/homebrew/bin` for ffmpeg |
 
 Legacy alias: `LOCAL_TRANSCRIBER_ROOT` is still accepted where `SCRIBE_ROOT` is read.
 
-### Switching profiles in development
+### Model defaults in development
+
+On first launch (no `settings.json`), Scribe probes local hardware and picks strong or weak model defaults. To re-run that probe:
 
 ```bash
-SCRIBE_PROFILE=lite ./scripts/run-dev.sh
-# or write profile.json at repo root / backend/ (see profile_config.py)
+rm -f ~/Library/Application\ Support/Scribe/settings.json
+./scripts/run-dev.sh
 ```
 
-Lite uses smaller Whisper + summary models and tighter token limits — useful when testing memory behavior on 8 GB machines.
+Or pick Small / 1.5B under **Processing options**. On 8 GB hardware prefer those for full-pipeline smoke.
 
 ## Where to look when something breaks
 

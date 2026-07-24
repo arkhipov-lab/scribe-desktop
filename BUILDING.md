@@ -10,8 +10,8 @@ How to produce macOS `.app` bundles and DMGs for Scribe. Prefer this doc over pa
 | --- | --- | --- | --- |
 | `./scripts/build.sh` | `dist/Scribe.app` | **No** — launches via project `.venv` | Daily local Finder launch on *this* machine |
 | `./scripts/build-dist.sh` | `.app` + optional `.dmg` | **Yes** — embedded CPython + deps + ffmpeg | Sharing with others / moving the app |
-| `./scripts/build-dist-standard.sh` | Standard profile wrapper | Yes | Quality build (medium Whisper + 3B summary) |
-| `./scripts/build-dist-lite.sh` | Lite profile wrapper | Yes | 8 GB–friendly build (small Whisper + 1.5B summary) |
+| `./scripts/build-dist-standard.sh` | Alias of `build-dist.sh` | Yes | Same single product build |
+| `./scripts/build-dist-lite.sh` | Deprecated → `build-dist.sh` | Yes | Kept for older docs/hooks |
 
 Do **not** commit `dist/` or `.cache/`.
 
@@ -48,24 +48,21 @@ A fully frozen MLX + PyInstaller bundle is brittle (native dylibs, dynamic impor
 
 Requires Homebrew tooling on the **build** machine (ffmpeg resolution helpers, icon tools, etc.). The **shipped** app embeds a compatible ffmpeg binary — end users do not need Homebrew.
 
-### Profiles
+There is **one** product artifact:
 
-| | Standard | Lite |
-| --- | --- | --- |
-| Command | `./scripts/build-dist-standard.sh` or `PROFILE=standard ./scripts/build-dist.sh` | `./scripts/build-dist-lite.sh` or `PROFILE=lite ./scripts/build-dist.sh` |
-| App name | **Scribe** | **Scribe Lite** |
-| Bundle ID | `local.scribe.app` | `local.scribe.lite.app` |
-| Artifacts | `dist/Scribe.app`, `dist/Scribe-<version>.dmg` | `dist/Scribe Lite.app`, `dist/Scribe-Lite-<version>.dmg` |
-| Whisper | medium | small |
-| Summary | Qwen2.5-3B-Instruct-4bit | Qwen2.5-1.5B-Instruct-4bit |
+| | |
+| --- | --- |
+| Command | `./scripts/build-dist.sh` |
+| App name | **Scribe** |
+| Bundle ID | `local.scribe.app` |
+| Artifacts | `dist/Scribe.app`, `dist/Scribe-<version>.dmg` |
 
-Hardware guidance: [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDARD.md), [SYSTEM-REQUIREMENTS-LITE.md](SYSTEM-REQUIREMENTS-LITE.md).
+Whisper / summary model sizes are chosen **at runtime** (Processing options) with hardware-based defaults. See [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDARD.md) (and the Lite doc for historical 8 GB guidance).
 
 ### Useful knobs
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `PROFILE` | `standard` | `standard` or `lite` |
 | `MAKE_DMG` | `1` | Set `0` to skip DMG creation |
 | `FORCE_RUNTIME` | `0` | Rebuild cached embedded Python + site-packages |
 | `PYTHON_BIN` | `python3` | Host Python for the *build helper* venv |
@@ -73,16 +70,16 @@ Hardware guidance: [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDAR
 | `MAX_MINOS_MAJOR` | `14` | Mach-O min OS assert for shipped binaries |
 | `FFMPEG_SRC` | auto | Override ffmpeg binary used for bundling |
 
-App / DMG version comes from the repo-root [`VERSION`](VERSION) file (semver). It is written into `Info.plist` (`CFBundleShortVersionString` / `CFBundleVersion`), baked into the bundle as `Resources/VERSION`, and used in the DMG filename (`Scribe-1.2.3.dmg`, `Scribe-Lite-1.2.3.dmg`).
+App / DMG version comes from the repo-root [`VERSION`](VERSION) file (semver). It is written into `Info.plist` (`CFBundleShortVersionString` / `CFBundleVersion`), baked into the bundle as `Resources/VERSION`, and used in the DMG filename (`Scribe-1.2.3.dmg`).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how `VERSION` is bumped from conventional commits.
 
 ### Local release builds (after merge bump)
 
-On merge into `main`, if the version bump created a new `VERSION`/tag, `scripts/release-build-local.sh` builds both profiles into `dist/`:
+On merge into `main`, if the version bump created a new `VERSION`/tag, `scripts/release-build-local.sh` builds:
 
-- `Scribe.app` / `Scribe Lite.app`
-- `Scribe-X.Y.Z.dmg` / `Scribe-Lite-X.Y.Z.dmg`
+- `Scribe.app`
+- `Scribe-X.Y.Z.dmg`
 
 Default: background (log `.cache/release-build.log`). Foreground: `SCRIBE_RELEASE_BUILD_FG=1`. Skip builds: `SKIP_RELEASE_BUILD=1`.
 
@@ -91,7 +88,7 @@ Optional CI (`.github/workflows/release-build.yml`) can still publish the same a
 Examples:
 
 ```bash
-MAKE_DMG=0 PROFILE=lite ./scripts/build-dist.sh
+MAKE_DMG=0 ./scripts/build-dist.sh
 FORCE_RUNTIME=1 ./scripts/build-dist.sh
 ./scripts/release-build-local.sh
 ```

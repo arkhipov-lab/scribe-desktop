@@ -70,14 +70,13 @@ Local Finder `.app` (uses project `.venv`):
 open "dist/Scribe.app"
 ```
 
-Self-contained `.app` + versioned DMG for sharing (Lite or Standard):
+Self-contained `.app` + versioned DMG for sharing:
 
 ```bash
-./scripts/build-dist-standard.sh   # → dist/Scribe-<version>.dmg
-./scripts/build-dist-lite.sh       # → dist/Scribe-Lite-<version>.dmg
+./scripts/build-dist.sh   # → dist/Scribe.app + dist/Scribe-<version>.dmg
 ```
 
-Version comes from the repo-root `VERSION` file (auto-bumped on merge to `main` from conventional commits — see [CONTRIBUTING.md](CONTRIBUTING.md)). After that bump, local hooks build versioned DMGs and `.app` bundles into `dist/`.
+Version comes from the repo-root `VERSION` file (auto-bumped on merge to `main` from conventional commits — see [CONTRIBUTING.md](CONTRIBUTING.md)). After that bump, local hooks build the versioned DMG and `.app` into `dist/`.
 
 Full packaging details, env knobs, runtime pruning, and Gatekeeper notes: **[BUILDING.md](BUILDING.md)**.
 
@@ -88,23 +87,23 @@ The **Record** button captures **microphone + system audio** (via ScreenCaptureK
 ## Usage
 
 1. Drop or select an audio/video file (`.m4a`, `.mp3`, `.wav`, `.mp4`, `.mov`) — or record
-2. Choose language and summary options (preset, length, optional instructions)
+2. Choose language; open **Processing options** for Whisper/summary models, preset, length, instructions
 3. Click **Transcribe**
-4. Wait for local processing — first transcription downloads the Whisper model; first summary downloads the local LLM (each once, then cached)
+4. Wait for local processing — first use of each model downloads it once, then caches locally
 5. Review **Transcript** and **Summary**, then Copy
 
-Preferences (language, summary controls) are stored locally in `~/Library/Application Support/Scribe/settings.json`. All processing is local. No cloud upload.
+Preferences are stored in `~/Library/Application Support/Scribe/settings.json`. On first launch, Scribe picks stronger models + auto-summary on capable Macs (M3+ / ample RAM) and lighter models with auto-summary off on weaker machines. All processing is local. No cloud upload.
 
 ## Models
 
-Model IDs are **profile-driven**. Source of truth: [`backend/profile_config.py`](backend/profile_config.py) (`PROFILES`). Dist builds bake the chosen profile into `profile.json`; `transcriber.py` / `summarizer.py` read those values (they are not independent hard-coded defaults).
+Runtime catalog: [`backend/model_catalog.py`](backend/model_catalog.py). Defaults come from a local hardware probe ([`backend/hardware.py`](backend/hardware.py)).
 
-| Profile | Whisper | Summary |
-| --- | --- | --- |
-| **standard** (default) | `mlx-community/whisper-medium-mlx` | `mlx-community/Qwen2.5-3B-Instruct-4bit` |
-| **lite** | `mlx-community/whisper-small-mlx` | `mlx-community/Qwen2.5-1.5B-Instruct-4bit` |
+| Role | Options |
+| --- | --- |
+| Transcription | Whisper **small** or **medium** |
+| Summary | Qwen2.5 **1.5B** or **3B** (4-bit) |
 
-Each model downloads once into the Hugging Face / MLX cache, then works offline. See [BUILDING.md](BUILDING.md) and the system-requirements docs for which profile to ship.
+Each selected model downloads once into the Hugging Face / MLX cache, then works offline. See [BUILDING.md](BUILDING.md) and the system-requirements docs.
 
 ### Python dependencies
 
