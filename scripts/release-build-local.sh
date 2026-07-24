@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build both dist profiles (relocatable .app + versioned DMG) into dist/.
+# Build the single dist profile (relocatable .app + versioned DMG) into dist/.
 # Used by the post-merge hook after a local version bump on main.
 #
 # Env:
@@ -22,7 +22,6 @@ fi
 chmod +x \
   "$ROOT/scripts/build-dist.sh" \
   "$ROOT/scripts/build-dist-standard.sh" \
-  "$ROOT/scripts/build-dist-lite.sh" \
   "$ROOT/scripts/read-version.sh" \
   "$ROOT/scripts/bundle-ffmpeg.sh" \
   "$ROOT/scripts/prune-runtime.sh" \
@@ -41,16 +40,13 @@ run_builds() {
   source "$ROOT/scripts/use-xcode-toolchain.sh"
   echo "==> Local release build for v${VERSION}"
   echo "==> DEVELOPER_DIR=${DEVELOPER_DIR:-} SDKROOT=${SDKROOT:-}"
-  echo "==> $(date '+%Y-%m-%d %H:%M:%S') starting standard + lite dist builds"
-  MAKE_DMG="${MAKE_DMG:-1}" "$ROOT/scripts/build-dist-standard.sh"
-  MAKE_DMG="${MAKE_DMG:-1}" "$ROOT/scripts/build-dist-lite.sh"
+  echo "==> $(date '+%Y-%m-%d %H:%M:%S') starting dist build"
+  MAKE_DMG="${MAKE_DMG:-1}" "$ROOT/scripts/build-dist.sh"
   echo "==> $(date '+%Y-%m-%d %H:%M:%S') verifying artifacts"
   local missing=0
   for path in \
     "$ROOT/dist/Scribe.app" \
-    "$ROOT/dist/Scribe Lite.app" \
-    "$ROOT/dist/Scribe-${VERSION}.dmg" \
-    "$ROOT/dist/Scribe-Lite-${VERSION}.dmg"
+    "$ROOT/dist/Scribe-${VERSION}.dmg"
   do
     if [[ -e "$path" ]]; then
       ls -lh "$path"
@@ -71,7 +67,6 @@ if [[ "${SCRIBE_RELEASE_BUILD_FG:-0}" == "1" ]]; then
 fi
 
 # Background so git merge/pull returns quickly; builds can take a long time.
-# Keep set -e active inside the subshell (do not wrap run_builds in `if`).
 (
   set -euo pipefail
   echo "======== $(date '+%Y-%m-%d %H:%M:%S') release-build-local v${VERSION} ========"
@@ -79,9 +74,8 @@ fi
   echo "======== $(date '+%Y-%m-%d %H:%M:%S') SUCCESS ========"
 ) >>"$LOG_FILE" 2>&1 &
 pid=$!
-echo "post-merge: dist builds started in background (pid $pid)"
+echo "post-merge: dist build started in background (pid $pid)"
 echo "  log: $LOG_FILE"
-echo "  expect: dist/Scribe.app, dist/Scribe Lite.app,"
-echo "          dist/Scribe-${VERSION}.dmg, dist/Scribe-Lite-${VERSION}.dmg"
+echo "  expect: dist/Scribe.app, dist/Scribe-${VERSION}.dmg"
 echo "  foreground instead: SCRIBE_RELEASE_BUILD_FG=1"
 echo "  skip builds:        SKIP_RELEASE_BUILD=1"

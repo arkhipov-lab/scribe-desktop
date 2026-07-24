@@ -115,6 +115,9 @@ cp "$ROOT/backend/languages.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/summarizer.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/summary_presets.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/settings.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/model_catalog.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/hardware.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/macos_app.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/profile_config.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/memory.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/version.py" "$RESOURCES/backend/"
@@ -157,6 +160,10 @@ cat > "$CONTENTS/Info.plist" <<EOF
   <string>${APP_VERSION}</string>
   <key>CFBundleVersion</key>
   <string>${APP_VERSION}</string>
+  <key>CFBundleGetInfoString</key>
+  <string>${APP_NAME} ${APP_VERSION} — On-device transcription and notes. Nothing leaves your Mac.</string>
+  <key>NSHumanReadableCopyright</key>
+  <string>On-device transcription and notes. Nothing leaves your Mac.</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>NSHighResolutionCapable</key>

@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 # Build a self-contained arm64 Scribe.app (+ optional DMG).
 #
-# Profiles:
-#   PROFILE=standard (default) — whisper-medium + Qwen2.5-3B → Scribe.app / Scribe-<ver>.dmg
-#   PROFILE=lite               — whisper-small + Qwen2.5-1.5B → "Scribe Lite.app" / Scribe-Lite-<ver>.dmg
+# One product build: models are chosen at runtime from Processing options.
 #
 # Usage:
 #   ./scripts/build-dist.sh
-#   PROFILE=lite ./scripts/build-dist.sh
 #   MAKE_DMG=0 ./scripts/build-dist.sh
 #   FORCE_RUNTIME=1 ./scripts/build-dist.sh
 set -euo pipefail
@@ -31,24 +28,13 @@ if [[ "$ARCH" != "arm64" ]]; then
 fi
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-PROFILE="${PROFILE:-standard}"
-case "$PROFILE" in
-  standard|lite) ;;
-  *)
-    echo "Unknown PROFILE='$PROFILE' (use standard or lite)" >&2
-    exit 1
-    ;;
-esac
-
-if [[ "$PROFILE" == "lite" ]]; then
-  APP_NAME="Scribe Lite"
-  DMG_BASENAME="Scribe-Lite"
-  BUNDLE_ID="local.scribe.lite.app"
-else
-  APP_NAME="Scribe"
-  DMG_BASENAME="Scribe"
-  BUNDLE_ID="local.scribe.app"
+if [[ -n "${PROFILE:-}" && "${PROFILE}" != "standard" ]]; then
+  echo "==> [dist] Ignoring PROFILE='${PROFILE}' — single Scribe build (runtime model selection)" >&2
 fi
+PROFILE="standard"
+APP_NAME="Scribe"
+DMG_BASENAME="Scribe"
+BUNDLE_ID="local.scribe.app"
 
 DIST_DIR="$ROOT/dist"
 APP_DIR="$DIST_DIR/$APP_NAME.app"
@@ -255,6 +241,9 @@ cp "$ROOT/backend/languages.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/summarizer.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/summary_presets.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/settings.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/model_catalog.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/hardware.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/macos_app.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/profile_config.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/memory.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/version.py" "$RESOURCES/backend/"
@@ -333,6 +322,10 @@ cat > "$CONTENTS/Info.plist" <<EOF
   <string>${APP_VERSION}</string>
   <key>CFBundleVersion</key>
   <string>${APP_VERSION}</string>
+  <key>CFBundleGetInfoString</key>
+  <string>${APP_NAME} ${APP_VERSION} — On-device transcription and notes. Nothing leaves your Mac.</string>
+  <key>NSHumanReadableCopyright</key>
+  <string>On-device transcription and notes. Nothing leaves your Mac.</string>
   <key>LSMinimumSystemVersion</key>
   <string>${MACOSX_DEPLOYMENT_TARGET}</string>
   <key>NSHighResolutionCapable</key>

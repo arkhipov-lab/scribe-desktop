@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Convenience wrapper: standard quality Scribe build (M3+ / 16GB+).
+# Build relocatable Scribe.app (+ versioned DMG) into dist/.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-exec env PROFILE=standard "$ROOT/scripts/build-dist.sh" "$@"
+exec "$ROOT/scripts/build-dist.sh" "$@"

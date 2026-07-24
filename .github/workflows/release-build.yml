@@ -1,7 +1,7 @@
 name: Release build
 
 # Runs after version bump pushes tag vX.Y.Z (or on manual dispatch).
-# Produces relocatable .app (+ zip) and versioned DMG for standard + lite.
+# Produces relocatable Scribe.app (+ zip) and versioned DMG.
 
 on:
   push:
@@ -25,10 +25,6 @@ jobs:
   build:
     runs-on: macos-14
     timeout-minutes: 240
-    strategy:
-      fail-fast: false
-      matrix:
-        profile: [standard, lite]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,7 +44,7 @@ jobs:
           chmod +x scripts/read-version.sh
           version="$(./scripts/read-version.sh)"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Building profile=${{ matrix.profile }} version=$version"
+          echo "Building version=$version"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -72,7 +68,6 @@ jobs:
 
       - name: Build dist (.app + DMG)
         env:
-          PROFILE: ${{ matrix.profile }}
           MAKE_DMG: "1"
           PYTHON_BIN: python3
         run: |
@@ -82,15 +77,9 @@ jobs:
       - name: Package .app zip for release
         run: |
           version="${{ steps.ver.outputs.version }}"
-          if [[ "${{ matrix.profile }}" == "lite" ]]; then
-            app="dist/Scribe Lite.app"
-            zip="dist/Scribe-Lite-${version}.app.zip"
-            dmg="dist/Scribe-Lite-${version}.dmg"
-          else
-            app="dist/Scribe.app"
-            zip="dist/Scribe-${version}.app.zip"
-            dmg="dist/Scribe-${version}.dmg"
-          fi
+          app="dist/Scribe.app"
+          zip="dist/Scribe-${version}.app.zip"
+          dmg="dist/Scribe-${version}.dmg"
           [[ -d "$app" ]] || { echo "Missing $app" >&2; exit 1; }
           [[ -f "$dmg" ]] || { echo "Missing $dmg" >&2; exit 1; }
           rm -f "$zip"
@@ -103,7 +92,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: scribe-${{ matrix.profile }}-${{ steps.ver.outputs.version }}
+          name: scribe-${{ steps.ver.outputs.version }}
           path: |
             ${{ env.DMG_PATH }}
             ${{ env.ZIP_PATH }}
@@ -135,7 +124,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: release-assets
-          pattern: scribe-*-${{ steps.meta.outputs.version }}
+          pattern: scribe-${{ steps.meta.outputs.version }}
           merge-multiple: true
 
       - name: List assets

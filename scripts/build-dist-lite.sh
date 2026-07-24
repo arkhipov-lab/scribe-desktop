@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Convenience wrapper: lightweight Scribe Lite build (M1 / 8GB-friendly).
+# Deprecated: Scribe ships as a single build with runtime model selection.
+# Kept so older docs/hooks keep working.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-exec env PROFILE=lite "$ROOT/scripts/build-dist.sh" "$@"
+echo "==> build-dist-lite.sh is deprecated — building standard Scribe.app instead" >&2
+exec "$ROOT/scripts/build-dist.sh" "$@"
