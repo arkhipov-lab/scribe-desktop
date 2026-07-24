@@ -14,18 +14,24 @@ import webview
 
 from logger import get_logger, log_exception, setup_logging
 from languages import DEFAULT_LANGUAGE, WHISPER_LANGUAGES, languages_for_api, normalize_language
+from macos_app import configure_macos_app
 from memory import release_ml_memory
 from profile_config import get_profile
 from recorder import CaptureRecorder, RecorderError, delete_path_quiet, is_temp_recording
-from settings import load_settings, merge_settings
+from settings import ensure_settings_file, merge_settings
 from summarizer import (
-    DEFAULT_SUMMARY_MODEL,
     SummaryError,
     summarize_transcript,
 )
 from summary_presets import presets_for_api
+from model_catalog import (
+    summary_hf_id,
+    summary_model_options_for_api,
+    whisper_hf_id,
+    whisper_options_for_api,
+)
+from hardware import probe_hardware
 from transcriber import (
-    DEFAULT_MODEL,
     SUPPORTED_EXTENSIONS,
     TranscribeError,
     find_ffmpeg,
@@ -94,7 +100,7 @@ class Api:
         self._summary_cancel = threading.Event()
         self._worker: threading.Thread | None = None
         self._summary_worker: threading.Thread | None = None
-        prefs = load_settings()
+        prefs = ensure_settings_file()
         self._state: dict[str, Any] = {
             "status": "idle",
             "message": "Drop an audio file, select a file, or record notes.",
@@ -112,6 +118,10 @@ class Api:
             "additional_instructions": prefs["additional_instructions"],
             "summary_length": prefs["summary_length"],
             "auto_summary": prefs["auto_summary"],
+            "whisper_model": prefs["whisper_model"],
+            "summary_model": prefs["summary_model"],
+            "performance_tier": prefs.get("performance_tier"),
+            "hardware_reason": prefs.get("hardware_reason"),
         }
         self._timer_stop = threading.Event()
         self._timer_thread: threading.Thread | None = None
@@ -127,6 +137,8 @@ class Api:
             "additional_instructions": snap.get("additional_instructions") or "",
             "summary_length": snap.get("summary_length"),
             "auto_summary": bool(snap.get("auto_summary", True)),
+            "whisper_model": snap.get("whisper_model"),
+            "summary_model": snap.get("summary_model"),
         }
 
     def _apply_prefs(self, prefs: dict[str, Any]) -> None:
@@ -136,6 +148,10 @@ class Api:
             additional_instructions=prefs["additional_instructions"],
             summary_length=prefs["summary_length"],
             auto_summary=prefs["auto_summary"],
+            whisper_model=prefs["whisper_model"],
+            summary_model=prefs["summary_model"],
+            performance_tier=prefs.get("performance_tier"),
+            hardware_reason=prefs.get("hardware_reason"),
         )
 
     def _snapshot(self) -> dict[str, Any]:
@@ -170,19 +186,24 @@ class Api:
         return sorted(SUPPORTED_EXTENSIONS)
 
     def get_model_name(self) -> str:
-        return DEFAULT_MODEL
+        snap = self._snapshot()
+        return whisper_hf_id(str(snap.get("whisper_model") or ""))
 
     def get_summary_model_name(self) -> str:
-        return DEFAULT_SUMMARY_MODEL
+        snap = self._snapshot()
+        return summary_hf_id(str(snap.get("summary_model") or ""))
 
     def get_app_info(self) -> dict[str, str]:
         profile = get_profile()
+        snap = self._snapshot()
         return {
             "app_name": profile.app_name,
             "profile": profile.id,
             "version": get_app_version(),
-            "whisper_model": profile.whisper_model,
-            "summary_model": profile.summary_model,
+            "whisper_model": whisper_hf_id(str(snap.get("whisper_model") or "")),
+            "summary_model": summary_hf_id(str(snap.get("summary_model") or "")),
+            "performance_tier": str(snap.get("performance_tier") or ""),
+            "hardware_reason": str(snap.get("hardware_reason") or ""),
         }
 
     def _clear_summary_fields(self) -> None:
@@ -410,6 +431,22 @@ class Api:
     def get_summary_presets(self) -> list[dict[str, str]]:
         return presets_for_api()
 
+    def get_whisper_models(self) -> list[dict[str, str]]:
+        return whisper_options_for_api()
+
+    def get_summary_models(self) -> list[dict[str, str]]:
+        return summary_model_options_for_api()
+
+    def get_hardware_info(self) -> dict[str, Any]:
+        hw = probe_hardware()
+        return {
+            "memory_gb": hw.memory_gb,
+            "chip_generation": hw.chip_generation,
+            "chip_name": hw.chip_name,
+            "tier": hw.tier,
+            "reason": hw.reason,
+        }
+
     def get_settings(self) -> dict[str, Any]:
         return self._prefs_from_state()
 
@@ -422,6 +459,8 @@ class Api:
             "additional_instructions",
             "summary_length",
             "auto_summary",
+            "whisper_model",
+            "summary_model",
         }
         clean = {k: patch[k] for k in allowed if k in patch}
         if not clean:
@@ -466,8 +505,13 @@ class Api:
         self._start_elapsed_timer()
 
         language = self._snapshot().get("language") or DEFAULT_LANGUAGE
+        whisper_id = str(self._snapshot().get("whisper_model") or "")
+        whisper_hf = whisper_hf_id(whisper_id)
         self.logger.info(
-            "UI requested transcription: path=%s language=%s", file_path, language
+            "UI requested transcription: path=%s language=%s model=%s",
+            file_path,
+            language,
+            whisper_hf,
         )
 
         def worker() -> None:
@@ -480,6 +524,7 @@ class Api:
                 result = transcribe_file(
                     str(file_path),
                     str(language),
+                    model=whisper_hf,
                     on_status=on_status,
                     should_cancel=self._cancel.is_set,
                 )
@@ -581,12 +626,15 @@ class Api:
         preset_id = str(snap.get("summary_preset") or "")
         additional = str(snap.get("additional_instructions") or "")
         summary_length = str(snap.get("summary_length") or "")
+        summary_model_id = str(snap.get("summary_model") or "")
+        summary_hf = summary_hf_id(summary_model_id)
         self.logger.info(
-            "Starting summary worker (%s chars, language=%s preset=%s length=%s)",
+            "Starting summary worker (%s chars, language=%s preset=%s length=%s model=%s)",
             len(transcript),
             language_name,
             preset_id or "meeting_notes",
             summary_length or "normal",
+            summary_hf,
         )
 
         def worker() -> None:
@@ -612,6 +660,7 @@ class Api:
                     preset_id=preset_id,
                     additional_instructions=additional,
                     summary_length=summary_length,
+                    model=summary_hf,
                     on_status=on_status,
                     should_cancel=self._summary_cancel.is_set,
                 )
@@ -716,6 +765,7 @@ class Api:
 def main(dev_url: str | None = None) -> None:
     setup_logging()
     logger = get_logger()
+    configure_macos_app(app_name=APP_NAME, version=get_app_version())
     # Eager-import DOM helpers. Finder-launched local .app bundles that point at a
     # project .venv under ~/Documents can hit macOS TCC on *late* imports from
     # site-packages; importing here keeps drop-binding (and the JS bridge path)
@@ -726,16 +776,16 @@ def main(dev_url: str | None = None) -> None:
     except Exception:
         log_exception("Eager webview.dom import failed")
 
-    logger.info(
-        "Starting %s (profile=%s whisper=%s summary=%s)",
-        APP_NAME,
-        _PROFILE.id,
-        DEFAULT_MODEL,
-        DEFAULT_SUMMARY_MODEL,
-    )
-
     api = Api()
     url = resolve_ui_url(dev_url)
+    snap = api.get_state()
+    logger.info(
+        "Starting %s (whisper=%s summary=%s tier=%s)",
+        APP_NAME,
+        whisper_hf_id(str(snap.get("whisper_model") or "")),
+        summary_hf_id(str(snap.get("summary_model") or "")),
+        snap.get("performance_tier") or "unknown",
+    )
     logger.info("Loading UI from %s", url)
 
     window = webview.create_window(

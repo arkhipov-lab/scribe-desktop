@@ -1,9 +1,12 @@
-"""Build/runtime profile: standard (quality) vs lite (low memory)."""
+"""Build/runtime profile helpers.
+
+Packaging always ships a single Scribe.app. The `lite` / `standard` entries below
+remain as named model+token presets used by model_catalog / hardware defaults.
+"""
 
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -34,8 +37,8 @@ PROFILES: dict[str, AppProfile] = {
     ),
     "lite": AppProfile(
         id="lite",
-        app_name="Scribe Lite",
-        dmg_basename="Scribe-Lite",
+        app_name="Scribe",
+        dmg_basename="Scribe",
         whisper_model="mlx-community/whisper-small-mlx",
         summary_model="mlx-community/Qwen2.5-1.5B-Instruct-4bit",
         summary_chunk_chars=5000,
@@ -47,31 +50,8 @@ PROFILES: dict[str, AppProfile] = {
 _cached: AppProfile | None = None
 
 
-def _profile_path_candidates() -> list[Path]:
-    paths: list[Path] = []
-    root = os.environ.get("SCRIBE_ROOT") or os.environ.get("LOCAL_TRANSCRIBER_ROOT")
-    if root:
-        paths.append(Path(root) / "profile.json")
-    here = Path(__file__).resolve().parent
-    paths.append(here / "profile.json")
-    paths.append(here.parent / "profile.json")
-    return paths
-
-
 def _load_profile_id() -> str:
-    env = (os.environ.get("SCRIBE_PROFILE") or "").strip().lower()
-    if env in PROFILES:
-        return env
-    for path in _profile_path_candidates():
-        if not path.is_file():
-            continue
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-            value = str(data.get("id") or data.get("profile") or "").strip().lower()
-            if value in PROFILES:
-                return value
-        except Exception:
-            continue
+    # Packaging is always the single Scribe app; SCRIBE_PROFILE is ignored for branding.
     return "standard"
 
 
@@ -89,12 +69,12 @@ def reset_profile_cache() -> None:
 
 
 def write_profile_json(path: Path, profile_id: str) -> None:
-    profile = PROFILES[profile_id]
+    profile = PROFILES.get(profile_id, PROFILES["standard"])
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(
             {
-                "id": profile.id,
+                "id": "standard",
                 "app_name": profile.app_name,
                 "whisper_model": profile.whisper_model,
                 "summary_model": profile.summary_model,

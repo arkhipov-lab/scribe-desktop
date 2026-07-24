@@ -11,9 +11,9 @@ from typing import Callable
 
 from logger import get_logger, log_exception
 from languages import normalize_language as _normalize_language_code
-from profile_config import get_profile
+from model_catalog import DEFAULT_WHISPER_ID, whisper_hf_id
 
-DEFAULT_MODEL = get_profile().whisper_model
+DEFAULT_MODEL = whisper_hf_id(DEFAULT_WHISPER_ID)
 
 SUPPORTED_EXTENSIONS = {".m4a", ".mp3", ".wav", ".mp4", ".mov"}
 

@@ -37,6 +37,10 @@ export interface AppState {
   additional_instructions: string;
   summary_length: SummaryLength | string;
   auto_summary: boolean;
+  whisper_model: string;
+  summary_model: string;
+  performance_tier?: string | null;
+  hardware_reason?: string | null;
 }
 
 export interface ApiResult extends AppState {
@@ -54,12 +58,21 @@ export interface SummaryPresetOption {
   label: string;
 }
 
+export interface ModelOption {
+  id: string;
+  label: string;
+  hint?: string;
+  huggingface_id?: string;
+}
+
 export interface AppSettings {
   language: string;
   summary_preset: string;
   additional_instructions: string;
   summary_length: SummaryLength | string;
   auto_summary: boolean;
+  whisper_model: string;
+  summary_model: string;
 }
 
 export interface AppInfo {
@@ -68,6 +81,8 @@ export interface AppInfo {
   version: string;
   whisper_model: string;
   summary_model: string;
+  performance_tier?: string;
+  hardware_reason?: string;
 }
 
 export interface PywebviewApi {
@@ -78,6 +93,15 @@ export interface PywebviewApi {
   set_language: (language: string) => Promise<ApiResult>;
   get_languages: () => Promise<LanguageOption[]>;
   get_summary_presets: () => Promise<SummaryPresetOption[]>;
+  get_whisper_models: () => Promise<ModelOption[]>;
+  get_summary_models: () => Promise<ModelOption[]>;
+  get_hardware_info: () => Promise<{
+    memory_gb: number | null;
+    chip_generation: number | null;
+    chip_name: string | null;
+    tier: string;
+    reason: string;
+  }>;
   get_settings: () => Promise<AppSettings>;
   update_settings: (patch: Partial<AppSettings>) => Promise<ApiResult>;
   start_transcription: () => Promise<ApiResult>;

@@ -11,6 +11,7 @@ import PresetSelect from "./PresetSelect";
 import { DEFAULT_LANGUAGE } from "./languages";
 import type {
   AppState,
+  ModelOption,
   SummaryLength,
   SummaryPresetOption,
   SummaryStatus,
@@ -31,6 +32,16 @@ const FALLBACK_PRESETS: SummaryPresetOption[] = [
   { id: "customer_interview", label: "Customer interview" },
   { id: "lecture", label: "Lecture / research notes" },
   { id: "cleaned_transcript", label: "Cleaned transcript" },
+];
+
+const FALLBACK_WHISPER: ModelOption[] = [
+  { id: "small", label: "Small", hint: "Faster, lower memory" },
+  { id: "medium", label: "Medium", hint: "Better accuracy, more memory" },
+];
+
+const FALLBACK_SUMMARY_MODELS: ModelOption[] = [
+  { id: "1.5b", label: "1.5B", hint: "Lighter notes model" },
+  { id: "3b", label: "3B", hint: "Higher-quality notes" },
 ];
 
 type ResultTab = "transcript" | "summary";
@@ -65,6 +76,10 @@ function mergeState(next: AppState): AppState {
     additional_instructions: next.additional_instructions ?? "",
     summary_length: next.summary_length ?? "normal",
     auto_summary: next.auto_summary ?? true,
+    whisper_model: next.whisper_model ?? "medium",
+    summary_model: next.summary_model ?? "3b",
+    performance_tier: next.performance_tier ?? null,
+    hardware_reason: next.hardware_reason ?? null,
   };
 }
 
@@ -76,6 +91,9 @@ export default function App() {
   const [appName, setAppName] = useState("Scribe");
   const [resultTab, setResultTab] = useState<ResultTab>("transcript");
   const [presets, setPresets] = useState<SummaryPresetOption[]>(FALLBACK_PRESETS);
+  const [whisperModels, setWhisperModels] = useState<ModelOption[]>(FALLBACK_WHISPER);
+  const [summaryModels, setSummaryModels] =
+    useState<ModelOption[]>(FALLBACK_SUMMARY_MODELS);
   const [instructionsDraft, setInstructionsDraft] = useState("");
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
   const copyTimer = useRef<number | null>(null);
@@ -90,7 +108,7 @@ export default function App() {
       try {
         const api = await getApi();
         if (cancelled) return;
-        const [initial, info, presetList] = await Promise.all([
+        const [initial, info, presetList, whisperList, summaryList] = await Promise.all([
           api.get_state(),
           api.get_app_info
             ? api.get_app_info().catch(() => null)
@@ -98,6 +116,12 @@ export default function App() {
           api.get_summary_presets
             ? api.get_summary_presets().catch(() => FALLBACK_PRESETS)
             : Promise.resolve(FALLBACK_PRESETS),
+          api.get_whisper_models
+            ? api.get_whisper_models().catch(() => FALLBACK_WHISPER)
+            : Promise.resolve(FALLBACK_WHISPER),
+          api.get_summary_models
+            ? api.get_summary_models().catch(() => FALLBACK_SUMMARY_MODELS)
+            : Promise.resolve(FALLBACK_SUMMARY_MODELS),
         ]);
         if (cancelled) return;
         const merged = mergeState(initial);
@@ -106,6 +130,12 @@ export default function App() {
         if (info?.app_name) setAppName(info.app_name);
         if (Array.isArray(presetList) && presetList.length > 0) {
           setPresets(presetList);
+        }
+        if (Array.isArray(whisperList) && whisperList.length > 0) {
+          setWhisperModels(whisperList);
+        }
+        if (Array.isArray(summaryList) && summaryList.length > 0) {
+          setSummaryModels(summaryList);
         }
         setBridgeError(null);
 
@@ -202,6 +232,8 @@ export default function App() {
       additional_instructions: string;
       summary_length: SummaryLength;
       auto_summary: boolean;
+      whisper_model: string;
+      summary_model: string;
     }>,
   ) {
     await withApi((api) => api.update_settings(patch));
@@ -433,9 +465,9 @@ export default function App() {
           onClick={() => setSummaryOptionsOpen((open) => !open)}
         >
           <span className="disclosure-copy">
-            <span className="disclosure-title">Summary options</span>
+            <span className="disclosure-title">Processing options</span>
             <span className="disclosure-hint">
-              Preset, length, and extra instructions
+              Models, summary style, and auto-summary
             </span>
           </span>
           <span className="disclosure-chevron" aria-hidden="true" />
@@ -443,6 +475,45 @@ export default function App() {
 
         {summaryOptionsOpen && (
           <div id="summary-options-body" className="summary-settings-body">
+            {state.hardware_reason && (
+              <p className="hardware-hint">
+                Recommended for this Mac ({state.performance_tier || "auto"}):{" "}
+                {state.hardware_reason}
+              </p>
+            )}
+
+            <div className="summary-settings-grid">
+              <div className="field">
+                <label className="field-label" htmlFor="whisper-model">
+                  Transcription model
+                </label>
+                <PresetSelect
+                  value={state.whisper_model || "medium"}
+                  options={whisperModels}
+                  inputId="whisper-model"
+                  ariaLabel="Transcription models"
+                  searchPlaceholder="Search model…"
+                  disabled={locked || summaryBusy}
+                  onChange={(next) => void onSettingsPatch({ whisper_model: next })}
+                />
+              </div>
+
+              <div className="field">
+                <label className="field-label" htmlFor="summary-model">
+                  Summary model
+                </label>
+                <PresetSelect
+                  value={state.summary_model || "3b"}
+                  options={summaryModels}
+                  inputId="summary-model"
+                  ariaLabel="Summary models"
+                  searchPlaceholder="Search model…"
+                  disabled={locked || summaryBusy}
+                  onChange={(next) => void onSettingsPatch({ summary_model: next })}
+                />
+              </div>
+            </div>
+
             <div className="summary-settings-grid">
               <div className="field">
                 <label className="field-label" htmlFor="summary-preset">
@@ -451,6 +522,9 @@ export default function App() {
                 <PresetSelect
                   value={state.summary_preset || "meeting_notes"}
                   options={presets}
+                  inputId="summary-preset"
+                  ariaLabel="Summary presets"
+                  searchPlaceholder="Search preset…"
                   disabled={locked || summaryBusy}
                   onChange={(next) => void onSettingsPatch({ summary_preset: next })}
                 />

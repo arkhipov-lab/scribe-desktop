@@ -6,19 +6,21 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
-import type { SummaryPresetOption } from "./vite-env";
+import type { ModelOption, SummaryPresetOption } from "./vite-env";
+
+type SelectOption = SummaryPresetOption | ModelOption;
 
 interface PresetSelectProps {
   value: string;
-  options: SummaryPresetOption[];
+  options: SelectOption[];
   disabled?: boolean;
+  inputId?: string;
+  ariaLabel?: string;
+  searchPlaceholder?: string;
   onChange: (id: string) => void;
 }
 
-function filterPresets(
-  options: SummaryPresetOption[],
-  query: string,
-): SummaryPresetOption[] {
+function filterPresets(options: SelectOption[], query: string): SelectOption[] {
   const q = query.trim().toLowerCase();
   if (!q) return options;
   return options.filter(
@@ -31,6 +33,9 @@ export default function PresetSelect({
   value,
   options,
   disabled = false,
+  inputId = "summary-preset",
+  ariaLabel = "Options",
+  searchPlaceholder = "Search…",
   onChange,
 }: PresetSelectProps) {
   const listId = useId();
@@ -43,7 +48,7 @@ export default function PresetSelect({
   const [highlight, setHighlight] = useState(0);
 
   const selectedLabel =
-    options.find((preset) => preset.id === value)?.label || value || "Select preset";
+    options.find((preset) => preset.id === value)?.label || value || "Select…";
   const filtered = useMemo(() => filterPresets(options, query), [options, query]);
 
   useEffect(() => {
@@ -130,7 +135,7 @@ export default function PresetSelect({
       {open ? (
         <input
           ref={inputRef}
-          id="summary-preset"
+          id={inputId}
           className="language-select language-search"
           type="text"
           role="combobox"
@@ -140,7 +145,7 @@ export default function PresetSelect({
           aria-activedescendant={
             filtered[highlight] ? `${listId}-${filtered[highlight].id}` : undefined
           }
-          placeholder="Search preset…"
+          placeholder={searchPlaceholder}
           value={query}
           disabled={disabled}
           onChange={(e) => setQuery(e.target.value)}
@@ -149,7 +154,7 @@ export default function PresetSelect({
       ) : (
         <button
           type="button"
-          id="summary-preset"
+          id={inputId}
           className="language-select language-trigger"
           disabled={disabled}
           aria-haspopup="listbox"
@@ -166,7 +171,7 @@ export default function PresetSelect({
           id={listId}
           className="language-menu"
           role="listbox"
-          aria-label="Summary presets"
+          aria-label={ariaLabel}
         >
           {filtered.length === 0 ? (
             <li className="language-empty" role="presentation">

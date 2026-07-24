@@ -10,7 +10,12 @@ from pathlib import Path
 from typing import Callable
 
 from logger import get_logger, log_exception
-from profile_config import get_profile
+from model_catalog import (
+    DEFAULT_SUMMARY_ID,
+    summary_hf_id,
+    summary_token_profile,
+    normalize_summary_model_id,
+)
 from summary_presets import (
     DEFAULT_PRESET_ID,
     DEFAULT_SUMMARY_LENGTH,
@@ -20,14 +25,7 @@ from summary_presets import (
     token_limits,
 )
 
-_profile = get_profile()
-DEFAULT_SUMMARY_MODEL = _profile.summary_model
-_IS_LITE = _profile.id == "lite"
-
-# Soft limit for a single prompt; longer transcripts are map-reduced.
-_CHUNK_CHARS = _profile.summary_chunk_chars
-_BASE_MAX_OUTPUT_TOKENS = _profile.summary_max_tokens
-_BASE_MERGE_OUTPUT_TOKENS = _profile.summary_merge_tokens
+DEFAULT_SUMMARY_MODEL = summary_hf_id(DEFAULT_SUMMARY_ID)
 
 StatusCallback = Callable[[str, str], None]
 
@@ -150,7 +148,11 @@ def _generate(model, tokenizer, user_content: str, *, max_tokens: int) -> str:
     return str(raw).strip()
 
 
-def _split_chunks(text: str, size: int = _CHUNK_CHARS) -> list[str]:
+def _uses_lite_prompts(model_hf_id: str) -> bool:
+    return normalize_summary_model_id(model_hf_id) == "1.5b"
+
+
+def _split_chunks(text: str, size: int) -> list[str]:
     text = text.strip()
     if len(text) <= size:
         return [text]
@@ -209,10 +211,11 @@ def _language_instruction(
     *,
     language: str,
     sections: tuple[str, ...],
+    lite: bool,
 ) -> str:
     name = (language_name or "").strip() or "English"
     headings = _headings_phrase(sections)
-    if _IS_LITE:
+    if lite:
         return (
             f"CRITICAL LANGUAGE RULE: Write the ENTIRE answer in {name} only. "
             f"Do not write English prose. Do not mix languages. "
@@ -231,13 +234,16 @@ def _single_prompt(
     language: str,
     preset: SummaryPreset,
     additional_instructions: str,
+    lite: bool,
 ) -> str:
     name = (language_name or "").strip() or "English"
     sections = _section_headings(preset, language)
     extra = _extra_block(additional_instructions)
-    lang_rule = _language_instruction(name, language=language, sections=sections)
-    structure = _structure_block(sections, lite=_IS_LITE)
-    if _IS_LITE:
+    lang_rule = _language_instruction(
+        name, language=language, sections=sections, lite=lite
+    )
+    structure = _structure_block(sections, lite=lite)
+    if lite:
         return (
             f"You write notes from a transcript. Preset: {preset.label}.\n"
             f"{preset.instruction}\n"
@@ -270,13 +276,16 @@ def _chunk_prompt(
     language: str,
     preset: SummaryPreset,
     additional_instructions: str,
+    lite: bool,
 ) -> str:
     name = (language_name or "").strip() or "English"
     sections = _section_headings(preset, language)
     section_names = ", ".join(sections)
     extra = _extra_block(additional_instructions)
-    lang_rule = _language_instruction(name, language=language, sections=sections)
-    if _IS_LITE:
+    lang_rule = _language_instruction(
+        name, language=language, sections=sections, lite=lite
+    )
+    if lite:
         return (
             f"Summarize transcript section ({index}/{total}) for later merging.\n"
             f"Preset: {preset.label}. {preset.instruction}\n"
@@ -305,16 +314,19 @@ def _merge_prompt(
     language: str,
     preset: SummaryPreset,
     additional_instructions: str,
+    lite: bool,
 ) -> str:
     name = (language_name or "").strip() or "English"
     sections = _section_headings(preset, language)
     headings = ", ".join(f"## {title}" for title in sections)
     extra = _extra_block(additional_instructions)
-    lang_rule = _language_instruction(name, language=language, sections=sections)
+    lang_rule = _language_instruction(
+        name, language=language, sections=sections, lite=lite
+    )
     joined = "\n\n---\n\n".join(
         f"Section {i + 1}:\n{part}" for i, part in enumerate(partials)
     )
-    if _IS_LITE:
+    if lite:
         return (
             f"Merge these partial notes into one clean summary in {name} only.\n"
             f"Preset: {preset.label}. {preset.instruction}\n"
@@ -357,11 +369,21 @@ def summarize_transcript(
     display_language = (language_name or "").strip() or (language or "en").strip() or "English"
     preset = get_preset(preset_id)
     length = normalize_summary_length(summary_length)
+    # Callers may pass catalog id ("3b") or a full Hugging Face id.
+    raw_model = (model or "").strip() or DEFAULT_SUMMARY_MODEL
+    if "/" in raw_model:
+        model_hf = raw_model
+        model_id = normalize_summary_model_id(raw_model)
+    else:
+        model_id = normalize_summary_model_id(raw_model)
+        model_hf = summary_hf_id(model_id)
+    chunk_chars, base_max, base_merge = summary_token_profile(model_id)
     max_tokens, merge_tokens = token_limits(
-        base_max=_BASE_MAX_OUTPUT_TOKENS,
-        base_merge=_BASE_MERGE_OUTPUT_TOKENS,
+        base_max=base_max,
+        base_merge=base_merge,
         length=length,
     )
+    lite = _uses_lite_prompts(model_hf)
 
     def emit(status: str, message: str) -> None:
         if on_status:
@@ -377,11 +399,11 @@ def summarize_transcript(
         display_language,
         preset.id,
         length,
-        model,
-        is_summary_model_cached(model),
+        model_hf,
+        is_summary_model_cached(model_hf),
     )
 
-    if not is_summary_model_cached(model):
+    if not is_summary_model_cached(model_hf):
         emit(
             "loading_model",
             "Downloading the summary model. This happens only once.",
@@ -393,7 +415,7 @@ def summarize_transcript(
         raise SummaryError("Summarization cancelled.")
 
     try:
-        mlx_model, tokenizer = _load_model(model)
+        mlx_model, tokenizer = _load_model(model_hf)
     except SummaryError:
         raise
     except Exception as exc:
@@ -404,11 +426,12 @@ def summarize_transcript(
         raise SummaryError("Summarization cancelled.")
 
     emit("summarizing", "Writing summary…")
-    chunks = _split_chunks(text)
+    chunks = _split_chunks(text, chunk_chars)
     prompt_kwargs = {
         "language": language,
         "preset": preset,
         "additional_instructions": additional_instructions,
+        "lite": lite,
     }
 
     try:

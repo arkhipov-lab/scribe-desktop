@@ -18,6 +18,10 @@ const DEFAULT_STATE: AppState = {
   additional_instructions: "",
   summary_length: "normal",
   auto_summary: true,
+  whisper_model: "medium",
+  summary_model: "3b",
+  performance_tier: null,
+  hardware_reason: null,
 };
 
 function waitForApi(timeoutMs = 20000): Promise<PywebviewApi> {
