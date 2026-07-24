@@ -72,18 +72,15 @@ Scribe is a single-window macOS desktop app. The UI is a React SPA hosted inside
 - Small Mach-O executable inside `.app/Contents/MacOS/Scribe`.
 - Required so Finder double-click works; sets up environment and starts embedded or project Python running `backend/app.py`.
 
-### 7. Profiles (`backend/profile_config.py`)
+### 7. Models & hardware (`backend/model_catalog.py`, `hardware.py`)
 
-| Profile | App name | Whisper | Summary |
-| --- | --- | --- | --- |
-| `standard` | Scribe | `whisper-medium-mlx` | Qwen2.5-**3B**-Instruct-4bit |
-| `lite` | Scribe Lite | `whisper-small-mlx` | Qwen2.5-**1.5B**-Instruct-4bit |
+One product build. Users pick Whisper (small/medium) and summary (1.5B/3B) under Processing options. First-launch defaults come from a local hardware probe (strong vs weak tier). Token budgets for summarization live next to the catalog entries.
 
-Dist builds bake `profile.json` into the app Resources. Dev can override with `SCRIBE_PROFILE`.
+App display name comes from `backend/profile_config.py` (`APP_NAME`). Dist builds bake `Resources/app.json` identity metadata.
 
 ### 8. Memory (`backend/memory.py`)
 
-Between pipeline stages the app unloads the summary model (when applicable) and clears MLX Metal caches so 8 GB machines can survive Lite runs.
+Between pipeline stages the app unloads the summary model (when applicable) and clears MLX Metal caches so 8 GB machines can survive Small / 1.5B runs.
 
 ## Packaging shapes
 

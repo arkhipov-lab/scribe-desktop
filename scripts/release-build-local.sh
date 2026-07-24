@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the single dist profile (relocatable .app + versioned DMG) into dist/.
+# Build relocatable Scribe.app (+ versioned DMG) into dist/.
 # Used by the post-merge hook after a local version bump on main.
 #
 # Env:
@@ -21,7 +21,6 @@ fi
 
 chmod +x \
   "$ROOT/scripts/build-dist.sh" \
-  "$ROOT/scripts/build-dist-standard.sh" \
   "$ROOT/scripts/read-version.sh" \
   "$ROOT/scripts/bundle-ffmpeg.sh" \
   "$ROOT/scripts/prune-runtime.sh" \

@@ -17,7 +17,7 @@ brew install ffmpeg
 # Expected path: /opt/homebrew/bin/ffmpeg
 ```
 
-Optional reading: [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDARD.md), [SYSTEM-REQUIREMENTS-LITE.md](SYSTEM-REQUIREMENTS-LITE.md).
+Optional reading: [SYSTEM-REQUIREMENTS.md](SYSTEM-REQUIREMENTS.md).
 
 ## First-time setup
 
@@ -52,7 +52,6 @@ chmod +x scripts/*.sh
 | `USE_VITE_DEV` | `1` | `1` = Vite URL; `0` = build + load `frontend/dist` |
 | `DEV_URL` | `http://127.0.0.1:5173` | UI URL when Vite mode is on |
 | `PYTHON_BIN` | `python3` | Interpreter used to create `.venv` |
-| `SCRIBE_PROFILE` | ignored | Legacy; branding is always Scribe. Models are chosen in Processing options. |
 | `SCRIBE_ROOT` | unset | Set inside packaged apps to Resources root |
 | `MACOSX_DEPLOYMENT_TARGET` | `14.0` | Native compile target (Sonoma+) |
 | `PATH` | — | Dev script prepends `/opt/homebrew/bin` for ffmpeg |

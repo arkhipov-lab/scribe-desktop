@@ -127,9 +127,9 @@ cp "$ROOT/VERSION" "$RESOURCES/backend/VERSION"
 from pathlib import Path
 import sys
 sys.path.insert(0, '$ROOT/backend')
-from profile_config import write_profile_json
-write_profile_json(Path('$RESOURCES') / 'profile.json', 'standard')
-write_profile_json(Path('$RESOURCES') / 'backend' / 'profile.json', 'standard')
+from profile_config import write_app_json
+write_app_json(Path('$RESOURCES') / 'app.json')
+write_app_json(Path('$RESOURCES') / 'backend' / 'app.json')
 "
 cp -R "$ROOT/frontend/dist" "$RESOURCES/frontend/dist"
 cp "$ICNS_PATH" "$RESOURCES/AppIcon.icns"

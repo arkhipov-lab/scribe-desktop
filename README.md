@@ -9,12 +9,12 @@ Personal macOS (Apple Silicon) desktop utility for fully local audio transcripti
 | [AGENTS.md](AGENTS.md) | Entry point for AI coding agents |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Frontend → pywebview → Python → MLX / native flow |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Local setup, env vars, logs |
-| [BUILDING.md](BUILDING.md) | Local `.app`, dist DMG, Lite/Standard profiles |
+| [BUILDING.md](BUILDING.md) | Local `.app`, dist DMG |
 | [TESTING.md](TESTING.md) | Smoke checks and validation matrix |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution rules (including AI edits) |
 | [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md) | Local-only processing, permissions, logging |
 | [ROADMAP.md](ROADMAP.md) | Planned work |
-| [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDARD.md) / [SYSTEM-REQUIREMENTS-LITE.md](SYSTEM-REQUIREMENTS-LITE.md) | Hardware profiles |
+| [SYSTEM-REQUIREMENTS.md](SYSTEM-REQUIREMENTS.md) | Hardware and model defaults |
 
 ## Requirements
 

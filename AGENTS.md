@@ -14,7 +14,7 @@ Read this file first. Then open the linked docs for depth.
 | [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md) | Local-only processing, permissions, logging rules |
 | [ROADMAP.md](ROADMAP.md) | Planned work (do not implement unless asked) |
 | [README.md](README.md) | User-facing overview |
-| [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDARD.md) / [SYSTEM-REQUIREMENTS-LITE.md](SYSTEM-REQUIREMENTS-LITE.md) | Hardware profiles |
+| [SYSTEM-REQUIREMENTS.md](SYSTEM-REQUIREMENTS.md) | Hardware and model defaults |
 
 ---
 
@@ -61,9 +61,10 @@ backend/                  Python desktop shell + ML pipeline
   transcriber.py          mlx-whisper transcription
   summarizer.py           mlx-lm summary (map-reduce for long text)
   recorder.py             AudioRecorder subprocess + ffmpeg mix
-  profile_config.py       model token presets (catalog source)
-  model_catalog.py        runtime Whisper / summary choices
+  profile_config.py       app name / identity helpers
+  model_catalog.py        runtime Whisper / summary choices + token caps
   hardware.py             local Mac probe for recommended defaults
+  macos_app.py            menu-bar name + system About panel
   memory.py               unload models / clear MLX cache between stages
   logger.py               rotating file log (no transcript body)
   languages.py            Whisper language list
@@ -77,10 +78,9 @@ scripts/
   run-dev.sh              primary local launcher
   build.sh                local .app (uses project .venv)
   build-dist.sh           self-contained .app + versioned DMG
-  build-dist-{lite,standard}.sh
   bump-version.sh         conventional-commit semver bump
   read-version.sh         print VERSION
-  release-build-local.sh  standard+lite .app/DMG after release bump
+  release-build-local.sh  .app/DMG after release bump
   install-git-hooks.sh    core.hooksPath → .githooks
   bundle-ffmpeg.sh / prune-runtime.sh / …
 
@@ -113,7 +113,7 @@ dist/                     build output — do not commit
 1. **Match existing patterns** in nearby files (imports, naming, error shape returned to the UI).
 2. **Keep the local-only contract.** Network may be used only for one-time Hugging Face model download.
 3. **Never log transcript or summary text.** Log paths, statuses, durations, and error types only. See [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md).
-4. **Respect profiles.** Model IDs and app naming come from `backend/profile_config.py` / baked `profile.json`, not hard-coded strings in the UI.
+4. **One product, runtime models.** App name from `backend/profile_config.py`; Whisper/summary HF ids and token caps from `backend/model_catalog.py` — not hard-coded in the UI.
 5. **Apple Silicon only.** Reject or gate work that assumes x86_64 or non-macOS.
 6. **Prefer small, focused diffs.** No drive-by cleanup or unsolicited markdown unless docs were requested.
 7. **Frontend ↔ backend contract:** update `frontend/src/vite-env.d.ts` when adding/changing `Api` methods in `backend/app.py`.
@@ -158,9 +158,8 @@ After meaningful changes, use [TESTING.md](TESTING.md). At least:
 | `USE_VITE_DEV=1` (default) | Dev UI from Vite `http://127.0.0.1:5173` |
 | `USE_VITE_DEV=0` | Build frontend, load `frontend/dist` |
 | `PYTHON_BIN` | Python used to create `.venv` (default `python3`) |
-| `SCRIBE_PROFILE` | ignored (legacy) |
 | `SCRIBE_ROOT` | Resources root inside packaged `.app` |
-| `PROFILE` / `MAKE_DMG` / `FORCE_RUNTIME` | Dist build knobs — see [BUILDING.md](BUILDING.md) |
+| `MAKE_DMG` / `FORCE_RUNTIME` | Dist build knobs — see [BUILDING.md](BUILDING.md) |
 
 ---
 

@@ -13,68 +13,16 @@ Forward-looking ideas for Scribe. **Not a commitment** — order and scope may c
 
 ## P1 — Summary controls
 
-Today the summary prompt is fixed in `backend/summarizer.py` (Overview / Decisions / Action items / Open questions), and length is only tuned per build profile (`summary_max_tokens` / `summary_merge_tokens` in `profile_config.py`). One UI language drives both Whisper and the summarizer.
-
-### Configurable summary presets
-
-Modes such as:
-
-- Meeting notes (current default shape)
-- Action items only
-- Executive summary
-- Customer interview
-- Lecture / research notes
-- Raw cleaned transcript
-
-### Additional instructions (not a free-form system prompt)
-
-UI field that the backend mixes into `_single_prompt` / `_chunk_prompt` / `_merge_prompt`, e.g.:
-
-- highlight risks  
-- keep it as short as possible  
-- format like a Slack message  
-- keep technical terms in English  
-
-Avoid letting users fully replace the system prompt so smaller local models stay on-rails.
-
-### Persist preferences locally
-
-Example path:
-
-```text
-~/Library/Application Support/Scribe/settings.json
-```
-
-Store at least:
-
-- last transcript language  
-- last summary language (once split — see below)  
-- selected summary preset  
-- additional instructions  
-- summary length preference  
-- auto-summary on/off  
-
-Still local-only; no sync. See [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md).
-
-### Summary length control
-
-UI presets that scale tokens relative to the build profile:
-
-- Short  
-- Normal  
-- Detailed  
+Most of this shipped (presets, length, additional instructions, auto-summary, local `settings.json`). Remaining:
 
 ### Separate transcript language vs summary language
 
 Allow e.g. transcribe in Russian, summarize in English (and the reverse). Whisper language and summary output language should be independent controls.
 
-### Technical shape (when implementing P1)
+### Technical leftovers
 
-- [x] Represent presets as data, e.g. `SummaryPreset(id, label, sections, instruction)` instead of hard-wiring section logic only inside prompt helpers  
 - [ ] Optional markdown post-process: drop duplicate headings, ensure expected sections, empty sections → localized “None”, then optional checklist UI  
-- [ ] Keep advanced model knobs (Whisper/summary model, chunk size, raw token caps) behind an **Advanced** panel — easy to tank performance otherwise  
-- [x] Additional instructions + summary length presets + local `settings.json` persistence  
-- [x] Auto-summary on/off  
+- [ ] Keep advanced model knobs (chunk size, raw token caps) behind an **Advanced** panel — easy to tank performance otherwise  
 - [ ] Separate transcript language vs summary language
 
 ---
@@ -101,7 +49,7 @@ On-disk only (no cloud):
 
 ## UX (general)
 
-- [ ] Clearer first-run onboarding (permissions order, model download progress, Lite vs Standard)  
+- [ ] Clearer first-run onboarding (permissions order, model download progress, weak vs strong defaults)  
 - [ ] Richer progress for long files (phase + rough percent where feasible)  
 - [ ] Better empty / error / cancel states and retry affordances  
 - [ ] Keyboard shortcuts for record, transcribe, copy  
@@ -135,18 +83,18 @@ On-disk only (no cloud):
 - [ ] Developer ID signing + notarization  
 - [ ] Privacy-preserving update feed (e.g. Sparkle), optional  
 - [ ] Smaller DMGs / further runtime pruning  
-- [x] Single Scribe DMG (runtime model selection; Lite profile retired)  
+- [x] Single Scribe DMG (runtime model selection)  
 - [ ] CI building on arm64 runners  
-- [ ] Reproducible build attestations (profile, commit, Python tag)  
+- [ ] Reproducible build attestations (commit, Python tag)  
 
 ---
 
 ## Reliability & tests
 
-- [ ] Unit tests for path validation, profiles, language normalization, presets  
+- [ ] Unit tests for path validation, model ids, language normalization, presets  
 - [ ] Headless smoke for Api state machine (no ML)  
 - [ ] Optional integration harness with tiny fixture audio  
-- [ ] Memory regression checks for Lite on 8 GB–class machines  
+- [ ] Memory regression checks for Small / 1.5B on 8 GB–class machines  
 - [ ] Crash reporting that strips transcript content by design  
 
 ---

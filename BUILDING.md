@@ -10,8 +10,6 @@ How to produce macOS `.app` bundles and DMGs for Scribe. Prefer this doc over pa
 | --- | --- | --- | --- |
 | `./scripts/build.sh` | `dist/Scribe.app` | **No** — launches via project `.venv` | Daily local Finder launch on *this* machine |
 | `./scripts/build-dist.sh` | `.app` + optional `.dmg` | **Yes** — embedded CPython + deps + ffmpeg | Sharing with others / moving the app |
-| `./scripts/build-dist-standard.sh` | Alias of `build-dist.sh` | Yes | Same single product build |
-| `./scripts/build-dist-lite.sh` | Deprecated → `build-dist.sh` | Yes | Kept for older docs/hooks |
 
 Do **not** commit `dist/` or `.cache/`.
 
@@ -48,8 +46,6 @@ A fully frozen MLX + PyInstaller bundle is brittle (native dylibs, dynamic impor
 
 Requires Homebrew tooling on the **build** machine (ffmpeg resolution helpers, icon tools, etc.). The **shipped** app embeds a compatible ffmpeg binary — end users do not need Homebrew.
 
-There is **one** product artifact:
-
 | | |
 | --- | --- |
 | Command | `./scripts/build-dist.sh` |
@@ -57,7 +53,7 @@ There is **one** product artifact:
 | Bundle ID | `local.scribe.app` |
 | Artifacts | `dist/Scribe.app`, `dist/Scribe-<version>.dmg` |
 
-Whisper / summary model sizes are chosen **at runtime** (Processing options) with hardware-based defaults. See [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDARD.md) (and the Lite doc for historical 8 GB guidance).
+Whisper / summary model sizes are chosen **at runtime** (Processing options) with hardware-based defaults. See [SYSTEM-REQUIREMENTS.md](SYSTEM-REQUIREMENTS.md).
 
 ### Useful knobs
 
@@ -92,19 +88,20 @@ MAKE_DMG=0 ./scripts/build-dist.sh
 FORCE_RUNTIME=1 ./scripts/build-dist.sh
 ./scripts/release-build-local.sh
 ```
+
 ### What the dist build embeds
 
-Inside `Something.app/Contents/`:
+Inside `Scribe.app/Contents/`:
 
 ```text
 MacOS/Scribe              Mach-O launcher
 MacOS/AudioRecorder       ScreenCaptureKit helper
-Resources/backend/        Python app sources + profile.json
+Resources/backend/        Python app sources + app.json
 Resources/frontend/dist/  Built UI
 Resources/python/         Relocatable CPython 3.13 + runtime deps
 Resources/bin/ffmpeg      Bundled ffmpeg (+ libs as needed)
 Resources/AppIcon.icns
-Resources/profile.json    Baked standard|lite config
+Resources/app.json        App identity metadata
 ```
 
 Models are **not** pre-baked. On first transcription/summary on each machine they download into the Hugging Face cache, then work offline.
@@ -127,7 +124,7 @@ First dist build is slow; later builds reuse `.cache/dist/runtime` unless `FORCE
 
 ## Giving the app to someone else
 
-1. Build with `build-dist-*.sh` (not `build.sh`).
+1. Build with `build-dist.sh` (not `build.sh`).
 2. Share the DMG.
 3. On the other Mac:
    - Open DMG → drag app to Applications

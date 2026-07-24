@@ -148,7 +148,8 @@ def _generate(model, tokenizer, user_content: str, *, max_tokens: int) -> str:
     return str(raw).strip()
 
 
-def _uses_lite_prompts(model_hf_id: str) -> bool:
+def _uses_compact_prompts(model_hf_id: str) -> bool:
+    """Smaller 1.5B model needs shorter, stricter prompt scaffolding."""
     return normalize_summary_model_id(model_hf_id) == "1.5b"
 
 
@@ -185,11 +186,11 @@ def _headings_phrase(sections: tuple[str, ...]) -> str:
     return " / ".join(f"## {title}" for title in sections)
 
 
-def _structure_block(sections: tuple[str, ...], *, lite: bool) -> str:
+def _structure_block(sections: tuple[str, ...], *, compact: bool) -> str:
     lines: list[str] = []
     for title in sections:
         lines.append(f"## {title}")
-        if lite:
+        if compact:
             lines.append("- short bullets, or none")
         else:
             lines.append("- concise bullets grounded in the transcript, or none")
@@ -211,11 +212,11 @@ def _language_instruction(
     *,
     language: str,
     sections: tuple[str, ...],
-    lite: bool,
+    compact: bool,
 ) -> str:
     name = (language_name or "").strip() or "English"
     headings = _headings_phrase(sections)
-    if lite:
+    if compact:
         return (
             f"CRITICAL LANGUAGE RULE: Write the ENTIRE answer in {name} only. "
             f"Do not write English prose. Do not mix languages. "
@@ -234,16 +235,16 @@ def _single_prompt(
     language: str,
     preset: SummaryPreset,
     additional_instructions: str,
-    lite: bool,
+    compact: bool,
 ) -> str:
     name = (language_name or "").strip() or "English"
     sections = _section_headings(preset, language)
     extra = _extra_block(additional_instructions)
     lang_rule = _language_instruction(
-        name, language=language, sections=sections, lite=lite
+        name, language=language, sections=sections, compact=compact
     )
-    structure = _structure_block(sections, lite=lite)
-    if lite:
+    structure = _structure_block(sections, compact=compact)
+    if compact:
         return (
             f"You write notes from a transcript. Preset: {preset.label}.\n"
             f"{preset.instruction}\n"
@@ -276,16 +277,16 @@ def _chunk_prompt(
     language: str,
     preset: SummaryPreset,
     additional_instructions: str,
-    lite: bool,
+    compact: bool,
 ) -> str:
     name = (language_name or "").strip() or "English"
     sections = _section_headings(preset, language)
     section_names = ", ".join(sections)
     extra = _extra_block(additional_instructions)
     lang_rule = _language_instruction(
-        name, language=language, sections=sections, lite=lite
+        name, language=language, sections=sections, compact=compact
     )
-    if lite:
+    if compact:
         return (
             f"Summarize transcript section ({index}/{total}) for later merging.\n"
             f"Preset: {preset.label}. {preset.instruction}\n"
@@ -314,19 +315,19 @@ def _merge_prompt(
     language: str,
     preset: SummaryPreset,
     additional_instructions: str,
-    lite: bool,
+    compact: bool,
 ) -> str:
     name = (language_name or "").strip() or "English"
     sections = _section_headings(preset, language)
     headings = ", ".join(f"## {title}" for title in sections)
     extra = _extra_block(additional_instructions)
     lang_rule = _language_instruction(
-        name, language=language, sections=sections, lite=lite
+        name, language=language, sections=sections, compact=compact
     )
     joined = "\n\n---\n\n".join(
         f"Section {i + 1}:\n{part}" for i, part in enumerate(partials)
     )
-    if lite:
+    if compact:
         return (
             f"Merge these partial notes into one clean summary in {name} only.\n"
             f"Preset: {preset.label}. {preset.instruction}\n"
@@ -383,7 +384,7 @@ def summarize_transcript(
         base_merge=base_merge,
         length=length,
     )
-    lite = _uses_lite_prompts(model_hf)
+    compact = _uses_compact_prompts(model_hf)
 
     def emit(status: str, message: str) -> None:
         if on_status:
@@ -431,7 +432,7 @@ def summarize_transcript(
         "language": language,
         "preset": preset,
         "additional_instructions": additional_instructions,
-        "lite": lite,
+        "compact": compact,
     }
 
     try:

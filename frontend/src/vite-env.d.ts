@@ -77,7 +77,6 @@ export interface AppSettings {
 
 export interface AppInfo {
   app_name: string;
-  profile: string;
   version: string;
   whisper_model: string;
   summary_model: string;

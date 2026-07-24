@@ -16,7 +16,7 @@ from logger import get_logger, log_exception, setup_logging
 from languages import DEFAULT_LANGUAGE, WHISPER_LANGUAGES, languages_for_api, normalize_language
 from macos_app import configure_macos_app
 from memory import release_ml_memory
-from profile_config import get_profile
+from profile_config import get_app_name
 from recorder import CaptureRecorder, RecorderError, delete_path_quiet, is_temp_recording
 from settings import ensure_settings_file, merge_settings
 from summarizer import (
@@ -40,8 +40,7 @@ from transcriber import (
 )
 from version import get_app_version
 
-_PROFILE = get_profile()
-APP_NAME = _PROFILE.app_name
+APP_NAME = get_app_name()
 WINDOW_WIDTH = 880
 WINDOW_HEIGHT = 860
 
@@ -194,11 +193,9 @@ class Api:
         return summary_hf_id(str(snap.get("summary_model") or ""))
 
     def get_app_info(self) -> dict[str, str]:
-        profile = get_profile()
         snap = self._snapshot()
         return {
-            "app_name": profile.app_name,
-            "profile": profile.id,
+            "app_name": APP_NAME,
             "version": get_app_version(),
             "whisper_model": whisper_hf_id(str(snap.get("whisper_model") or "")),
             "summary_model": summary_hf_id(str(snap.get("summary_model") or "")),

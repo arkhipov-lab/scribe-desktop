@@ -28,10 +28,6 @@ if [[ "$ARCH" != "arm64" ]]; then
 fi
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-if [[ -n "${PROFILE:-}" && "${PROFILE}" != "standard" ]]; then
-  echo "==> [dist] Ignoring PROFILE='${PROFILE}' — single Scribe build (runtime model selection)" >&2
-fi
-PROFILE="standard"
 APP_NAME="Scribe"
 DMG_BASENAME="Scribe"
 BUNDLE_ID="local.scribe.app"
@@ -249,17 +245,17 @@ cp "$ROOT/backend/memory.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/version.py" "$RESOURCES/backend/"
 cp "$ROOT/VERSION" "$RESOURCES/VERSION"
 cp "$ROOT/VERSION" "$RESOURCES/backend/VERSION"
-# Bake profile so the app does not depend on build-machine env at runtime.
+# Bake app identity into Resources.
 "$ROOT/.venv/bin/python" - <<PY
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path("$ROOT") / "backend"))
-from profile_config import write_profile_json
-write_profile_json(Path("$RESOURCES") / "profile.json", "$PROFILE")
-print("profile:", "$PROFILE")
+from profile_config import write_app_json
+write_app_json(Path("$RESOURCES") / "app.json")
+print("app:", "Scribe")
 PY
-# Also keep a copy next to backend modules for import-time discovery without SCRIBE_ROOT.
-cp "$RESOURCES/profile.json" "$RESOURCES/backend/profile.json"
+# Also keep a copy next to backend modules.
+cp "$RESOURCES/app.json" "$RESOURCES/backend/app.json"
 cp -R "$ROOT/frontend/dist" "$RESOURCES/frontend/dist"
 cp "$ICNS_PATH" "$RESOURCES/AppIcon.icns"
 
@@ -385,6 +381,6 @@ if [[ "$MAKE_DMG" == "1" ]]; then
   echo "==> DMG: $DMG_PATH ($(du -sh "$DMG_PATH" | awk '{print $1}'))"
 fi
 
-echo "==> Built self-contained app: $APP_DIR ($(du -sh "$APP_DIR" | awk '{print $1}')) [profile=$PROFILE version=$APP_VERSION]"
+echo "==> Built self-contained app: $APP_DIR ($(du -sh "$APP_DIR" | awk '{print $1}')) [version=$APP_VERSION]"
 echo "Open with: open \"$APP_DIR\""
 echo "Friends: mount DMG → drag to Applications → right-click Open / Open Anyway"

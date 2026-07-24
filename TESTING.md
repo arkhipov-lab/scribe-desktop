@@ -9,7 +9,6 @@ Scribe does not yet have a large automated test suite. Validate changes with the
 | Frontend typecheck + production build | `(cd frontend && npm run build)` (`tsc --noEmit` + Vite) |
 | Dist runtime smoke | Built into `scripts/build-dist.sh` (import mlx stack, mel spectrogram, optional torch absence) |
 | Mach-O min OS | `scripts/assert-macho-minos.sh` (invoked by dist build) |
-| Profile helper | `profile_config.reset_profile_cache()` exists for tests; no pytest suite checked in yet |
 
 There is no CI matrix documented in-repo yet. Treat the checklists here as the source of truth for agents and humans.
 
@@ -98,8 +97,7 @@ open "dist/Scribe.app"
 ## Manual smoke: dist package (when packaging changed)
 
 ```bash
-PROFILE=standard MAKE_DMG=1 ./scripts/build-dist.sh
-# PROFILE is ignored if set to anything else — one Scribe.app only
+MAKE_DMG=1 ./scripts/build-dist.sh
 ```
 
 1. Build finishes with smoke steps green (including post-prune).
@@ -126,7 +124,8 @@ Use this when unsure what to retest:
 | `transcriber.py` | File validate + short transcribe + cancel + logs |
 | `summarizer.py` | Short + long transcript (chunk path) + cancel |
 | `recorder.py` / `AudioRecorder.swift` | Record permissions + mix + temp cleanup |
-| `profile_config.py` / dist scripts | Both profiles’ app names + model ids; dist smoke |
+| `profile_config.py` / dist scripts | App name / identity; dist smoke |
+| `model_catalog.py` / `hardware.py` | Model pickers + first-launch defaults |
 | `logger.py` | Still no transcript/summary in log file |
 | Packaging scripts | Dist build + launch on a second machine if possible |
 
@@ -136,7 +135,7 @@ Use this when unsure what to retest:
 
 1. Read `~/Library/Logs/Scribe/app.log`.
 2. Confirm arch (`arm64`), ffmpeg, and `native/build/AudioRecorder`.
-3. For OOM-like failures on 8 GB: switch to Lite / shorter audio.
+3. For OOM-like failures on 8 GB: switch to Small / 1.5B and shorter audio.
 4. For Gatekeeper issues: unsigned ad-hoc builds need Open Anyway — not a code bug.
 
-When adding automated tests later, prefer fast unit tests around path validation, profile loading, and language normalization before full ML integration tests.
+When adding automated tests later, prefer fast unit tests around path validation, model id normalization, and language normalization before full ML integration tests.
