@@ -11,6 +11,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# shellcheck disable=SC1091
+source "$ROOT/scripts/use-xcode-toolchain.sh"
+
 if [[ "${SKIP_RELEASE_BUILD:-0}" == "1" ]]; then
   echo "SKIP_RELEASE_BUILD=1 — skipping dist builds"
   exit 0
@@ -24,7 +27,8 @@ chmod +x \
   "$ROOT/scripts/bundle-ffmpeg.sh" \
   "$ROOT/scripts/prune-runtime.sh" \
   "$ROOT/scripts/ensure-compatible-ffmpeg.sh" \
-  "$ROOT/scripts/assert-macho-minos.sh" 2>/dev/null || true
+  "$ROOT/scripts/assert-macho-minos.sh" \
+  "$ROOT/scripts/use-xcode-toolchain.sh" 2>/dev/null || true
 
 VERSION="$("$ROOT/scripts/read-version.sh")"
 LOG_DIR="$ROOT/.cache"
@@ -32,15 +36,33 @@ LOG_FILE="$LOG_DIR/release-build.log"
 mkdir -p "$LOG_DIR" "$ROOT/dist"
 
 run_builds() {
+  set -euo pipefail
+  # shellcheck disable=SC1091
+  source "$ROOT/scripts/use-xcode-toolchain.sh"
   echo "==> Local release build for v${VERSION}"
+  echo "==> DEVELOPER_DIR=${DEVELOPER_DIR:-} SDKROOT=${SDKROOT:-}"
   echo "==> $(date '+%Y-%m-%d %H:%M:%S') starting standard + lite dist builds"
   MAKE_DMG="${MAKE_DMG:-1}" "$ROOT/scripts/build-dist-standard.sh"
   MAKE_DMG="${MAKE_DMG:-1}" "$ROOT/scripts/build-dist-lite.sh"
+  echo "==> $(date '+%Y-%m-%d %H:%M:%S') verifying artifacts"
+  local missing=0
+  for path in \
+    "$ROOT/dist/Scribe.app" \
+    "$ROOT/dist/Scribe Lite.app" \
+    "$ROOT/dist/Scribe-${VERSION}.dmg" \
+    "$ROOT/dist/Scribe-Lite-${VERSION}.dmg"
+  do
+    if [[ -e "$path" ]]; then
+      ls -lh "$path"
+    else
+      echo "Missing required artifact: $path" >&2
+      missing=1
+    fi
+  done
+  if [[ "$missing" -ne 0 ]]; then
+    return 1
+  fi
   echo "==> $(date '+%Y-%m-%d %H:%M:%S') done"
-  echo "==> Artifacts:"
-  ls -lh "$ROOT/dist/Scribe.app" "$ROOT/dist/Scribe Lite.app" \
-    "$ROOT/dist/Scribe-${VERSION}.dmg" "$ROOT/dist/Scribe-Lite-${VERSION}.dmg" 2>/dev/null || \
-    ls -lh "$ROOT/dist"/*"${VERSION}"* "$ROOT/dist"/*.app 2>/dev/null || true
 }
 
 if [[ "${SCRIBE_RELEASE_BUILD_FG:-0}" == "1" ]]; then
@@ -49,15 +71,13 @@ if [[ "${SCRIBE_RELEASE_BUILD_FG:-0}" == "1" ]]; then
 fi
 
 # Background so git merge/pull returns quickly; builds can take a long time.
-{
+# Keep set -e active inside the subshell (do not wrap run_builds in `if`).
+(
+  set -euo pipefail
   echo "======== $(date '+%Y-%m-%d %H:%M:%S') release-build-local v${VERSION} ========"
-  if run_builds; then
-    echo "======== $(date '+%Y-%m-%d %H:%M:%S') SUCCESS ========"
-  else
-    echo "======== $(date '+%Y-%m-%d %H:%M:%S') FAILED (exit $?) ========"
-    exit 1
-  fi
-} >>"$LOG_FILE" 2>&1 &
+  run_builds
+  echo "======== $(date '+%Y-%m-%d %H:%M:%S') SUCCESS ========"
+) >>"$LOG_FILE" 2>&1 &
 pid=$!
 echo "post-merge: dist builds started in background (pid $pid)"
 echo "  log: $LOG_FILE"

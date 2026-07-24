@@ -10,6 +10,10 @@ if [[ -d "$ROOT/.git" ]]; then
   "$ROOT/scripts/install-git-hooks.sh" >/dev/null || true
 fi
 
+# Prefer Xcode.app SDK (avoids CLT MacOSX26 + older swiftc mismatch).
+# shellcheck disable=SC1091
+source "$ROOT/scripts/use-xcode-toolchain.sh"
+
 ARCH="$(uname -m)"
 if [[ "$ARCH" != "arm64" ]]; then
   echo "This app targets Apple Silicon (arm64). Current arch: $ARCH" >&2
@@ -53,7 +57,8 @@ mkdir -p "$ROOT/native/build"
 MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-14.0}"
 export MACOSX_DEPLOYMENT_TARGET
 if [[ ! -x "$ROOT/native/build/AudioRecorder" ]] || [[ "$ROOT/native/AudioRecorder.swift" -nt "$ROOT/native/build/AudioRecorder" ]]; then
-  swiftc -O -parse-as-library \
+  "${SCRIBE_SWIFTC:-swiftc}" -O -parse-as-library \
+    -sdk "${SDKROOT:?SDKROOT not set — install Xcode.app}" \
     -target "arm64-apple-macosx${MACOSX_DEPLOYMENT_TARGET}" \
     -o "$ROOT/native/build/AudioRecorder" \
     "$ROOT/native/AudioRecorder.swift" \
