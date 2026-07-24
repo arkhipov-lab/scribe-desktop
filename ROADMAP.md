@@ -30,7 +30,7 @@ Allow e.g. transcribe in Russian, summarize in English (and the reverse). Whispe
 ## P2 — Editable results & export
 
 - [ ] Edit transcript and summary in-app before copy/export  
-- [ ] Export `.md` and `.txt` (PDF optional later)  
+- [x] Export `.md` and `.txt` (PDF optional later)  
 - [ ] `.srt` / `.vtt` once timestamps exist  
 - [ ] Partial copy actions: Copy transcript / Copy summary / Copy action items  
 - [ ] Dedicated Action items view — parse the markdown section into a task list  

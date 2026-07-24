@@ -45,6 +45,23 @@ WINDOW_WIDTH = 880
 WINDOW_HEIGHT = 860
 
 
+def _format_export_notes(*, transcript: str, summary: str, fmt: str) -> str:
+    """Build export body. Never log the returned text."""
+    parts: list[str] = []
+    as_md = fmt == "md"
+    if transcript:
+        if as_md:
+            parts.append(f"## Transcript\n\n{transcript}")
+        else:
+            parts.append(f"Transcript\n==========\n\n{transcript}")
+    if summary:
+        if as_md:
+            parts.append(f"## Summary\n\n{summary}")
+        else:
+            parts.append(f"Summary\n=======\n\n{summary}")
+    return "\n\n".join(parts).rstrip() + "\n"
+
+
 def _backend_dir() -> Path:
     return Path(__file__).resolve().parent
 
@@ -306,6 +323,73 @@ class Api:
 
         self.logger.info("Saved audio copy: %s -> %s", source, dest)
         self._update(message=f"Saved copy: {dest.name}", error=None)
+        return self._snapshot() | {
+            "ok": True,
+            "saved_path": str(dest),
+        }
+
+    def export_notes(self) -> dict[str, Any]:
+        """Save transcript and/or summary via a Save dialog (.md or .txt)."""
+        state = self._snapshot()
+        transcript = str(state.get("transcript") or "").strip()
+        summary = str(state.get("summary") or "").strip()
+        if not transcript and not summary:
+            return state | {"ok": False, "error": "Nothing to export yet."}
+
+        window = webview.active_window()
+        if window is None and webview.windows:
+            window = webview.windows[0]
+        if window is None:
+            return state | {"ok": False, "error": "Window is not ready."}
+
+        stem = "scribe-notes"
+        file_name = state.get("file_name")
+        if file_name:
+            stem = Path(str(file_name)).stem or stem
+        suggested = f"{stem}-notes.md"
+        file_types = (
+            "Markdown (*.md)",
+            "Plain text (*.txt)",
+        )
+        try:
+            result = window.create_file_dialog(
+                webview.SAVE_DIALOG,
+                save_filename=suggested,
+                file_types=file_types,
+            )
+        except ValueError as exc:
+            self.logger.error("Export dialog filter error: %s", exc)
+            return state | {"ok": False, "error": "Could not open the save dialog."}
+
+        if not result:
+            return state | {"ok": False, "cancelled": True}
+
+        dest_raw = result[0] if isinstance(result, (list, tuple)) else str(result)
+        dest = Path(str(dest_raw)).expanduser()
+        suffix = dest.suffix.lower()
+        if suffix not in {".md", ".txt"}:
+            dest = dest.with_suffix(".md")
+            suffix = ".md"
+
+        body = _format_export_notes(transcript=transcript, summary=summary, fmt=suffix[1:])
+        try:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(body, encoding="utf-8")
+        except OSError as exc:
+            log_exception("Failed to export notes")
+            return state | {
+                "ok": False,
+                "error": f"Could not save the file: {exc.strerror or exc}",
+            }
+
+        self.logger.info(
+            "Exported notes: path=%s format=%s has_transcript=%s has_summary=%s",
+            dest,
+            suffix,
+            bool(transcript),
+            bool(summary),
+        )
+        self._update(message=f"Exported: {dest.name}", error=None)
         return self._snapshot() | {
             "ok": True,
             "saved_path": str(dest),

@@ -88,6 +88,7 @@ export default function App() {
   const [bridgeError, setBridgeError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [exported, setExported] = useState(false);
   const [appName, setAppName] = useState("Scribe");
   const [resultTab, setResultTab] = useState<ResultTab>("transcript");
   const [presets, setPresets] = useState<SummaryPresetOption[]>(FALLBACK_PRESETS);
@@ -97,6 +98,7 @@ export default function App() {
   const [instructionsDraft, setInstructionsDraft] = useState("");
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
   const copyTimer = useRef<number | null>(null);
+  const exportTimer = useRef<number | null>(null);
   const instructionsTimer = useRef<number | null>(null);
   const lastTranscriptRef = useRef("");
 
@@ -161,6 +163,7 @@ export default function App() {
       cancelled = true;
       if (intervalId) window.clearInterval(intervalId);
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
+      if (exportTimer.current) window.clearTimeout(exportTimer.current);
       if (instructionsTimer.current) window.clearTimeout(instructionsTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -191,8 +194,10 @@ export default function App() {
     try {
       const api = await getApi();
       const next = await action(api);
-      setState(mergeState(next));
+      const merged = mergeState(next);
+      setState(merged);
       setBridgeError(null);
+      return merged;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Desktop bridge is not available.";
@@ -200,6 +205,7 @@ export default function App() {
         resetApi();
       }
       setBridgeError(message);
+      return null;
     }
   }
 
@@ -212,6 +218,7 @@ export default function App() {
   const activeText =
     resultTab === "summary" ? state.summary : state.transcript;
   const canCopy = Boolean(activeText);
+  const canExport = Boolean(state.transcript?.trim() || state.summary?.trim());
   const summaryLength = (state.summary_length || "normal") as SummaryLength;
 
   async function onSelectFile() {
@@ -220,6 +227,31 @@ export default function App() {
 
   async function onSaveAudioCopy() {
     await withApi((api) => api.save_audio_copy());
+  }
+
+  async function onExportNotes() {
+    try {
+      const api = await getApi();
+      if (!api.export_notes) {
+        setBridgeError("Export is not available in this build. Rebuild the app.");
+        return;
+      }
+      const next = await api.export_notes();
+      setState(mergeState(next));
+      setBridgeError(null);
+      if (next.ok) {
+        setExported(true);
+        if (exportTimer.current) window.clearTimeout(exportTimer.current);
+        exportTimer.current = window.setTimeout(() => setExported(false), 1600);
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Desktop bridge is not available.";
+      if (message.includes("Desktop bridge is not available")) {
+        resetApi();
+      }
+      setBridgeError(message);
+    }
   }
 
   async function onLanguageChange(next: string) {
@@ -670,6 +702,14 @@ export default function App() {
                     Regenerate
                   </button>
                 )}
+              <button
+                type="button"
+                className="btn ghost"
+                onClick={() => void onExportNotes()}
+                disabled={!canExport}
+              >
+                {exported ? "Exported" : "Export"}
+              </button>
               <button
                 type="button"
                 className="btn secondary"
