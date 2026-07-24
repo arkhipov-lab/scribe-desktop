@@ -16,6 +16,8 @@ export type SummaryStatus =
   | "completed"
   | "error";
 
+export type SummaryLength = "short" | "normal" | "detailed";
+
 export type LanguageCode = string;
 
 export interface AppState {
@@ -31,6 +33,10 @@ export interface AppState {
   error: string | null;
   elapsed_seconds: number;
   started_at: number | null;
+  summary_preset: string;
+  additional_instructions: string;
+  summary_length: SummaryLength | string;
+  auto_summary: boolean;
 }
 
 export interface ApiResult extends AppState {
@@ -41,6 +47,19 @@ export interface ApiResult extends AppState {
 export interface LanguageOption {
   code: string;
   label: string;
+}
+
+export interface SummaryPresetOption {
+  id: string;
+  label: string;
+}
+
+export interface AppSettings {
+  language: string;
+  summary_preset: string;
+  additional_instructions: string;
+  summary_length: SummaryLength | string;
+  auto_summary: boolean;
 }
 
 export interface AppInfo {
@@ -58,6 +77,9 @@ export interface PywebviewApi {
   set_file_path: (filePath: string) => Promise<ApiResult>;
   set_language: (language: string) => Promise<ApiResult>;
   get_languages: () => Promise<LanguageOption[]>;
+  get_summary_presets: () => Promise<SummaryPresetOption[]>;
+  get_settings: () => Promise<AppSettings>;
+  update_settings: (patch: Partial<AppSettings>) => Promise<ApiResult>;
   start_transcription: () => Promise<ApiResult>;
   cancel_transcription: () => Promise<ApiResult>;
   start_summary: () => Promise<ApiResult>;

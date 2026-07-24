@@ -88,12 +88,12 @@ The **Record** button captures **microphone + system audio** (via ScreenCaptureK
 ## Usage
 
 1. Drop or select an audio/video file (`.m4a`, `.mp3`, `.wav`, `.mp4`, `.mov`) — or record
-2. Choose language
+2. Choose language and summary options (preset, length, optional instructions)
 3. Click **Transcribe**
 4. Wait for local processing — first transcription downloads the Whisper model; first summary downloads the local LLM (each once, then cached)
 5. Review **Transcript** and **Summary**, then Copy
 
-All processing is local. No cloud upload.
+Preferences (language, summary controls) are stored locally in `~/Library/Application Support/Scribe/settings.json`. All processing is local. No cloud upload.
 
 ## Models
 

@@ -14,42 +14,59 @@ const DEFAULT_STATE: AppState = {
   error: null,
   elapsed_seconds: 0,
   started_at: null,
+  summary_preset: "meeting_notes",
+  additional_instructions: "",
+  summary_length: "normal",
+  auto_summary: true,
 };
 
-function waitForApi(timeoutMs = 15000): Promise<PywebviewApi> {
+function waitForApi(timeoutMs = 20000): Promise<PywebviewApi> {
   return new Promise((resolve, reject) => {
     const started = Date.now();
+    let settled = false;
+    let interval = 0;
+
+    const finish = (api: PywebviewApi) => {
+      if (settled) return;
+      settled = true;
+      if (interval) window.clearInterval(interval);
+      window.removeEventListener("pywebviewready", onReady);
+      resolve(api);
+    };
+
+    const fail = () => {
+      if (settled) return;
+      settled = true;
+      if (interval) window.clearInterval(interval);
+      window.removeEventListener("pywebviewready", onReady);
+      reject(new Error("Desktop bridge is not available."));
+    };
 
     const tryResolve = () => {
       const api = window.pywebview?.api;
       if (api) {
-        resolve(api);
+        finish(api);
         return true;
       }
       return false;
     };
 
+    const onReady = () => {
+      tryResolve();
+    };
+
+    window.addEventListener("pywebviewready", onReady);
+
     if (tryResolve()) {
       return;
     }
 
-    const onReady = () => {
+    interval = window.setInterval(() => {
       if (tryResolve()) {
-        window.removeEventListener("pywebviewready", onReady);
-      }
-    };
-    window.addEventListener("pywebviewready", onReady);
-
-    const interval = window.setInterval(() => {
-      if (tryResolve()) {
-        window.clearInterval(interval);
-        window.removeEventListener("pywebviewready", onReady);
         return;
       }
       if (Date.now() - started > timeoutMs) {
-        window.clearInterval(interval);
-        window.removeEventListener("pywebviewready", onReady);
-        reject(new Error("Desktop bridge is not available."));
+        fail();
       }
     }, 50);
   });
@@ -57,9 +74,17 @@ function waitForApi(timeoutMs = 15000): Promise<PywebviewApi> {
 
 let apiPromise: Promise<PywebviewApi> | null = null;
 
+export function resetApi(): void {
+  apiPromise = null;
+}
+
 export function getApi(): Promise<PywebviewApi> {
   if (!apiPromise) {
-    apiPromise = waitForApi();
+    apiPromise = waitForApi().catch((err) => {
+      // Allow a later retry after a transient startup miss.
+      apiPromise = null;
+      throw err;
+    });
   }
   return apiPromise;
 }

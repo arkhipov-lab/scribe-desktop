@@ -70,9 +70,12 @@ Allow e.g. transcribe in Russian, summarize in English (and the reverse). Whispe
 
 ### Technical shape (when implementing P1)
 
-- [ ] Represent presets as data, e.g. `SummaryPreset(id, label, sections, instruction)` instead of hard-wiring section logic only inside prompt helpers  
+- [x] Represent presets as data, e.g. `SummaryPreset(id, label, sections, instruction)` instead of hard-wiring section logic only inside prompt helpers  
 - [ ] Optional markdown post-process: drop duplicate headings, ensure expected sections, empty sections → localized “None”, then optional checklist UI  
 - [ ] Keep advanced model knobs (Whisper/summary model, chunk size, raw token caps) behind an **Advanced** panel — easy to tank performance otherwise  
+- [x] Additional instructions + summary length presets + local `settings.json` persistence  
+- [x] Auto-summary on/off  
+- [ ] Separate transcript language vs summary language
 
 ---
 

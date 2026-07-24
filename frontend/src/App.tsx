@@ -3,13 +3,35 @@ import {
   formatElapsed,
   getApi,
   getDefaultState,
+  resetApi,
 } from "./api";
 import LanguageSelect from "./LanguageSelect";
 import MarkdownBody from "./MarkdownBody";
+import PresetSelect from "./PresetSelect";
 import { DEFAULT_LANGUAGE } from "./languages";
-import type { AppState, SummaryStatus } from "./vite-env";
+import type {
+  AppState,
+  SummaryLength,
+  SummaryPresetOption,
+  SummaryStatus,
+} from "./vite-env";
 
 const ACCEPTED = ".m4a,.mp3,.wav,.mp4,.mov";
+
+const LENGTH_OPTIONS: { id: SummaryLength; label: string }[] = [
+  { id: "short", label: "Short" },
+  { id: "normal", label: "Normal" },
+  { id: "detailed", label: "Detailed" },
+];
+
+const FALLBACK_PRESETS: SummaryPresetOption[] = [
+  { id: "meeting_notes", label: "Meeting notes" },
+  { id: "action_items", label: "Action items only" },
+  { id: "executive", label: "Executive summary" },
+  { id: "customer_interview", label: "Customer interview" },
+  { id: "lecture", label: "Lecture / research notes" },
+  { id: "cleaned_transcript", label: "Cleaned transcript" },
+];
 
 type ResultTab = "transcript" | "summary";
 
@@ -39,6 +61,10 @@ function mergeState(next: AppState): AppState {
     error: next.error ?? null,
     elapsed_seconds: next.elapsed_seconds,
     started_at: next.started_at,
+    summary_preset: next.summary_preset ?? "meeting_notes",
+    additional_instructions: next.additional_instructions ?? "",
+    summary_length: next.summary_length ?? "normal",
+    auto_summary: next.auto_summary ?? true,
   };
 }
 
@@ -49,7 +75,11 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [appName, setAppName] = useState("Scribe");
   const [resultTab, setResultTab] = useState<ResultTab>("transcript");
+  const [presets, setPresets] = useState<SummaryPresetOption[]>(FALLBACK_PRESETS);
+  const [instructionsDraft, setInstructionsDraft] = useState("");
+  const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
   const copyTimer = useRef<number | null>(null);
+  const instructionsTimer = useRef<number | null>(null);
   const lastTranscriptRef = useRef("");
 
   useEffect(() => {
@@ -60,13 +90,23 @@ export default function App() {
       try {
         const api = await getApi();
         if (cancelled) return;
-        const [initial, info] = await Promise.all([
+        const [initial, info, presetList] = await Promise.all([
           api.get_state(),
-          api.get_app_info?.().catch(() => null),
+          api.get_app_info
+            ? api.get_app_info().catch(() => null)
+            : Promise.resolve(null),
+          api.get_summary_presets
+            ? api.get_summary_presets().catch(() => FALLBACK_PRESETS)
+            : Promise.resolve(FALLBACK_PRESETS),
         ]);
         if (cancelled) return;
-        setState(mergeState(initial));
+        const merged = mergeState(initial);
+        setState(merged);
+        setInstructionsDraft(merged.additional_instructions);
         if (info?.app_name) setAppName(info.app_name);
+        if (Array.isArray(presetList) && presetList.length > 0) {
+          setPresets(presetList);
+        }
         setBridgeError(null);
 
         intervalId = window.setInterval(async () => {
@@ -91,9 +131,15 @@ export default function App() {
       cancelled = true;
       if (intervalId) window.clearInterval(intervalId);
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
+      if (instructionsTimer.current) window.clearTimeout(instructionsTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function retryBridge() {
+    resetApi();
+    window.location.reload();
+  }
 
   useEffect(() => {
     // New transcript → always land on Transcript tab.
@@ -102,6 +148,12 @@ export default function App() {
     }
     lastTranscriptRef.current = state.transcript;
   }, [state.transcript]);
+
+  useEffect(() => {
+    // Keep draft aligned when settings load/change from the bridge (not while typing).
+    if (document.activeElement?.id === "summary-instructions") return;
+    setInstructionsDraft(state.additional_instructions || "");
+  }, [state.additional_instructions]);
 
   async function withApi(
     action: (api: Awaited<ReturnType<typeof getApi>>) => Promise<AppState>,
@@ -112,9 +164,12 @@ export default function App() {
       setState(mergeState(next));
       setBridgeError(null);
     } catch (err) {
-      setBridgeError(
-        err instanceof Error ? err.message : "Desktop bridge is not available.",
-      );
+      const message =
+        err instanceof Error ? err.message : "Desktop bridge is not available.";
+      if (message.includes("Desktop bridge is not available")) {
+        resetApi();
+      }
+      setBridgeError(message);
     }
   }
 
@@ -127,6 +182,7 @@ export default function App() {
   const activeText =
     resultTab === "summary" ? state.summary : state.transcript;
   const canCopy = Boolean(activeText);
+  const summaryLength = (state.summary_length || "normal") as SummaryLength;
 
   async function onSelectFile() {
     await withApi((api) => api.select_file());
@@ -138,6 +194,17 @@ export default function App() {
 
   async function onLanguageChange(next: string) {
     await withApi((api) => api.set_language(next));
+  }
+
+  async function onSettingsPatch(
+    patch: Partial<{
+      summary_preset: string;
+      additional_instructions: string;
+      summary_length: SummaryLength;
+      auto_summary: boolean;
+    }>,
+  ) {
+    await withApi((api) => api.update_settings(patch));
   }
 
   async function onTranscribe() {
@@ -163,6 +230,14 @@ export default function App() {
 
   async function onCancelSummary() {
     await withApi((api) => api.cancel_summary());
+  }
+
+  function onInstructionsChange(value: string) {
+    setInstructionsDraft(value);
+    if (instructionsTimer.current) window.clearTimeout(instructionsTimer.current);
+    instructionsTimer.current = window.setTimeout(() => {
+      void onSettingsPatch({ additional_instructions: value });
+    }, 450);
   }
 
   async function onCopy() {
@@ -229,7 +304,18 @@ export default function App() {
 
       {(bridgeError || state.error || summaryBanner) && (
         <div className="banner error" role="alert">
-          {bridgeError || state.error || summaryBanner}
+          <div className="banner-row">
+            <span>{bridgeError || state.error || summaryBanner}</span>
+            {bridgeError && (
+              <button
+                type="button"
+                className="btn ghost banner-retry"
+                onClick={() => retryBridge()}
+              >
+                Retry
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -310,7 +396,7 @@ export default function App() {
           </label>
           <LanguageSelect
             value={language}
-            disabled={locked}
+            disabled={locked || summaryBusy}
             onChange={(next) => void onLanguageChange(next)}
           />
         </div>
@@ -334,6 +420,96 @@ export default function App() {
             </button>
           )}
         </div>
+      </section>
+
+      <section
+        className={`panel summary-settings ${summaryOptionsOpen ? "expanded" : "collapsed"}`}
+      >
+        <button
+          type="button"
+          className="disclosure-toggle"
+          aria-expanded={summaryOptionsOpen}
+          aria-controls="summary-options-body"
+          onClick={() => setSummaryOptionsOpen((open) => !open)}
+        >
+          <span className="disclosure-copy">
+            <span className="disclosure-title">Summary options</span>
+            <span className="disclosure-hint">
+              Preset, length, and extra instructions
+            </span>
+          </span>
+          <span className="disclosure-chevron" aria-hidden="true" />
+        </button>
+
+        {summaryOptionsOpen && (
+          <div id="summary-options-body" className="summary-settings-body">
+            <div className="summary-settings-grid">
+              <div className="field">
+                <label className="field-label" htmlFor="summary-preset">
+                  Preset
+                </label>
+                <PresetSelect
+                  value={state.summary_preset || "meeting_notes"}
+                  options={presets}
+                  disabled={locked || summaryBusy}
+                  onChange={(next) => void onSettingsPatch({ summary_preset: next })}
+                />
+              </div>
+
+              <div className="field">
+                <span className="field-label" id="summary-length-label">
+                  Length
+                </span>
+                <div
+                  className="segmented"
+                  role="group"
+                  aria-labelledby="summary-length-label"
+                >
+                  {LENGTH_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={summaryLength === option.id ? "active" : ""}
+                      disabled={locked || summaryBusy}
+                      aria-pressed={summaryLength === option.id}
+                      onClick={() => void onSettingsPatch({ summary_length: option.id })}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="field instructions-field">
+              <label className="field-label" htmlFor="summary-instructions">
+                Additional instructions
+              </label>
+              <textarea
+                id="summary-instructions"
+                className="instructions-input"
+                rows={2}
+                maxLength={800}
+                placeholder="e.g. highlight risks, keep technical terms in English"
+                value={instructionsDraft}
+                disabled={locked || summaryBusy}
+                onChange={(e) => onInstructionsChange(e.target.value)}
+              />
+            </div>
+
+            <label className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={Boolean(state.auto_summary)}
+                disabled={locked || summaryBusy}
+                onChange={(e) =>
+                  void onSettingsPatch({ auto_summary: e.target.checked })
+                }
+              />
+              <span>Auto-summarize after transcription</span>
+            </label>
+          </div>
+        )}
       </section>
 
       <section className="panel status-panel">
@@ -457,7 +633,9 @@ export default function App() {
               <p>
                 {state.summary_status === "error"
                   ? "Summary failed. You can try again."
-                  : "Summary will appear here after transcription finishes."}
+                  : state.auto_summary
+                    ? "Summary will appear here after transcription finishes."
+                    : "Auto-summary is off. Generate when you are ready."}
               </p>
               {Boolean(state.transcript) && (
                 <button

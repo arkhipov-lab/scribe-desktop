@@ -17,11 +17,13 @@ from languages import DEFAULT_LANGUAGE, WHISPER_LANGUAGES, languages_for_api, no
 from memory import release_ml_memory
 from profile_config import get_profile
 from recorder import CaptureRecorder, RecorderError, delete_path_quiet, is_temp_recording
+from settings import load_settings, merge_settings
 from summarizer import (
     DEFAULT_SUMMARY_MODEL,
     SummaryError,
     summarize_transcript,
 )
+from summary_presets import presets_for_api
 from transcriber import (
     DEFAULT_MODEL,
     SUPPORTED_EXTENSIONS,
@@ -35,7 +37,7 @@ from version import get_app_version
 _PROFILE = get_profile()
 APP_NAME = _PROFILE.app_name
 WINDOW_WIDTH = 880
-WINDOW_HEIGHT = 760
+WINDOW_HEIGHT = 860
 
 
 def _backend_dir() -> Path:
@@ -92,12 +94,13 @@ class Api:
         self._summary_cancel = threading.Event()
         self._worker: threading.Thread | None = None
         self._summary_worker: threading.Thread | None = None
+        prefs = load_settings()
         self._state: dict[str, Any] = {
             "status": "idle",
             "message": "Drop an audio file, select a file, or record notes.",
             "file_path": None,
             "file_name": None,
-            "language": DEFAULT_LANGUAGE,
+            "language": prefs["language"],
             "transcript": "",
             "summary": "",
             "summary_status": "idle",
@@ -105,12 +108,35 @@ class Api:
             "error": None,
             "elapsed_seconds": 0.0,
             "started_at": None,
+            "summary_preset": prefs["summary_preset"],
+            "additional_instructions": prefs["additional_instructions"],
+            "summary_length": prefs["summary_length"],
+            "auto_summary": prefs["auto_summary"],
         }
         self._timer_stop = threading.Event()
         self._timer_thread: threading.Thread | None = None
         self._recorder = CaptureRecorder()
         self._owned_temp_path: str | None = None
         self.logger = get_logger()
+
+    def _prefs_from_state(self) -> dict[str, Any]:
+        snap = self._snapshot()
+        return {
+            "language": snap.get("language") or DEFAULT_LANGUAGE,
+            "summary_preset": snap.get("summary_preset"),
+            "additional_instructions": snap.get("additional_instructions") or "",
+            "summary_length": snap.get("summary_length"),
+            "auto_summary": bool(snap.get("auto_summary", True)),
+        }
+
+    def _apply_prefs(self, prefs: dict[str, Any]) -> None:
+        self._update(
+            language=prefs["language"],
+            summary_preset=prefs["summary_preset"],
+            additional_instructions=prefs["additional_instructions"],
+            summary_length=prefs["summary_length"],
+            auto_summary=prefs["auto_summary"],
+        )
 
     def _snapshot(self) -> dict[str, Any]:
         with self._lock:
@@ -374,11 +400,35 @@ class Api:
                 "ok": False,
                 "error": "Unsupported language. Choose a language from the list.",
             }
-        self._update(language=lang)
+        prefs = merge_settings({**self._prefs_from_state(), "language": lang})
+        self._apply_prefs(prefs)
         return self._snapshot() | {"ok": True}
 
     def get_languages(self) -> list[dict[str, str]]:
         return languages_for_api()
+
+    def get_summary_presets(self) -> list[dict[str, str]]:
+        return presets_for_api()
+
+    def get_settings(self) -> dict[str, Any]:
+        return self._prefs_from_state()
+
+    def update_settings(self, patch: dict[str, Any] | None = None) -> dict[str, Any]:
+        if not isinstance(patch, dict):
+            return self._snapshot() | {"ok": False, "error": "Invalid settings."}
+        allowed = {
+            "language",
+            "summary_preset",
+            "additional_instructions",
+            "summary_length",
+            "auto_summary",
+        }
+        clean = {k: patch[k] for k in allowed if k in patch}
+        if not clean:
+            return self._snapshot() | {"ok": False, "error": "No settings to update."}
+        prefs = merge_settings({**self._prefs_from_state(), **clean})
+        self._apply_prefs(prefs)
+        return self._snapshot() | {"ok": True}
 
     def start_transcription(self) -> dict[str, Any]:
         state = self._snapshot()
@@ -451,7 +501,13 @@ class Api:
                     started_at=None,
                 )
                 release_ml_memory("before summary")
-                self._begin_summary(result.text)
+                if bool(self._snapshot().get("auto_summary", True)):
+                    self._begin_summary(result.text)
+                else:
+                    self._update(
+                        message="Transcription complete.",
+                        summary_status="idle",
+                    )
             except TranscribeError as exc:
                 if "cancelled" in exc.message.lower():
                     snap = self._snapshot()
@@ -519,12 +575,18 @@ class Api:
             summary_status="loading_model",
             summary_error=None,
         )
-        language = str(self._snapshot().get("language") or DEFAULT_LANGUAGE)
+        snap = self._snapshot()
+        language = str(snap.get("language") or DEFAULT_LANGUAGE)
         language_name = WHISPER_LANGUAGES.get(language, language)
+        preset_id = str(snap.get("summary_preset") or "")
+        additional = str(snap.get("additional_instructions") or "")
+        summary_length = str(snap.get("summary_length") or "")
         self.logger.info(
-            "Starting summary worker (%s chars, language=%s)",
+            "Starting summary worker (%s chars, language=%s preset=%s length=%s)",
             len(transcript),
             language_name,
+            preset_id or "meeting_notes",
+            summary_length or "normal",
         )
 
         def worker() -> None:
@@ -533,12 +595,12 @@ class Api:
                     return
                 # Keep transcription status untouched; only update summary fields.
                 # Surface progress lightly in the main message when idle/completed.
-                snap = self._snapshot()
+                current = self._snapshot()
                 patch: dict[str, Any] = {
                     "summary_status": status,
                     "summary_error": None,
                 }
-                if snap.get("status") in {"completed", "ready"}:
+                if current.get("status") in {"completed", "ready"}:
                     patch["message"] = message
                 self._update(**patch)
 
@@ -547,6 +609,9 @@ class Api:
                     transcript,
                     language=language,
                     language_name=language_name,
+                    preset_id=preset_id,
+                    additional_instructions=additional,
+                    summary_length=summary_length,
                     on_status=on_status,
                     should_cancel=self._summary_cancel.is_set,
                 )
@@ -651,6 +716,16 @@ class Api:
 def main(dev_url: str | None = None) -> None:
     setup_logging()
     logger = get_logger()
+    # Eager-import DOM helpers. Finder-launched local .app bundles that point at a
+    # project .venv under ~/Documents can hit macOS TCC on *late* imports from
+    # site-packages; importing here keeps drop-binding (and the JS bridge path)
+    # from failing after the window is already up.
+    try:
+        from webview.dom import DOMEventHandler  # noqa: F401
+        from webview.dom import event as _webview_dom_event  # noqa: F401
+    except Exception:
+        log_exception("Eager webview.dom import failed")
+
     logger.info(
         "Starting %s (profile=%s whisper=%s summary=%s)",
         APP_NAME,

@@ -129,6 +129,7 @@ The React UI talks only through `window.pywebview.api` (`Api` in `backend/app.py
 | `start_recording` / `stop_recording` | Mic + system audio |
 | `start_transcription` / `cancel_transcription` | Whisper pipeline |
 | `start_summary` / `cancel_summary` | Local LLM notes |
+| `get_summary_presets` / `get_settings` / `update_settings` | Summary controls + local prefs |
 | `check_ffmpeg` / `get_app_info` / `get_languages` | Capability / metadata |
 
 Heavy work runs on **background threads**; the UI polls state. Do not block the pywebview main thread with long ML calls.

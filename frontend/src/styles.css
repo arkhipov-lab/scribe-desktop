@@ -211,6 +211,143 @@ h1 {
   font-size: 0.9rem;
 }
 
+.summary-settings {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.summary-settings.expanded {
+  gap: 14px;
+  padding-bottom: 18px;
+}
+
+.summary-settings.expanded:has(.language-combobox.open) {
+  z-index: 40;
+}
+
+.disclosure-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 18px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.disclosure-toggle:focus-visible {
+  outline: 2px solid rgba(15, 107, 92, 0.35);
+  outline-offset: -4px;
+  border-radius: var(--radius);
+}
+
+.disclosure-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.disclosure-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.disclosure-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.disclosure-chevron {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform 160ms ease;
+  opacity: 0.8;
+}
+
+.summary-settings.expanded .disclosure-chevron {
+  transform: rotate(45deg);
+}
+
+.summary-settings-body {
+  display: grid;
+  gap: 14px;
+  padding: 0 18px;
+}
+
+.summary-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px 18px;
+  align-items: end;
+}
+
+.field-label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.instructions-field {
+  width: 100%;
+}
+
+.instructions-input {
+  width: 100%;
+  resize: none;
+  min-height: 64px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink);
+  padding: 10px 12px;
+}
+
+.instructions-input:focus {
+  outline: 2px solid rgba(15, 107, 92, 0.35);
+  outline-offset: 1px;
+}
+
+.instructions-input:disabled {
+  opacity: 0.65;
+}
+
+.checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 0.95rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -683,6 +820,18 @@ h1 {
   background: var(--danger-bg);
   color: var(--danger);
   border: 1px solid rgba(139, 46, 46, 0.2);
+}
+
+.banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.banner-retry {
+  flex: 0 0 auto;
+  color: var(--danger);
 }
 
 @keyframes spin {

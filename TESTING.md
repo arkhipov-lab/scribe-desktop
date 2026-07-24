@@ -48,10 +48,12 @@ Run:
 
 ### D. Summary
 
-1. After a transcript exists, summary should run (auto and/or via regenerate if exposed).
-2. Output has structured notes (overview / decisions / actions / open questions — localized headings when language matches).
-3. Cancel summary does not corrupt the existing transcript.
-4. Log must not contain summary text.
+1. After a transcript exists, summary should run when auto-summary is on (or via Generate/Regenerate).
+2. Change preset / length / additional instructions and regenerate — output shape should follow the preset.
+3. With auto-summary off, transcription completes without starting summary; Generate still works.
+4. Preferences survive relaunch (`~/Library/Application Support/Scribe/settings.json`).
+5. Cancel summary does not corrupt the existing transcript.
+6. Log must not contain summary text or additional-instructions body.
 
 ### E. Recording
 

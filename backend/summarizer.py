@@ -11,6 +11,14 @@ from typing import Callable
 
 from logger import get_logger, log_exception
 from profile_config import get_profile
+from summary_presets import (
+    DEFAULT_PRESET_ID,
+    DEFAULT_SUMMARY_LENGTH,
+    SummaryPreset,
+    get_preset,
+    normalize_summary_length,
+    token_limits,
+)
 
 _profile = get_profile()
 DEFAULT_SUMMARY_MODEL = _profile.summary_model
@@ -18,8 +26,8 @@ _IS_LITE = _profile.id == "lite"
 
 # Soft limit for a single prompt; longer transcripts are map-reduced.
 _CHUNK_CHARS = _profile.summary_chunk_chars
-_MAX_OUTPUT_TOKENS = _profile.summary_max_tokens
-_MERGE_OUTPUT_TOKENS = _profile.summary_merge_tokens
+_BASE_MAX_OUTPUT_TOKENS = _profile.summary_max_tokens
+_BASE_MERGE_OUTPUT_TOKENS = _profile.summary_merge_tokens
 
 StatusCallback = Callable[[str, str], None]
 
@@ -28,8 +36,8 @@ _model = None
 _tokenizer = None
 _loaded_model_id: str | None = None
 
-# Localized section titles so smaller models are not pulled into English by the template.
-_SECTION_HEADINGS: dict[str, tuple[str, str, str, str]] = {
+# Localized meeting-notes headings so smaller models stay on-rails.
+_MEETING_SECTION_HEADINGS: dict[str, tuple[str, ...]] = {
     "en": ("Overview", "Decisions", "Action items", "Open questions"),
     "ru": ("Обзор", "Решения", "Задачи", "Открытые вопросы"),
     "uk": ("Огляд", "Рішення", "Задачі", "Відкриті питання"),
@@ -44,6 +52,8 @@ _SECTION_HEADINGS: dict[str, tuple[str, str, str, str]] = {
     "ja": ("概要", "決定事項", "アクション", "未解決の質問"),
     "ko": ("개요", "결정", "할 일", "미해결 질문"),
 }
+
+_MAX_EXTRA_INSTRUCTIONS = 800
 
 
 @dataclass(frozen=True)
@@ -162,59 +172,89 @@ def _split_chunks(text: str, size: int = _CHUNK_CHARS) -> list[str]:
     return chunks or [text]
 
 
-def _section_headings(language: str) -> tuple[str, str, str, str]:
-    code = (language or "").strip().lower()
-    return _SECTION_HEADINGS.get(code, _SECTION_HEADINGS["en"])
+def _section_headings(preset: SummaryPreset, language: str) -> tuple[str, ...]:
+    if preset.id == "meeting_notes":
+        code = (language or "").strip().lower()
+        return _MEETING_SECTION_HEADINGS.get(code, _MEETING_SECTION_HEADINGS["en"])
+    return preset.sections
 
 
-def _language_instruction(language_name: str, *, language: str = "en") -> str:
+def _headings_phrase(sections: tuple[str, ...]) -> str:
+    return " / ".join(f"## {title}" for title in sections)
+
+
+def _structure_block(sections: tuple[str, ...], *, lite: bool) -> str:
+    lines: list[str] = []
+    for title in sections:
+        lines.append(f"## {title}")
+        if lite:
+            lines.append("- short bullets, or none")
+        else:
+            lines.append("- concise bullets grounded in the transcript, or none")
+        lines.append("")
+    return "\n".join(lines).rstrip()
+
+
+def _extra_block(additional_instructions: str) -> str:
+    text = (additional_instructions or "").replace("\x00", "").strip()
+    if not text:
+        return ""
+    if len(text) > _MAX_EXTRA_INSTRUCTIONS:
+        text = text[:_MAX_EXTRA_INSTRUCTIONS]
+    return f"Additional user preferences (follow if compatible):\n{text}\n\n"
+
+
+def _language_instruction(
+    language_name: str,
+    *,
+    language: str,
+    sections: tuple[str, ...],
+) -> str:
     name = (language_name or "").strip() or "English"
-    overview, decisions, actions, questions = _section_headings(language)
+    headings = _headings_phrase(sections)
     if _IS_LITE:
         return (
             f"CRITICAL LANGUAGE RULE: Write the ENTIRE answer in {name} only. "
             f"Do not write English prose. Do not mix languages. "
-            f"Use these exact markdown headings (already in {name}): "
-            f"## {overview} / ## {decisions} / ## {actions} / ## {questions}."
+            f"Use these exact markdown headings: {headings}."
         )
     return (
         f"Write the entire summary in {name}. "
-        f"Use these exact markdown headings: "
-        f"## {overview}, ## {decisions}, ## {actions}, ## {questions}."
+        f"Use these exact markdown headings: {headings}."
     )
 
 
-def _single_prompt(transcript: str, language_name: str, *, language: str = "en") -> str:
+def _single_prompt(
+    transcript: str,
+    language_name: str,
+    *,
+    language: str,
+    preset: SummaryPreset,
+    additional_instructions: str,
+) -> str:
     name = (language_name or "").strip() or "English"
-    overview, decisions, actions, questions = _section_headings(language)
+    sections = _section_headings(preset, language)
+    extra = _extra_block(additional_instructions)
+    lang_rule = _language_instruction(name, language=language, sections=sections)
+    structure = _structure_block(sections, lite=_IS_LITE)
     if _IS_LITE:
         return (
-            f"You summarize meeting notes. Output language: {name} only.\n"
-            f"{_language_instruction(name, language=language)}\n"
+            f"You write notes from a transcript. Preset: {preset.label}.\n"
+            f"{preset.instruction}\n"
+            f"{lang_rule}\n"
+            f"{extra}"
             "Use this exact structure:\n\n"
-            f"## {overview}\n"
-            "- 3 to 6 short bullets\n\n"
-            f"## {decisions}\n"
-            "- decisions, or none\n\n"
-            f"## {actions}\n"
-            "- next steps (owner if known), or none\n\n"
-            f"## {questions}\n"
-            "- unresolved items, or none\n\n"
+            f"{structure}\n\n"
             f"Be concise. Do not invent facts. Every sentence must be in {name}.\n\n"
             f"Transcript:\n{transcript}"
         )
     return (
         "You are a notes assistant. Summarize the transcript below.\n"
-        f"{_language_instruction(name, language=language)}\n"
+        f"Preset: {preset.label}. {preset.instruction}\n"
+        f"{lang_rule}\n"
+        f"{extra}"
         "Use this structure with markdown headings:\n\n"
-        f"## {overview}\n"
-        "- 3 to 6 short bullets of what the recording was about\n\n"
-        f"## {decisions}\n"
-        "- Key decisions, or note if none\n\n"
-        f"## {actions}\n"
-        "- Concrete next steps (owner if mentioned), or note if none\n\n"
-        f"## {questions}\n"
-        "- Unresolved questions, or note if none\n\n"
+        f"{structure}\n\n"
         f"Be concise. Do not invent facts that are not in the transcript. "
         f"Write the body text in {name}.\n\n"
         f"Transcript:\n{transcript}"
@@ -227,23 +267,32 @@ def _chunk_prompt(
     total: int,
     language_name: str,
     *,
-    language: str = "en",
+    language: str,
+    preset: SummaryPreset,
+    additional_instructions: str,
 ) -> str:
     name = (language_name or "").strip() or "English"
-    overview, decisions, actions, questions = _section_headings(language)
+    sections = _section_headings(preset, language)
+    section_names = ", ".join(sections)
+    extra = _extra_block(additional_instructions)
+    lang_rule = _language_instruction(name, language=language, sections=sections)
     if _IS_LITE:
         return (
             f"Summarize transcript section ({index}/{total}) for later merging.\n"
-            f"{_language_instruction(name, language=language)}\n"
-            f"Short bullets under: {overview}, {decisions}, {actions}, {questions}.\n"
+            f"Preset: {preset.label}. {preset.instruction}\n"
+            f"{lang_rule}\n"
+            f"{extra}"
+            f"Short bullets under: {section_names}.\n"
             f"Write only in {name}. Do not invent facts.\n\n"
             f"Transcript section:\n{transcript_chunk}"
         )
     return (
         "You are a notes assistant. Summarize this transcript section "
         f"({index}/{total}) for later merging.\n"
-        f"{_language_instruction(name, language=language)}\n"
-        f"Use short bullets under: {overview}, {decisions}, {actions}, {questions}.\n"
+        f"Preset: {preset.label}. {preset.instruction}\n"
+        f"{lang_rule}\n"
+        f"{extra}"
+        f"Use short bullets under: {section_names}.\n"
         f"Write in {name}. Do not invent facts.\n\n"
         f"Transcript section:\n{transcript_chunk}"
     )
@@ -253,27 +302,34 @@ def _merge_prompt(
     partials: list[str],
     language_name: str,
     *,
-    language: str = "en",
+    language: str,
+    preset: SummaryPreset,
+    additional_instructions: str,
 ) -> str:
     name = (language_name or "").strip() or "English"
-    overview, decisions, actions, questions = _section_headings(language)
+    sections = _section_headings(preset, language)
+    headings = ", ".join(f"## {title}" for title in sections)
+    extra = _extra_block(additional_instructions)
+    lang_rule = _language_instruction(name, language=language, sections=sections)
     joined = "\n\n---\n\n".join(
         f"Section {i + 1}:\n{part}" for i, part in enumerate(partials)
     )
     if _IS_LITE:
         return (
             f"Merge these partial notes into one clean summary in {name} only.\n"
-            f"{_language_instruction(name, language=language)}\n"
-            f"Use markdown headings: ## {overview}, ## {decisions}, "
-            f"## {actions}, ## {questions}.\n"
+            f"Preset: {preset.label}. {preset.instruction}\n"
+            f"{lang_rule}\n"
+            f"{extra}"
+            f"Use markdown headings: {headings}.\n"
             f"Deduplicate. Be concise. Do not invent facts. Reply only in {name}.\n\n"
             f"Partial notes:\n{joined}"
         )
     return (
         "Merge these partial notes into one clean summary.\n"
-        f"{_language_instruction(name, language=language)}\n"
-        f"Use markdown headings: ## {overview}, ## {decisions}, "
-        f"## {actions}, ## {questions}.\n\n"
+        f"Preset: {preset.label}. {preset.instruction}\n"
+        f"{lang_rule}\n"
+        f"{extra}"
+        f"Use markdown headings: {headings}.\n\n"
         f"Deduplicate overlapping points. Be concise. Do not invent facts. "
         f"Write in {name}.\n\n"
         f"Partial notes:\n{joined}"
@@ -285,6 +341,9 @@ def summarize_transcript(
     *,
     language: str = "en",
     language_name: str | None = None,
+    preset_id: str = DEFAULT_PRESET_ID,
+    additional_instructions: str = "",
+    summary_length: str = DEFAULT_SUMMARY_LENGTH,
     model: str = DEFAULT_SUMMARY_MODEL,
     on_status: StatusCallback | None = None,
     should_cancel: Callable[[], bool] | None = None,
@@ -296,6 +355,13 @@ def summarize_transcript(
         raise SummaryError("No transcript to summarize.")
 
     display_language = (language_name or "").strip() or (language or "en").strip() or "English"
+    preset = get_preset(preset_id)
+    length = normalize_summary_length(summary_length)
+    max_tokens, merge_tokens = token_limits(
+        base_max=_BASE_MAX_OUTPUT_TOKENS,
+        base_merge=_BASE_MERGE_OUTPUT_TOKENS,
+        length=length,
+    )
 
     def emit(status: str, message: str) -> None:
         if on_status:
@@ -306,9 +372,11 @@ def summarize_transcript(
 
     started = time.time()
     logger.info(
-        "Summary requested: chars=%s language=%s model=%s cached=%s",
+        "Summary requested: chars=%s language=%s preset=%s length=%s model=%s cached=%s",
         len(text),
         display_language,
+        preset.id,
+        length,
         model,
         is_summary_model_cached(model),
     )
@@ -337,14 +405,19 @@ def summarize_transcript(
 
     emit("summarizing", "Writing summary…")
     chunks = _split_chunks(text)
+    prompt_kwargs = {
+        "language": language,
+        "preset": preset,
+        "additional_instructions": additional_instructions,
+    }
 
     try:
         if len(chunks) == 1:
             summary = _generate(
                 mlx_model,
                 tokenizer,
-                _single_prompt(chunks[0], display_language, language=language),
-                max_tokens=_MAX_OUTPUT_TOKENS,
+                _single_prompt(chunks[0], display_language, **prompt_kwargs),
+                max_tokens=max_tokens,
             )
         else:
             partials: list[str] = []
@@ -363,9 +436,9 @@ def summarize_transcript(
                         index,
                         len(chunks),
                         display_language,
-                        language=language,
+                        **prompt_kwargs,
                     ),
-                    max_tokens=_MAX_OUTPUT_TOKENS,
+                    max_tokens=max_tokens,
                 )
                 if partial:
                     partials.append(partial)
@@ -375,8 +448,8 @@ def summarize_transcript(
             summary = _generate(
                 mlx_model,
                 tokenizer,
-                _merge_prompt(partials, display_language, language=language),
-                max_tokens=_MERGE_OUTPUT_TOKENS,
+                _merge_prompt(partials, display_language, **prompt_kwargs),
+                max_tokens=merge_tokens,
             )
     except SummaryError:
         raise

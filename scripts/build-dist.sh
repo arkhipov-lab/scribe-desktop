@@ -15,9 +15,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# Prefer Xcode.app SDK (avoids CLT MacOSX26 + older swiftc mismatch).
+# shellcheck disable=SC1091
+source "$ROOT/scripts/use-xcode-toolchain.sh"
+
 chmod +x "$ROOT/scripts/read-version.sh" 2>/dev/null || true
 APP_VERSION="$("$ROOT/scripts/read-version.sh")"
 echo "==> [dist] App version $APP_VERSION"
+echo "==> [dist] SDKROOT=${SDKROOT:-}"
 
 ARCH="$(uname -m)"
 if [[ "$ARCH" != "arm64" ]]; then
@@ -112,11 +117,13 @@ fi
 
 echo "==> [dist] Compiling launcher + AudioRecorder (minos $MACOSX_DEPLOYMENT_TARGET)"
 mkdir -p "$ROOT/native/build"
-clang -O2 -arch arm64 \
+"${SCRIBE_CLANG:-clang}" -O2 -arch arm64 \
   -mmacosx-version-min="$MACOSX_DEPLOYMENT_TARGET" \
+  -isysroot "${SDKROOT:?SDKROOT not set — install Xcode.app}" \
   -o "$ROOT/native/build/Scribe" \
   "$ROOT/native/launcher.c"
-swiftc -O -parse-as-library \
+"${SCRIBE_SWIFTC:-swiftc}" -O -parse-as-library \
+  -sdk "${SDKROOT:?SDKROOT not set — install Xcode.app}" \
   -target "arm64-apple-macosx${MACOSX_DEPLOYMENT_TARGET}" \
   -o "$ROOT/native/build/AudioRecorder" \
   "$ROOT/native/AudioRecorder.swift" \
@@ -246,6 +253,8 @@ cp "$ROOT/backend/logger.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/recorder.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/languages.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/summarizer.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/summary_presets.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/settings.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/profile_config.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/memory.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/version.py" "$RESOURCES/backend/"

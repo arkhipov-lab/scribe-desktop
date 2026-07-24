@@ -10,7 +10,7 @@ Local development for Scribe on **macOS Apple Silicon (arm64)**.
 | Python 3.10+ | 3.13 works; used for `.venv` |
 | Node.js 20+ and npm | Frontend toolchain |
 | Homebrew ffmpeg | Local/dev (dist bundles its own) |
-| Xcode CLT / Swift | Compiles `native/AudioRecorder.swift` |
+| Xcode.app (+ matching Swift) | Compiles `native/AudioRecorder.swift`. Scripts force Xcode’s macOS SDK via `scripts/use-xcode-toolchain.sh` so a newer Command Line Tools SDK cannot break `swiftc`. |
 
 ```bash
 brew install ffmpeg
@@ -93,7 +93,7 @@ Rotating file (≈2 MB × 3 backups) plus console while running under the termin
 | Window never opens | Check log; pywebview / display issues |
 | Recording permission errors | Grant Mic + Screen & System Audio; **restart app** |
 | First transcription very slow | Model download into Hugging Face cache |
-| `Desktop bridge is not available` | UI loaded outside pywebview, or API not ready yet |
+| `Desktop bridge is not available` | UI loaded outside pywebview, API not ready yet, or a failed first connect was cached — use **Retry** / relaunch via `./scripts/run-dev.sh` or the built `.app` (not a bare browser tab) |
 | Stale AudioRecorder | Delete `native/build/AudioRecorder` and re-run `run-dev.sh` |
 
 ## Working on the frontend alone
