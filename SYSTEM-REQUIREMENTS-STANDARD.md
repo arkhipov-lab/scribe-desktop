@@ -4,7 +4,7 @@ Higher-quality build for more capable Macs.
 
 ## Install
 
-- File: `Scribe.dmg` → app **Scribe**
+- File: `Scribe-<version>.dmg` → app **Scribe**
 - App size on disk: ~670 MB
 - DMG size: ~286 MB
 

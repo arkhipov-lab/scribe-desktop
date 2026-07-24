@@ -1,0 +1,51 @@
+name: Version bump on main
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: version-bump-main
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: macos-latest
+    # Skip release commits to avoid loops
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version from conventional commits
+        id: bump
+        run: |
+          chmod +x scripts/bump-version.sh scripts/read-version.sh
+          before_commit="$(git rev-parse HEAD)"
+          before_tags="$(git tag -l 'v*' | sort | tr '\n' ' ')"
+          ./scripts/bump-version.sh --commit
+          after_commit="$(git rev-parse HEAD)"
+          after_tags="$(git tag -l 'v*' | sort | tr '\n' ' ')"
+          if [[ "$before_commit" != "$after_commit" || "$before_tags" != "$after_tags" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push release commit and tag
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          git push origin HEAD:main --follow-tags
+          echo "Pushed release tag — release-build.yml should build DMGs/.app zips."

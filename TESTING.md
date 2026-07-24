@@ -102,11 +102,12 @@ PROFILE=lite MAKE_DMG=1 ./scripts/build-dist.sh
 
 1. Build finishes with smoke steps green (including post-prune).
 2. `dist/*.app` size is in the expected ballpark (~hundreds of MB for the app; models separate).
-3. Open the DMG, drag to Applications (or run from `dist/` directly).
-4. Gatekeeper: right-click → Open works.
-5. On a **clean** user (or after clearing HF cache if testing download): first Transcribe downloads models, second run is offline-capable.
-6. Recording permissions still prompt via Info.plist usage strings.
-7. Confirm bundled ffmpeg is **arm64** and minos ≤ 14 (`otool` / dist asserts).
+3. DMG name includes `VERSION` (e.g. `Scribe-Lite-1.0.0.dmg`); `Info.plist` / `get_app_info().version` match.
+4. Open the DMG, drag to Applications (or run from `dist/` directly).
+5. Gatekeeper: right-click → Open works.
+6. On a **clean** user (or after clearing HF cache if testing download): first Transcribe downloads models, second run is offline-capable.
+7. Recording permissions still prompt via Info.plist usage strings.
+8. Confirm bundled ffmpeg is **arm64** and minos ≤ 14 (`otool` / dist asserts).
 
 Skip full dist builds for pure UI copy tweaks; run frontend build + `run-dev.sh` instead.
 

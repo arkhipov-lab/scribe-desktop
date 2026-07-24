@@ -2,8 +2,8 @@
 # Build a self-contained arm64 Scribe.app (+ optional DMG).
 #
 # Profiles:
-#   PROFILE=standard (default) — whisper-medium + Qwen2.5-3B → Scribe.app / Scribe.dmg
-#   PROFILE=lite               — whisper-small + Qwen2.5-1.5B → "Scribe Lite.app" / Scribe-Lite.dmg
+#   PROFILE=standard (default) — whisper-medium + Qwen2.5-3B → Scribe.app / Scribe-<ver>.dmg
+#   PROFILE=lite               — whisper-small + Qwen2.5-1.5B → "Scribe Lite.app" / Scribe-Lite-<ver>.dmg
 #
 # Usage:
 #   ./scripts/build-dist.sh
@@ -14,6 +14,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+
+chmod +x "$ROOT/scripts/read-version.sh" 2>/dev/null || true
+APP_VERSION="$("$ROOT/scripts/read-version.sh")"
+echo "==> [dist] App version $APP_VERSION"
 
 ARCH="$(uname -m)"
 if [[ "$ARCH" != "arm64" ]]; then
@@ -69,7 +73,8 @@ chmod +x \
   "$ROOT/scripts/bundle-ffmpeg.sh" \
   "$ROOT/scripts/prune-runtime.sh" \
   "$ROOT/scripts/ensure-compatible-ffmpeg.sh" \
-  "$ROOT/scripts/assert-macho-minos.sh"
+  "$ROOT/scripts/assert-macho-minos.sh" \
+  "$ROOT/scripts/read-version.sh"
 
 echo "==> [dist] Ensuring local tooling venv (for build helpers only)"
 if [[ ! -d "$ROOT/.venv" ]]; then
@@ -243,6 +248,9 @@ cp "$ROOT/backend/languages.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/summarizer.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/profile_config.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/memory.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/version.py" "$RESOURCES/backend/"
+cp "$ROOT/VERSION" "$RESOURCES/VERSION"
+cp "$ROOT/VERSION" "$RESOURCES/backend/VERSION"
 # Bake profile so the app does not depend on build-machine env at runtime.
 "$ROOT/.venv/bin/python" - <<PY
 from pathlib import Path
@@ -313,9 +321,9 @@ cat > "$CONTENTS/Info.plist" <<EOF
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.0.0</string>
+  <string>${APP_VERSION}</string>
   <key>CFBundleVersion</key>
-  <string>1</string>
+  <string>${APP_VERSION}</string>
   <key>LSMinimumSystemVersion</key>
   <string>${MACOSX_DEPLOYMENT_TARGET}</string>
   <key>NSHighResolutionCapable</key>
@@ -357,15 +365,15 @@ fi
 du -sh "$APP_DIR" || true
 
 if [[ "$MAKE_DMG" == "1" ]]; then
-  echo "==> [dist] Creating DMG ($DMG_BASENAME)"
+  echo "==> [dist] Creating DMG (${DMG_BASENAME}-${APP_VERSION})"
   DMG_ROOT="$DIST_DIR/dmg-root"
-  DMG_PATH="$DIST_DIR/${DMG_BASENAME}.dmg"
+  DMG_PATH="$DIST_DIR/${DMG_BASENAME}-${APP_VERSION}.dmg"
   rm -rf "$DMG_ROOT" "$DMG_PATH"
   mkdir -p "$DMG_ROOT"
   ditto "$APP_DIR" "$DMG_ROOT/$APP_NAME.app"
   ln -s /Applications "$DMG_ROOT/Applications"
   hdiutil create \
-    -volname "$APP_NAME" \
+    -volname "${APP_NAME} ${APP_VERSION}" \
     -srcfolder "$DMG_ROOT" \
     -ov \
     -format UDZO \
@@ -375,6 +383,6 @@ if [[ "$MAKE_DMG" == "1" ]]; then
   echo "==> DMG: $DMG_PATH ($(du -sh "$DMG_PATH" | awk '{print $1}'))"
 fi
 
-echo "==> Built self-contained app: $APP_DIR ($(du -sh "$APP_DIR" | awk '{print $1}')) [profile=$PROFILE]"
+echo "==> Built self-contained app: $APP_DIR ($(du -sh "$APP_DIR" | awk '{print $1}')) [profile=$PROFILE version=$APP_VERSION]"
 echo "Open with: open \"$APP_DIR\""
 echo "Friends: mount DMG → drag to Applications → right-click Open / Open Anyway"

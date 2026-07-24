@@ -74,9 +74,17 @@ native/
 scripts/
   run-dev.sh              primary local launcher
   build.sh                local .app (uses project .venv)
-  build-dist.sh           self-contained .app + DMG
+  build-dist.sh           self-contained .app + versioned DMG
   build-dist-{lite,standard}.sh
+  bump-version.sh         conventional-commit semver bump
+  read-version.sh         print VERSION
+  release-build-local.sh  standard+lite .app/DMG after release bump
+  install-git-hooks.sh    core.hooksPath → .githooks
   bundle-ffmpeg.sh / prune-runtime.sh / …
+
+VERSION                   semver source of truth (baked into .app / DMG name)
+.githooks/                post-merge: bump on main, then local dist builds
+.github/workflows/        optional remote bump + GitHub Release publish
 
 requirements-runtime.txt  deps embedded in dist .app
 requirements.txt          local/dev (-r runtime)

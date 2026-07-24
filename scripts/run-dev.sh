@@ -5,6 +5,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# Ensure merge-to-main version bumps work in this clone
+if [[ -d "$ROOT/.git" ]]; then
+  "$ROOT/scripts/install-git-hooks.sh" >/dev/null || true
+fi
+
 ARCH="$(uname -m)"
 if [[ "$ARCH" != "arm64" ]]; then
   echo "This app targets Apple Silicon (arm64). Current arch: $ARCH" >&2

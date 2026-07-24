@@ -80,6 +80,35 @@ When PRs are used:
 
 ## Commit messages
 
-Prefer short, imperative summaries focused on intent, e.g. “Fix temp recording cleanup after drop” rather than “Update recorder.py”.
+Use [Conventional Commits](https://www.conventionalcommits.org/). The type drives the automatic semver bump on merge to `main`:
+
+| Prefix | Bump |
+| --- | --- |
+| `feat!:` / `fix!:` / any `type!:` / `BREAKING CHANGE` | **major** |
+| `feat:` | **minor** |
+| `fix:`, `perf:`, `refactor:`, `chore:`, `docs:`, `test:`, `ci:`, `build:`, `style:`, `revert:` | **patch** |
+
+Examples: `feat: add language picker`, `fix: clean up temp recordings`, `docs: clarify DMG steps`.
 
 Do not create commits unless the maintainer asks you to.
+
+### Versioning
+
+- Source of truth: repo-root `VERSION` (also synced to `frontend/package.json`).
+- After a merge into `main`, `.githooks/post-merge`:
+  1. runs `scripts/bump-version.sh --commit`
+  2. if the version/tag changed, runs `scripts/release-build-local.sh` (standard + lite `.app` + DMG into `dist/`)
+- Hook install: `scripts/install-git-hooks.sh` (`run-dev.sh` does this automatically).
+- On GitHub, `.github/workflows/version-bump.yml` still bumps on push to `main`; `.github/workflows/release-build.yml` can publish GitHub Release assets from tags (optional).
+- Manual bump: `./scripts/bump-version.sh` (plan), `--apply`, `--commit`, or `--force patch|minor|major`.
+- Manual local package: `./scripts/release-build-local.sh`
+- Skip once: `SKIP_VERSION_BUMP=1` (skip bump+build) or `SKIP_RELEASE_BUILD=1` (bump only).
+- Foreground builds: `SCRIBE_RELEASE_BUILD_FG=1` (default is background; log at `.cache/release-build.log`).
+- Release commits look like `chore(release): v1.2.3` and create annotated tag `v1.2.3`.
+
+### Release artifacts (local, after merge bump)
+
+| Artifact | Example |
+| --- | --- |
+| Relocatable `.app` | `dist/Scribe.app`, `dist/Scribe Lite.app` |
+| DMG | `dist/Scribe-1.2.3.dmg`, `dist/Scribe-Lite-1.2.3.dmg` |

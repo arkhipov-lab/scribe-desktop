@@ -30,6 +30,7 @@ from transcriber import (
     transcribe_file,
     validate_audio_path,
 )
+from version import get_app_version
 
 _PROFILE = get_profile()
 APP_NAME = _PROFILE.app_name
@@ -153,6 +154,7 @@ class Api:
         return {
             "app_name": profile.app_name,
             "profile": profile.id,
+            "version": get_app_version(),
             "whisper_model": profile.whisper_model,
             "summary_model": profile.summary_model,
         }

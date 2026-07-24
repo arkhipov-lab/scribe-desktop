@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# After merging into main: bump VERSION from conventional commits, then build dist.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+if [[ "${SKIP_VERSION_BUMP:-0}" == "1" ]]; then
+  exit 0
+fi
+
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+if [[ "$branch" != "main" ]]; then
+  exit 0
+fi
+
+chmod +x \
+  "$ROOT/scripts/bump-version.sh" \
+  "$ROOT/scripts/read-version.sh" \
+  "$ROOT/scripts/release-build-local.sh" 2>/dev/null || true
+
+before_ver="$("$ROOT/scripts/read-version.sh")"
+before_tag="$(git describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null || true)"
+
+"$ROOT/scripts/bump-version.sh" --commit || {
+  echo "post-merge: version bump failed" >&2
+  exit 1
+}
+
+after_ver="$("$ROOT/scripts/read-version.sh")"
+after_tag="$(git describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null || true)"
+
+if [[ "$before_ver" == "$after_ver" && "$before_tag" == "$after_tag" ]]; then
+  # Merge did not produce a new release — nothing to package.
+  exit 0
+fi
+
+echo "post-merge: released v${after_ver} — starting local dist builds"
+"$ROOT/scripts/release-build-local.sh"

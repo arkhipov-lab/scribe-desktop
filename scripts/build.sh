@@ -9,6 +9,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+chmod +x "$ROOT/scripts/read-version.sh" 2>/dev/null || true
+APP_VERSION="$("$ROOT/scripts/read-version.sh")"
+echo "==> App version $APP_VERSION"
+
 ARCH="$(uname -m)"
 if [[ "$ARCH" != "arm64" ]]; then
   echo "This app targets Apple Silicon (arm64). Current arch: $ARCH" >&2
@@ -104,6 +108,9 @@ cp "$ROOT/backend/languages.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/summarizer.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/profile_config.py" "$RESOURCES/backend/"
 cp "$ROOT/backend/memory.py" "$RESOURCES/backend/"
+cp "$ROOT/backend/version.py" "$RESOURCES/backend/"
+cp "$ROOT/VERSION" "$RESOURCES/VERSION"
+cp "$ROOT/VERSION" "$RESOURCES/backend/VERSION"
 "$VENV_DIR/bin/python" -c "
 from pathlib import Path
 import sys
@@ -138,9 +145,9 @@ cat > "$CONTENTS/Info.plist" <<EOF
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.0.0</string>
+  <string>${APP_VERSION}</string>
   <key>CFBundleVersion</key>
-  <string>1</string>
+  <string>${APP_VERSION}</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>NSHighResolutionCapable</key>

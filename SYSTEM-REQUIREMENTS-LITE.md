@@ -4,7 +4,7 @@ Lighter build for Macs with less memory (including M1 / 8 GB). Same UI and workf
 
 ## Install
 
-- File: `Scribe-Lite.dmg` → app **Scribe Lite**
+- File: `Scribe-Lite-<version>.dmg` → app **Scribe Lite**
 - App size on disk: ~670 MB (same runtime; models differ and download separately)
 - DMG size: ~286 MB
 

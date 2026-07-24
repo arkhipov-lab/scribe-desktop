@@ -55,7 +55,7 @@ Requires Homebrew tooling on the **build** machine (ffmpeg resolution helpers, i
 | Command | `./scripts/build-dist-standard.sh` or `PROFILE=standard ./scripts/build-dist.sh` | `./scripts/build-dist-lite.sh` or `PROFILE=lite ./scripts/build-dist.sh` |
 | App name | **Scribe** | **Scribe Lite** |
 | Bundle ID | `local.scribe.app` | `local.scribe.lite.app` |
-| Artifacts | `dist/Scribe.app`, `dist/Scribe.dmg` | `dist/Scribe Lite.app`, `dist/Scribe-Lite.dmg` |
+| Artifacts | `dist/Scribe.app`, `dist/Scribe-<version>.dmg` | `dist/Scribe Lite.app`, `dist/Scribe-Lite-<version>.dmg` |
 | Whisper | medium | small |
 | Summary | Qwen2.5-3B-Instruct-4bit | Qwen2.5-1.5B-Instruct-4bit |
 
@@ -73,13 +73,28 @@ Hardware guidance: [SYSTEM-REQUIREMENTS-STANDARD.md](SYSTEM-REQUIREMENTS-STANDAR
 | `MAX_MINOS_MAJOR` | `14` | Mach-O min OS assert for shipped binaries |
 | `FFMPEG_SRC` | auto | Override ffmpeg binary used for bundling |
 
+App / DMG version comes from the repo-root [`VERSION`](VERSION) file (semver). It is written into `Info.plist` (`CFBundleShortVersionString` / `CFBundleVersion`), baked into the bundle as `Resources/VERSION`, and used in the DMG filename (`Scribe-1.2.3.dmg`, `Scribe-Lite-1.2.3.dmg`).
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how `VERSION` is bumped from conventional commits.
+
+### Local release builds (after merge bump)
+
+On merge into `main`, if the version bump created a new `VERSION`/tag, `scripts/release-build-local.sh` builds both profiles into `dist/`:
+
+- `Scribe.app` / `Scribe Lite.app`
+- `Scribe-X.Y.Z.dmg` / `Scribe-Lite-X.Y.Z.dmg`
+
+Default: background (log `.cache/release-build.log`). Foreground: `SCRIBE_RELEASE_BUILD_FG=1`. Skip builds: `SKIP_RELEASE_BUILD=1`.
+
+Optional CI (`.github/workflows/release-build.yml`) can still publish the same artifacts to a GitHub Release when a `v*` tag is pushed.
+
 Examples:
 
 ```bash
 MAKE_DMG=0 PROFILE=lite ./scripts/build-dist.sh
 FORCE_RUNTIME=1 ./scripts/build-dist.sh
+./scripts/release-build-local.sh
 ```
-
 ### What the dist build embeds
 
 Inside `Something.app/Contents/`:

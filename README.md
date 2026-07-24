@@ -70,12 +70,14 @@ Local Finder `.app` (uses project `.venv`):
 open "dist/Scribe.app"
 ```
 
-Self-contained `.app` + DMG for sharing (Lite or Standard):
+Self-contained `.app` + versioned DMG for sharing (Lite or Standard):
 
 ```bash
-./scripts/build-dist-standard.sh
-./scripts/build-dist-lite.sh
+./scripts/build-dist-standard.sh   # → dist/Scribe-<version>.dmg
+./scripts/build-dist-lite.sh       # → dist/Scribe-Lite-<version>.dmg
 ```
+
+Version comes from the repo-root `VERSION` file (auto-bumped on merge to `main` from conventional commits — see [CONTRIBUTING.md](CONTRIBUTING.md)). After that bump, local hooks build versioned DMGs and `.app` bundles into `dist/`.
 
 Full packaging details, env knobs, runtime pruning, and Gatekeeper notes: **[BUILDING.md](BUILDING.md)**.
 

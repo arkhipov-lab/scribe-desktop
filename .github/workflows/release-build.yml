@@ -1,0 +1,155 @@
+name: Release build
+
+# Runs after version bump pushes tag vX.Y.Z (or on manual dispatch).
+# Produces relocatable .app (+ zip) and versioned DMG for standard + lite.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to build (tag, branch, or SHA). Empty = current VERSION on default branch."
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [standard, lite]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Assert Apple Silicon
+        run: |
+          arch="$(uname -m)"
+          echo "arch=$arch"
+          [[ "$arch" == "arm64" ]] || { echo "Release builds require arm64" >&2; exit 1; }
+
+      - name: Read version
+        id: ver
+        run: |
+          chmod +x scripts/read-version.sh
+          version="$(./scripts/read-version.sh)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Building profile=${{ matrix.profile }} version=$version"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Cache dist runtime / ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: .cache/dist
+          key: dist-cache-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('requirements-runtime.txt', 'scripts/ensure-compatible-ffmpeg.sh', 'scripts/build-dist.sh') }}
+          restore-keys: |
+            dist-cache-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Build dist (.app + DMG)
+        env:
+          PROFILE: ${{ matrix.profile }}
+          MAKE_DMG: "1"
+          PYTHON_BIN: python3
+        run: |
+          chmod +x scripts/*.sh
+          ./scripts/build-dist.sh
+
+      - name: Package .app zip for release
+        run: |
+          version="${{ steps.ver.outputs.version }}"
+          if [[ "${{ matrix.profile }}" == "lite" ]]; then
+            app="dist/Scribe Lite.app"
+            zip="dist/Scribe-Lite-${version}.app.zip"
+            dmg="dist/Scribe-Lite-${version}.dmg"
+          else
+            app="dist/Scribe.app"
+            zip="dist/Scribe-${version}.app.zip"
+            dmg="dist/Scribe-${version}.dmg"
+          fi
+          [[ -d "$app" ]] || { echo "Missing $app" >&2; exit 1; }
+          [[ -f "$dmg" ]] || { echo "Missing $dmg" >&2; exit 1; }
+          rm -f "$zip"
+          ditto -c -k --sequesterRsrc --keepParent "$app" "$zip"
+          ls -lh "$app" "$dmg" "$zip"
+          echo "APP_PATH=$app" >> "$GITHUB_ENV"
+          echo "ZIP_PATH=$zip" >> "$GITHUB_ENV"
+          echo "DMG_PATH=$dmg" >> "$GITHUB_ENV"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: scribe-${{ matrix.profile }}-${{ steps.ver.outputs.version }}
+          path: |
+            ${{ env.DMG_PATH }}
+            ${{ env.ZIP_PATH }}
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (for VERSION / notes)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+
+      - name: Resolve tag and version
+        id: meta
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            tag="${{ github.ref_name }}"
+          else
+            tag="v${version}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          pattern: scribe-*-${{ steps.meta.outputs.version }}
+          merge-multiple: true
+
+      - name: List assets
+        run: find release-assets -type f -print | sort && ls -lh release-assets
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: Scribe ${{ steps.meta.outputs.version }}
+          generate_release_notes: true
+          files: |
+            release-assets/*.dmg
+            release-assets/*.zip
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
