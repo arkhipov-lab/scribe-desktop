@@ -11,6 +11,7 @@ import PresetSelect from "./PresetSelect";
 import { DEFAULT_LANGUAGE } from "./languages";
 import type {
   AppState,
+  HistorySession,
   ModelOption,
   SummaryLength,
   SummaryPresetOption,
@@ -80,6 +81,9 @@ function mergeState(next: AppState): AppState {
     summary_model: next.summary_model ?? "3b",
     performance_tier: next.performance_tier ?? null,
     hardware_reason: next.hardware_reason ?? null,
+    session_id: next.session_id ?? null,
+    session_title: next.session_title ?? null,
+    history_sidebar_open: next.history_sidebar_open ?? true,
   };
 }
 
@@ -89,7 +93,6 @@ export default function App() {
   const [dragging, setDragging] = useState(false);
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
-  const [appName, setAppName] = useState("Scribe");
   const [resultTab, setResultTab] = useState<ResultTab>("transcript");
   const [presets, setPresets] = useState<SummaryPresetOption[]>(FALLBACK_PRESETS);
   const [whisperModels, setWhisperModels] = useState<ModelOption[]>(FALLBACK_WHISPER);
@@ -97,6 +100,7 @@ export default function App() {
     useState<ModelOption[]>(FALLBACK_SUMMARY_MODELS);
   const [instructionsDraft, setInstructionsDraft] = useState("");
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
+  const [sessions, setSessions] = useState<HistorySession[]>([]);
   const copyTimer = useRef<number | null>(null);
   const exportTimer = useRef<number | null>(null);
   const instructionsTimer = useRef<number | null>(null);
@@ -110,11 +114,8 @@ export default function App() {
       try {
         const api = await getApi();
         if (cancelled) return;
-        const [initial, info, presetList, whisperList, summaryList] = await Promise.all([
+        const [initial, presetList, whisperList, summaryList] = await Promise.all([
           api.get_state(),
-          api.get_app_info
-            ? api.get_app_info().catch(() => null)
-            : Promise.resolve(null),
           api.get_summary_presets
             ? api.get_summary_presets().catch(() => FALLBACK_PRESETS)
             : Promise.resolve(FALLBACK_PRESETS),
@@ -129,7 +130,6 @@ export default function App() {
         const merged = mergeState(initial);
         setState(merged);
         setInstructionsDraft(merged.additional_instructions);
-        if (info?.app_name) setAppName(info.app_name);
         if (Array.isArray(presetList) && presetList.length > 0) {
           setPresets(presetList);
         }
@@ -138,6 +138,14 @@ export default function App() {
         }
         if (Array.isArray(summaryList) && summaryList.length > 0) {
           setSummaryModels(summaryList);
+        }
+        if (api.list_sessions) {
+          try {
+            const items = await api.list_sessions();
+            if (!cancelled && Array.isArray(items)) setSessions(items);
+          } catch {
+            // History optional on older bridges.
+          }
         }
         setBridgeError(null);
 
@@ -188,6 +196,24 @@ export default function App() {
     setInstructionsDraft(state.additional_instructions || "");
   }, [state.additional_instructions]);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function refresh() {
+      try {
+        const api = await getApi();
+        if (!api.list_sessions || cancelled) return;
+        const items = await api.list_sessions();
+        if (!cancelled && Array.isArray(items)) setSessions(items);
+      } catch {
+        // Bridge may be briefly unavailable during reload.
+      }
+    }
+    void refresh();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.session_id, state.session_title, state.summary_status, state.status]);
+
   async function withApi(
     action: (api: Awaited<ReturnType<typeof getApi>>) => Promise<AppState>,
   ) {
@@ -215,6 +241,8 @@ export default function App() {
   const locked = busy || recording;
   const canTranscribe = Boolean(state.file_path) && !locked;
   const language = state.language || DEFAULT_LANGUAGE;
+  const hasTranscript = Boolean(state.transcript?.trim());
+  const audioLocked = hasTranscript;
   const activeText =
     resultTab === "summary" ? state.summary : state.transcript;
   const canCopy = Boolean(activeText);
@@ -269,6 +297,36 @@ export default function App() {
     }>,
   ) {
     await withApi((api) => api.update_settings(patch));
+  }
+
+  async function onOpenSession(sessionId: string) {
+    await withApi((api) => api.open_session(sessionId));
+    setResultTab("transcript");
+  }
+
+  async function onNewTranscript() {
+    if (!state.session_id && !state.file_path && !state.transcript) {
+      setResultTab("transcript");
+      return;
+    }
+    await withApi((api) => api.reset_for_another_file());
+    setResultTab("transcript");
+  }
+
+  async function onDeleteSession(sessionId: string) {
+    const label =
+      sessions.find((s) => s.id === sessionId)?.title || "this session";
+    if (!window.confirm(`Delete “${label}” from history?`)) return;
+    await withApi((api) => api.delete_session(sessionId));
+    try {
+      const api = await getApi();
+      if (api.list_sessions) {
+        const items = await api.list_sessions();
+        if (Array.isArray(items)) setSessions(items);
+      }
+    } catch {
+      // ignore
+    }
   }
 
   async function onTranscribe() {
@@ -330,7 +388,7 @@ export default function App() {
 
   function onDragOver(e: DragEvent) {
     e.preventDefault();
-    if (!locked) setDragging(true);
+    if (!locked && !audioLocked) setDragging(true);
   }
 
   function onDragLeave(e: DragEvent) {
@@ -355,15 +413,62 @@ export default function App() {
     (Boolean(state.transcript) && state.status !== "error");
 
   const summaryBanner = state.summary_error;
+  const pageTitle = (state.session_title || "").trim() || "New Transcript";
+  const isNewTranscript = !state.session_id;
 
   return (
-    <div className="app">
+    <div className="shell">
+      <aside className="history-sidebar" aria-label="Session history">
+        <div className="history-sidebar-inner">
+          <button
+            type="button"
+            className={`history-new ${isNewTranscript ? "active" : ""}`}
+            disabled={locked || summaryBusy}
+            onClick={() => void onNewTranscript()}
+          >
+            New Transcript
+          </button>
+          <div className="history-list">
+            {sessions.length === 0 ? (
+              <p className="history-empty">History will appear here</p>
+            ) : (
+              sessions.map((session) => {
+                const active = session.id === state.session_id;
+                return (
+                  <div
+                    key={session.id}
+                    className={`history-item ${active ? "active" : ""}`}
+                  >
+                    <button
+                      type="button"
+                      className="history-item-main"
+                      disabled={locked || summaryBusy}
+                      onClick={() => void onOpenSession(session.id)}
+                    >
+                      <span className="history-item-title">
+                        {session.title || "New Transcript"}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="history-item-delete"
+                      disabled={locked || summaryBusy}
+                      aria-label={`Delete ${session.title || "session"}`}
+                      onClick={() => void onDeleteSession(session.id)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </aside>
+
+      <div className="app">
       <header className="header">
-        <p className="brand">{appName}</p>
-        <h1>Notes, ready to share</h1>
-        <p className="subtitle">
-          Record a call or drop a file — get a clean transcript in minutes.
-        </p>
+        <h1 className="page-title">{pageTitle}</h1>
       </header>
 
       {(bridgeError || state.error || summaryBanner) && (
@@ -405,6 +510,24 @@ export default function App() {
               Stop
             </button>
           </div>
+        ) : audioLocked ? (
+          <div className="file-locked">
+            <div className="file-locked-meta">
+              <p className="file-locked-name">
+                {state.file_name || "Audio on file"}
+              </p>
+            </div>
+            {state.file_path && (
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={() => void onSaveAudioCopy()}
+                disabled={locked}
+              >
+                Save copy
+              </button>
+            )}
+          </div>
         ) : (
           <div
             id="file-dropzone"
@@ -417,7 +540,9 @@ export default function App() {
             <p className="drop-title">
               {state.file_name ? state.file_name : "Drop audio or video here"}
             </p>
-            <p className="drop-hint">Supported: {ACCEPTED.replaceAll(",", " ")}</p>
+            <p className="drop-hint">
+              Supported: {ACCEPTED.replaceAll(",", " ")}
+            </p>
             <div className="drop-actions">
               <button
                 type="button"
@@ -764,6 +889,7 @@ export default function App() {
           )}
         </section>
       )}
+    </div>
     </div>
   );
 }

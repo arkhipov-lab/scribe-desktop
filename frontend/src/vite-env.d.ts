@@ -41,6 +41,9 @@ export interface AppState {
   summary_model: string;
   performance_tier?: string | null;
   hardware_reason?: string | null;
+  session_id?: string | null;
+  session_title?: string | null;
+  history_sidebar_open?: boolean;
 }
 
 export interface ApiResult extends AppState {
@@ -65,6 +68,18 @@ export interface ModelOption {
   huggingface_id?: string;
 }
 
+export interface HistorySession {
+  id: string;
+  title: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+  source_name?: string | null;
+  has_audio?: boolean;
+  has_transcript?: boolean;
+  has_summary?: boolean;
+  language?: string | null;
+}
+
 export interface AppSettings {
   language: string;
   summary_preset: string;
@@ -73,6 +88,7 @@ export interface AppSettings {
   auto_summary: boolean;
   whisper_model: string;
   summary_model: string;
+  history_sidebar_open?: boolean;
 }
 
 export interface AppInfo {
@@ -104,6 +120,9 @@ export interface PywebviewApi {
   }>;
   get_settings: () => Promise<AppSettings>;
   update_settings: (patch: Partial<AppSettings>) => Promise<ApiResult>;
+  list_sessions: () => Promise<HistorySession[]>;
+  open_session: (sessionId: string) => Promise<ApiResult>;
+  delete_session: (sessionId: string) => Promise<ApiResult>;
   start_transcription: () => Promise<ApiResult>;
   cancel_transcription: () => Promise<ApiResult>;
   start_summary: () => Promise<ApiResult>;

@@ -22,6 +22,9 @@ const DEFAULT_STATE: AppState = {
   summary_model: "3b",
   performance_tier: null,
   hardware_reason: null,
+  session_id: null,
+  session_title: null,
+  history_sidebar_open: true,
 };
 
 function waitForApi(timeoutMs = 20000): Promise<PywebviewApi> {
