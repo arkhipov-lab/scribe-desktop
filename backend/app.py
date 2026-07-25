@@ -21,6 +21,7 @@ from recorder import CaptureRecorder, RecorderError, delete_path_quiet, is_temp_
 from settings import ensure_settings_file, merge_settings
 from summarizer import (
     SummaryError,
+    generate_session_title,
     summarize_transcript,
 )
 from summary_presets import presets_for_api
@@ -31,6 +32,14 @@ from model_catalog import (
     whisper_options_for_api,
 )
 from hardware import probe_hardware
+from history import (
+    delete_session as history_delete_session,
+    list_sessions as history_list_sessions,
+    load_session,
+    update_session_summary,
+    update_session_title,
+    upsert_after_transcript,
+)
 from transcriber import (
     SUPPORTED_EXTENSIONS,
     TranscribeError,
@@ -41,7 +50,7 @@ from transcriber import (
 from version import get_app_version
 
 APP_NAME = get_app_name()
-WINDOW_WIDTH = 880
+WINDOW_WIDTH = 1080
 WINDOW_HEIGHT = 860
 
 
@@ -138,6 +147,9 @@ class Api:
             "summary_model": prefs["summary_model"],
             "performance_tier": prefs.get("performance_tier"),
             "hardware_reason": prefs.get("hardware_reason"),
+            "session_id": None,
+            "session_title": None,
+            "history_sidebar_open": bool(prefs.get("history_sidebar_open", True)),
         }
         self._timer_stop = threading.Event()
         self._timer_thread: threading.Thread | None = None
@@ -155,6 +167,7 @@ class Api:
             "auto_summary": bool(snap.get("auto_summary", True)),
             "whisper_model": snap.get("whisper_model"),
             "summary_model": snap.get("summary_model"),
+            "history_sidebar_open": bool(snap.get("history_sidebar_open", True)),
         }
 
     def _apply_prefs(self, prefs: dict[str, Any]) -> None:
@@ -166,6 +179,7 @@ class Api:
             auto_summary=prefs["auto_summary"],
             whisper_model=prefs["whisper_model"],
             summary_model=prefs["summary_model"],
+            history_sidebar_open=bool(prefs.get("history_sidebar_open", True)),
             performance_tier=prefs.get("performance_tier"),
             hardware_reason=prefs.get("hardware_reason"),
         )
@@ -194,6 +208,64 @@ class Api:
             return
         delete_path_quiet(owned)
         self._owned_temp_path = None
+
+    def _persist_after_transcript(self, transcript: str) -> None:
+        snap = self._snapshot()
+        try:
+            entry = upsert_after_transcript(
+                session_id=snap.get("session_id"),
+                transcript=transcript,
+                audio_path=snap.get("file_path"),
+                source_name=snap.get("file_name"),
+                language=str(snap.get("language") or DEFAULT_LANGUAGE),
+                whisper_model=str(snap.get("whisper_model") or ""),
+                summary_model=str(snap.get("summary_model") or ""),
+                summary_preset=str(snap.get("summary_preset") or ""),
+                summary_length=str(snap.get("summary_length") or ""),
+                clear_summary=True,
+            )
+            self._update(
+                session_id=entry["id"],
+                session_title=entry.get("title"),
+            )
+        except Exception:
+            log_exception("Failed to persist history after transcript")
+
+    def _persist_summary(self, summary: str) -> None:
+        sid = self._snapshot().get("session_id")
+        if not sid:
+            return
+        try:
+            entry = update_session_summary(str(sid), summary)
+            if entry:
+                self._update(session_title=entry.get("title"))
+        except Exception:
+            log_exception("Failed to persist history summary")
+
+    def _refresh_session_title(self, transcript: str, *, unload_after: bool) -> None:
+        snap = self._snapshot()
+        sid = snap.get("session_id")
+        if not sid:
+            return
+        language = str(snap.get("language") or DEFAULT_LANGUAGE)
+        language_name = WHISPER_LANGUAGES.get(language, language)
+        fallback = str(snap.get("file_name") or "New Transcript")
+        if fallback.lower().endswith((".wav", ".m4a", ".mp3", ".mp4", ".mov")):
+            fallback = Path(fallback).stem or "New Transcript"
+        summary_hf = summary_hf_id(str(snap.get("summary_model") or ""))
+        try:
+            title = generate_session_title(
+                transcript,
+                language_name=language_name,
+                model=summary_hf,
+                fallback=fallback,
+                unload_after=unload_after,
+            )
+            entry = update_session_title(str(sid), title)
+            if entry:
+                self._update(session_title=entry.get("title"))
+        except Exception:
+            log_exception("Failed to refresh history title")
 
     def get_state(self) -> dict[str, Any]:
         return self._snapshot()
@@ -401,6 +473,11 @@ class Api:
                 "ok": False,
                 "error": "Stop recording before selecting another file.",
             }
+        if str(self._snapshot().get("transcript") or "").strip():
+            return self._snapshot() | {
+                "ok": False,
+                "error": "Audio is locked after transcription. Start a New Transcript to replace it.",
+            }
         try:
             path = validate_audio_path(file_path)
         except TranscribeError as exc:
@@ -420,6 +497,8 @@ class Api:
             error=None,
             elapsed_seconds=0.0,
             started_at=None,
+            session_id=None,
+            session_title=None,
         )
         self.logger.info("File selected: %s", path)
         return self._snapshot() | {"ok": True}
@@ -428,6 +507,11 @@ class Api:
         state = self._snapshot()
         if state["status"] in {"loading_model", "transcribing", "recording"}:
             return state | {"ok": False, "error": "Cannot start recording right now."}
+        if str(state.get("transcript") or "").strip():
+            return state | {
+                "ok": False,
+                "error": "Audio is locked after transcription. Start a New Transcript to record again.",
+            }
 
         ffmpeg = self.check_ffmpeg()
         if not ffmpeg["ok"]:
@@ -542,6 +626,7 @@ class Api:
             "auto_summary",
             "whisper_model",
             "summary_model",
+            "history_sidebar_open",
         }
         clean = {k: patch[k] for k in allowed if k in patch}
         if not clean:
@@ -626,10 +711,12 @@ class Api:
                     elapsed_seconds=round(result.duration_seconds, 1),
                     started_at=None,
                 )
+                self._persist_after_transcript(result.text)
                 release_ml_memory("before summary")
                 if bool(self._snapshot().get("auto_summary", True)):
                     self._begin_summary(result.text)
                 else:
+                    self._refresh_session_title(result.text, unload_after=True)
                     self._update(
                         message="Transcription complete.",
                         summary_status="idle",
@@ -744,6 +831,7 @@ class Api:
                     model=summary_hf,
                     on_status=on_status,
                     should_cancel=self._summary_cancel.is_set,
+                    unload_after=False,
                 )
                 if self._summary_cancel.is_set():
                     self._update(
@@ -752,6 +840,7 @@ class Api:
                         summary_error=None,
                         message="Summary cancelled.",
                     )
+                    release_ml_memory("after cancelled summary")
                     return
                 self._update(
                     summary=result.text,
@@ -759,7 +848,10 @@ class Api:
                     summary_error=None,
                     message="Transcription complete. Summary ready.",
                 )
+                self._persist_summary(result.text)
+                self._refresh_session_title(transcript, unload_after=True)
             except SummaryError as exc:
+                release_ml_memory("after summary error")
                 if "cancelled" in exc.message.lower():
                     self._update(
                         summary_status="idle",
@@ -773,7 +865,11 @@ class Api:
                         summary_error=exc.message,
                         message=exc.message,
                     )
+                # Still try a title if we have a session from transcript.
+                if self._snapshot().get("session_id") and "cancelled" not in exc.message.lower():
+                    self._refresh_session_title(transcript, unload_after=True)
             except Exception:
+                release_ml_memory("after summary failure")
                 log_exception("Unexpected summary failure")
                 message = "Summarization failed. See the log for details."
                 self._update(
@@ -781,11 +877,107 @@ class Api:
                     summary_error=message,
                     message=message,
                 )
+                if self._snapshot().get("session_id"):
+                    self._refresh_session_title(transcript, unload_after=True)
 
         self._summary_worker = threading.Thread(
             target=worker, daemon=True, name="summarize"
         )
         self._summary_worker.start()
+
+    def list_sessions(self) -> list[dict[str, Any]]:
+        try:
+            return history_list_sessions()
+        except Exception:
+            log_exception("Failed to list history sessions")
+            return []
+
+    def open_session(self, session_id: str) -> dict[str, Any]:
+        state = self._snapshot()
+        if state["status"] in {"loading_model", "transcribing", "recording"}:
+            return state | {"ok": False, "error": "Finish the current job before opening history."}
+        if state["summary_status"] in {"loading_model", "summarizing"}:
+            return state | {"ok": False, "error": "Finish the summary before opening history."}
+
+        payload = load_session(str(session_id or ""))
+        if payload is None:
+            return self._snapshot() | {"ok": False, "error": "Session not found."}
+
+        meta = payload["meta"]
+        audio = payload.get("audio_path")
+        source = payload.get("source_path")
+        file_path = None
+        for candidate in (audio, source):
+            if candidate and Path(str(candidate)).is_file():
+                file_path = str(Path(str(candidate)).resolve())
+                break
+
+        self._cancel.set()
+        self._summary_cancel.set()
+        self._discard_owned_temp()
+        # History audio is not a disposable temp recording.
+        self._owned_temp_path = None
+
+        transcript = str(payload.get("transcript") or "")
+        summary = str(payload.get("summary") or "")
+        file_name = meta.get("source_name")
+        if file_path and not file_name:
+            file_name = Path(file_path).name
+
+        status = "completed" if transcript.strip() else ("ready" if file_path else "idle")
+        message = (
+            f"Opened: {meta.get('title') or file_name or 'session'}"
+            if transcript.strip() or file_path
+            else "Session opened."
+        )
+        self._update(
+            status=status,
+            message=message,
+            file_path=file_path,
+            file_name=file_name,
+            language=meta.get("language") or self._snapshot().get("language"),
+            transcript=transcript,
+            summary=summary,
+            summary_status="completed" if summary.strip() else "idle",
+            summary_error=None,
+            error=None,
+            elapsed_seconds=0.0,
+            started_at=None,
+            session_id=meta.get("id"),
+            session_title=meta.get("title"),
+            summary_preset=meta.get("summary_preset") or self._snapshot().get("summary_preset"),
+            summary_length=meta.get("summary_length") or self._snapshot().get("summary_length"),
+            whisper_model=meta.get("whisper_model") or self._snapshot().get("whisper_model"),
+            summary_model=meta.get("summary_model") or self._snapshot().get("summary_model"),
+        )
+        self.logger.info("Opened history session id=%s", meta.get("id"))
+        return self._snapshot() | {"ok": True}
+
+    def delete_session(self, session_id: str) -> dict[str, Any]:
+        sid = str(session_id or "").strip()
+        if not sid:
+            return self._snapshot() | {"ok": False, "error": "Missing session id."}
+        ok = history_delete_session(sid)
+        if not ok:
+            return self._snapshot() | {"ok": False, "error": "Could not delete session."}
+        if self._snapshot().get("session_id") == sid:
+            self._discard_owned_temp()
+            self._update(
+                status="idle",
+                message="Drop an audio file, select a file, or record notes.",
+                file_path=None,
+                file_name=None,
+                transcript="",
+                summary="",
+                summary_status="idle",
+                summary_error=None,
+                error=None,
+                elapsed_seconds=0.0,
+                started_at=None,
+                session_id=None,
+                session_title=None,
+            )
+        return self._snapshot() | {"ok": True}
 
     def clear_result(self) -> dict[str, Any]:
         file_path = self._snapshot().get("file_path")
@@ -822,6 +1014,8 @@ class Api:
             error=None,
             elapsed_seconds=0.0,
             started_at=None,
+            session_id=None,
+            session_title=None,
         )
         return self._snapshot() | {"ok": True}
 

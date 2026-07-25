@@ -360,6 +360,7 @@ def summarize_transcript(
     model: str = DEFAULT_SUMMARY_MODEL,
     on_status: StatusCallback | None = None,
     should_cancel: Callable[[], bool] | None = None,
+    unload_after: bool = True,
 ) -> SummaryResult:
     """Summarize transcript text. Cooperative cancel between stages only."""
     logger = get_logger()
@@ -489,13 +490,58 @@ def summarize_transcript(
 
     duration = time.time() - started
     logger.info("Summary complete in %.1fs (%s chars)", duration, len(summary))
-    try:
-        unload_summary_model()
-        import mlx.core as mx
+    if unload_after:
+        try:
+            unload_summary_model()
+            import mlx.core as mx
 
-        if hasattr(mx, "clear_cache"):
-            mx.clear_cache()
-    except Exception:
-        pass
-    gc.collect()
+            if hasattr(mx, "clear_cache"):
+                mx.clear_cache()
+        except Exception:
+            pass
+        gc.collect()
     return SummaryResult(text=summary.strip(), duration_seconds=duration)
+
+
+def generate_session_title(
+    transcript: str,
+    *,
+    language_name: str = "English",
+    model: str | None = None,
+    fallback: str = "Untitled session",
+    unload_after: bool = True,
+) -> str:
+    """Short local title for history; never log transcript or title text."""
+    from history import sanitize_title
+
+    text = (transcript or "").strip()
+    if not text:
+        return fallback
+    excerpt = text[:1800]
+    display = (language_name or "").strip() or "English"
+    model_hf = model or DEFAULT_SUMMARY_MODEL
+    prompt = (
+        f"Create a short title for these notes in {display}.\n"
+        "Rules: 3 to 8 words, no quotes, no trailing punctuation, title only.\n\n"
+        f"Notes:\n{excerpt}\n"
+    )
+    try:
+        mlx_model, tokenizer = _load_model(model_hf)
+        raw = _generate(mlx_model, tokenizer, prompt, max_tokens=32)
+        title = sanitize_title(raw, fallback=fallback)
+        get_logger().info("Session title generated (chars=%s)", len(title))
+        return title
+    except Exception:
+        log_exception("Session title generation failed")
+        return fallback
+    finally:
+        if unload_after:
+            try:
+                unload_summary_model()
+                import mlx.core as mx
+
+                if hasattr(mx, "clear_cache"):
+                    mx.clear_cache()
+            except Exception:
+                pass
+            gc.collect()

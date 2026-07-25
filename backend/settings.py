@@ -63,6 +63,7 @@ def default_settings() -> dict[str, Any]:
         "auto_summary": bool(rec["auto_summary"]),
         "whisper_model": str(rec["whisper_model"]),
         "summary_model": str(rec["summary_model"]),
+        "history_sidebar_open": True,
         "performance_tier": str(rec["performance_tier"]),
         "hardware_reason": str(rec["hardware_reason"]),
     }
@@ -103,6 +104,12 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
     else:
         auto_summary = base["auto_summary"]
 
+    if "history_sidebar_open" in raw:
+        side = raw.get("history_sidebar_open")
+        history_sidebar_open = side if isinstance(side, bool) else bool(side)
+    else:
+        history_sidebar_open = base["history_sidebar_open"]
+
     return {
         "language": language,
         "summary_preset": normalize_preset_id(str(raw.get("summary_preset", ""))),
@@ -115,6 +122,7 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
         "auto_summary": auto_summary,
         "whisper_model": whisper_model,
         "summary_model": summary_model,
+        "history_sidebar_open": history_sidebar_open,
         "performance_tier": base["performance_tier"],
         "hardware_reason": base["hardware_reason"],
     }
@@ -152,6 +160,7 @@ def save_settings(settings: dict[str, Any]) -> dict[str, Any]:
         "auto_summary": normalized["auto_summary"],
         "whisper_model": normalized["whisper_model"],
         "summary_model": normalized["summary_model"],
+        "history_sidebar_open": normalized["history_sidebar_open"],
     }
     with _lock:
         try:
