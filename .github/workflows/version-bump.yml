@@ -17,12 +17,23 @@ jobs:
     # Skip release commits to avoid loops
     if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
     steps:
+      - name: Require VERSION_BUMP_TOKEN
+        env:
+          VERSION_BUMP_TOKEN: ${{ secrets.VERSION_BUMP_TOKEN }}
+        run: |
+          if [[ -z "${VERSION_BUMP_TOKEN}" ]]; then
+            echo "Missing secret VERSION_BUMP_TOKEN (PAT with contents:write; must bypass main PR rules)." >&2
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # PAT of a user/role that can push to main (bypasses "PR-only" rulesets).
+          # GITHUB_TOKEN cannot push when main requires a pull request.
+          token: ${{ secrets.VERSION_BUMP_TOKEN }}
 
       - name: Configure git
         run: |
