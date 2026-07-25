@@ -249,6 +249,7 @@ export default function App() {
   const [instructionsDraft, setInstructionsDraft] = useState("");
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
   const [sidebarSettingsOpen, setSidebarSettingsOpen] = useState(false);
+  const [appVersion, setAppVersion] = useState<string | null>(null);
   const [sessions, setSessions] = useState<HistorySession[]>([]);
   const [playback, setPlayback] = useState<PlaybackState>("idle");
   const copyTimer = useRef<number | null>(null);
@@ -304,6 +305,15 @@ export default function App() {
             if (!cancelled && Array.isArray(items)) setSessions(items);
           } catch {
             // History optional on older bridges.
+          }
+        }
+        if (api.get_app_info) {
+          try {
+            const info = await api.get_app_info();
+            const ver = (info?.version || "").trim();
+            if (!cancelled && ver) setAppVersion(ver);
+          } catch {
+            // Version is optional chrome.
           }
         }
         setBridgeError(null);
@@ -889,6 +899,11 @@ export default function App() {
             </button>
           </div>
         </div>
+        {appVersion && (
+          <p className="sidebar-version" title={t("sidebar.version", { version: appVersion })}>
+            v{appVersion}
+          </p>
+        )}
       </aside>
 
       <div className="app">

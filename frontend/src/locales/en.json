@@ -17,7 +17,8 @@
     "themeDark": "Dark",
     "themeSystem": "System",
     "auto": "Auto",
-    "autoShort": "Auto"
+    "autoShort": "Auto",
+    "version": "Version {version}"
   },
   "common": {
     "retry": "Retry",

@@ -17,7 +17,8 @@
     "themeDark": "Тёмная",
     "themeSystem": "Системная",
     "auto": "Авто",
-    "autoShort": "Авто"
+    "autoShort": "Авто",
+    "version": "Версия {version}"
   },
   "common": {
     "retry": "Повторить",
