@@ -12,9 +12,12 @@ import {
   IconCheck,
   IconCopy,
   IconExport,
+  IconPause,
+  IconPlay,
   IconRefresh,
   IconSave,
   IconSparkles,
+  IconStop,
 } from "./icons";
 import { DEFAULT_LANGUAGE } from "./languages";
 import type {
@@ -27,6 +30,8 @@ import type {
 } from "./vite-env";
 
 const ACCEPTED = ".m4a,.mp3,.wav,.mp4,.mov";
+
+type PlaybackState = "idle" | "playing" | "paused";
 
 const LENGTH_OPTIONS: { id: SummaryLength; label: string }[] = [
   { id: "short", label: "Short" },
@@ -109,10 +114,14 @@ export default function App() {
   const [instructionsDraft, setInstructionsDraft] = useState("");
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
   const [sessions, setSessions] = useState<HistorySession[]>([]);
+  const [playback, setPlayback] = useState<PlaybackState>("idle");
   const copyTimer = useRef<number | null>(null);
   const exportTimer = useRef<number | null>(null);
   const instructionsTimer = useRef<number | null>(null);
   const lastTranscriptRef = useRef("");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const audioPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -181,9 +190,37 @@ export default function App() {
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       if (exportTimer.current) window.clearTimeout(exportTimer.current);
       if (instructionsTimer.current) window.clearTimeout(instructionsTimer.current);
+      teardownAudio();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function teardownAudio() {
+    const el = audioRef.current;
+    if (el) {
+      el.pause();
+      el.removeAttribute("src");
+      el.load();
+    }
+    audioRef.current = null;
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    audioPathRef.current = null;
+    setPlayback("idle");
+  }
+
+  useEffect(() => {
+    // Drop loaded audio when the source file changes or clears.
+    if (audioPathRef.current && audioPathRef.current !== state.file_path) {
+      teardownAudio();
+    }
+    if (!state.file_path && audioRef.current) {
+      teardownAudio();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.file_path]);
 
   async function retryBridge() {
     resetApi();
@@ -265,6 +302,144 @@ export default function App() {
     await withApi((api) => api.save_audio_copy());
   }
 
+  async function ensurePlaybackAudio(): Promise<HTMLAudioElement | null> {
+    const path = state.file_path;
+    if (!path) return null;
+    if (audioRef.current && audioPathRef.current === path) {
+      return audioRef.current;
+    }
+
+    teardownAudio();
+    try {
+      const api = await getApi();
+      if (!api.get_playback_src) {
+        setBridgeError("Playback is not available in this build. Rebuild the app.");
+        return null;
+      }
+      const result = await api.get_playback_src();
+      if (!result.ok || !result.data_base64 || !result.mime) {
+        setBridgeError(result.error || "Could not prepare audio playback.");
+        return null;
+      }
+      const binary = atob(result.data_base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: result.mime });
+      const url = URL.createObjectURL(blob);
+      const el = new Audio(url);
+      el.addEventListener("ended", () => setPlayback("idle"));
+      el.addEventListener("error", () => {
+        setBridgeError("Could not play this audio file.");
+        setPlayback("idle");
+      });
+      audioRef.current = el;
+      audioUrlRef.current = url;
+      audioPathRef.current = path;
+      setBridgeError(null);
+      return el;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Desktop bridge is not available.";
+      setBridgeError(message);
+      return null;
+    }
+  }
+
+  async function onPlayAudio() {
+    const el = await ensurePlaybackAudio();
+    if (!el) return;
+    try {
+      await el.play();
+      setPlayback("playing");
+    } catch {
+      setBridgeError("Could not start playback.");
+      setPlayback("idle");
+    }
+  }
+
+  function onPauseAudio() {
+    const el = audioRef.current;
+    if (!el) return;
+    el.pause();
+    setPlayback("paused");
+  }
+
+  function onStopAudio() {
+    const el = audioRef.current;
+    if (!el) {
+      setPlayback("idle");
+      return;
+    }
+    el.pause();
+    el.currentTime = 0;
+    setPlayback("idle");
+  }
+
+  function renderPlaybackControls() {
+    if (!state.file_path || recording) return null;
+    if (playback === "playing") {
+      return (
+        <>
+          <button
+            type="button"
+            className="btn secondary icon-btn"
+            onClick={onPauseAudio}
+            title="Pause"
+            aria-label="Pause"
+          >
+            <IconPause />
+          </button>
+          <button
+            type="button"
+            className="btn secondary icon-btn"
+            onClick={onStopAudio}
+            title="Stop"
+            aria-label="Stop"
+          >
+            <IconStop />
+          </button>
+        </>
+      );
+    }
+    if (playback === "paused") {
+      return (
+        <>
+          <button
+            type="button"
+            className="btn secondary icon-btn"
+            onClick={() => void onPlayAudio()}
+            title="Play"
+            aria-label="Play"
+          >
+            <IconPlay />
+          </button>
+          <button
+            type="button"
+            className="btn secondary icon-btn"
+            onClick={onStopAudio}
+            title="Stop"
+            aria-label="Stop"
+          >
+            <IconStop />
+          </button>
+        </>
+      );
+    }
+    return (
+      <button
+        type="button"
+        className="btn secondary icon-btn"
+        onClick={() => void onPlayAudio()}
+        title="Play"
+        aria-label="Play"
+      >
+        <IconPlay />
+      </button>
+    );
+  }
+
   async function onExportNotes() {
     try {
       const api = await getApi();
@@ -317,6 +492,7 @@ export default function App() {
       setResultTab("transcript");
       return;
     }
+    teardownAudio();
     await withApi((api) => api.reset_for_another_file());
     setResultTab("transcript");
   }
@@ -347,6 +523,7 @@ export default function App() {
   }
 
   async function onRecord() {
+    teardownAudio();
     await withApi((api) => api.start_recording());
   }
 
@@ -525,18 +702,21 @@ export default function App() {
                 {state.file_name || "Audio on file"}
               </p>
             </div>
-            {state.file_path && (
-              <button
-                type="button"
-                className="btn secondary icon-btn"
-                onClick={() => void onSaveAudioCopy()}
-                disabled={locked}
-                title="Save copy"
-                aria-label="Save copy"
-              >
-                <IconSave />
-              </button>
-            )}
+            <div className="file-locked-actions">
+              {renderPlaybackControls()}
+              {state.file_path && (
+                <button
+                  type="button"
+                  className="btn secondary icon-btn"
+                  onClick={() => void onSaveAudioCopy()}
+                  disabled={locked}
+                  title="Save copy"
+                  aria-label="Save copy"
+                >
+                  <IconSave />
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div
@@ -562,6 +742,7 @@ export default function App() {
               >
                 Select file
               </button>
+              {renderPlaybackControls()}
               {state.file_path && (
                 <button
                   type="button"

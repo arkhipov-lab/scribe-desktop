@@ -67,3 +67,32 @@ export function IconRefresh({ className }: IconProps) {
     </svg>
   );
 }
+
+export function IconPlay({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        stroke="none"
+        d="M8.5 5.8v12.4c0 .7.75 1.1 1.35.7l9.2-6.2a.85.85 0 0 0 0-1.4l-9.2-6.2a.85.85 0 0 0-1.35.7Z"
+      />
+    </svg>
+  );
+}
+
+export function IconPause({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <rect fill="currentColor" stroke="none" x="6.5" y="5" width="3.5" height="14" rx="1" />
+      <rect fill="currentColor" stroke="none" x="14" y="5" width="3.5" height="14" rx="1" />
+    </svg>
+  );
+}
+
+export function IconStop({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <rect fill="currentColor" stroke="none" x="6.5" y="6.5" width="11" height="11" rx="1.5" />
+    </svg>
+  );
+}

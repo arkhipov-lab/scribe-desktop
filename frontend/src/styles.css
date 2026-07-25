@@ -595,6 +595,13 @@ h1.page-title {
   white-space: nowrap;
 }
 
+.file-locked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .btn.record {
   background: rgba(28, 25, 21, 0.08);
   color: var(--ink);

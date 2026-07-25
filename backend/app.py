@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import mimetypes
 import os
 import shutil
 import sys
@@ -52,6 +54,9 @@ from version import get_app_version
 APP_NAME = get_app_name()
 WINDOW_WIDTH = 1080
 WINDOW_HEIGHT = 860
+
+# Inline playback for WebView (file:// often blocked from http:// Vite origin).
+_MAX_PLAYBACK_INLINE_BYTES = 80 * 1024 * 1024
 
 
 def _format_export_notes(*, transcript: str, summary: str, fmt: str) -> str:
@@ -398,6 +403,67 @@ class Api:
         return self._snapshot() | {
             "ok": True,
             "saved_path": str(dest),
+        }
+
+    def get_playback_src(self) -> dict[str, Any]:
+        """Return a playable audio source for the current file (never log bytes)."""
+        state = self._snapshot()
+        raw = state.get("file_path")
+        if not raw:
+            return {"ok": False, "error": "No audio file to play."}
+        path = Path(str(raw)).expanduser().resolve()
+        if not path.is_file():
+            return {"ok": False, "error": "Audio file is missing."}
+
+        mime, _ = mimetypes.guess_type(str(path))
+        suffix = path.suffix.lower()
+        if not mime:
+            mime = {
+                ".wav": "audio/wav",
+                ".mp3": "audio/mpeg",
+                ".m4a": "audio/mp4",
+                ".mp4": "audio/mp4",
+                ".mov": "video/quicktime",
+            }.get(suffix, "application/octet-stream")
+
+        try:
+            size = path.stat().st_size
+        except OSError as exc:
+            log_exception("Failed to stat audio for playback")
+            return {
+                "ok": False,
+                "error": f"Could not read the audio file: {exc.strerror or exc}",
+            }
+
+        if size <= 0:
+            return {"ok": False, "error": "Audio file is empty."}
+        if size > _MAX_PLAYBACK_INLINE_BYTES:
+            return {
+                "ok": False,
+                "error": "This file is too large to preview in-app. Use Save copy to open it elsewhere.",
+            }
+
+        try:
+            raw_bytes = path.read_bytes()
+        except OSError as exc:
+            log_exception("Failed to read audio for playback")
+            return {
+                "ok": False,
+                "error": f"Could not read the audio file: {exc.strerror or exc}",
+            }
+
+        encoded = base64.b64encode(raw_bytes).decode("ascii")
+        self.logger.info(
+            "Prepared playback src: path=%s mime=%s bytes=%s",
+            path,
+            mime,
+            size,
+        )
+        return {
+            "ok": True,
+            "mime": mime,
+            "data_base64": encoded,
+            "size": size,
         }
 
     def export_notes(self) -> dict[str, Any]:

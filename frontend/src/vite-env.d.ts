@@ -104,6 +104,13 @@ export interface PywebviewApi {
   get_state: () => Promise<AppState>;
   select_file: () => Promise<ApiResult>;
   save_audio_copy: () => Promise<ApiResult>;
+  get_playback_src: () => Promise<{
+    ok: boolean;
+    error?: string;
+    mime?: string;
+    data_base64?: string;
+    size?: number;
+  }>;
   export_notes: () => Promise<ApiResult>;
   set_file_path: (filePath: string) => Promise<ApiResult>;
   set_language: (language: string) => Promise<ApiResult>;
