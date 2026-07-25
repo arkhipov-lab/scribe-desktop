@@ -89,6 +89,15 @@ export function IconPause({ className }: IconProps) {
   );
 }
 
+export function IconPlus({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path {...stroke} d="M12 5v14" />
+      <path {...stroke} d="M5 12h14" />
+    </svg>
+  );
+}
+
 export function IconStop({ className }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">

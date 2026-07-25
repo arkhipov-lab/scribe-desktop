@@ -14,6 +14,7 @@ import {
   IconExport,
   IconPause,
   IconPlay,
+  IconPlus,
   IconRefresh,
   IconSave,
   IconSparkles,
@@ -655,6 +656,7 @@ export default function App() {
             disabled={locked || summaryBusy}
             onClick={() => void onNewTranscript()}
           >
+            <IconPlus className="history-new-icon" />
             New Transcript
           </button>
           <div className="history-list">
