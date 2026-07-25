@@ -98,6 +98,36 @@ export function IconPlus({ className }: IconProps) {
   );
 }
 
+export function IconSun({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <circle {...stroke} cx="12" cy="12" r="4" />
+      <path {...stroke} d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2" />
+      <path {...stroke} d="M5.4 5.4l1.6 1.6M17 17l1.6 1.6M17 7l1.6-1.6M5.4 18.6l1.6-1.6" />
+    </svg>
+  );
+}
+
+export function IconMoon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        {...stroke}
+        d="M19.5 13.4A7.5 7.5 0 1 1 10.6 4.5 6 6 0 0 0 19.5 13.4Z"
+      />
+    </svg>
+  );
+}
+
+export function IconMonitor({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <rect {...stroke} x="3.5" y="4.5" width="17" height="12" rx="2" />
+      <path {...stroke} d="M8 19.5h8M12 16.5v3" />
+    </svg>
+  );
+}
+
 export function IconStop({ className }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">

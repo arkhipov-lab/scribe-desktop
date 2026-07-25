@@ -9,8 +9,15 @@
     "deleteAria": "Delete {title}"
   },
   "sidebar": {
-    "settingsAria": "Quick settings",
-    "uiLanguage": "Language"
+    "settings": "Settings",
+    "settingsAria": "Settings",
+    "uiLanguage": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "auto": "Auto",
+    "autoShort": "Auto"
   },
   "common": {
     "retry": "Retry",

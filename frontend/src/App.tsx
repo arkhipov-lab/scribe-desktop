@@ -13,6 +13,8 @@ import {
   IconCheck,
   IconCopy,
   IconExport,
+  IconMonitor,
+  IconMoon,
   IconPause,
   IconPlay,
   IconPlus,
@@ -20,8 +22,10 @@ import {
   IconSave,
   IconSparkles,
   IconStop,
+  IconSun,
 } from "./icons";
 import { DEFAULT_LANGUAGE, languageLabel } from "./languages";
+import { useTheme } from "./theme";
 import type {
   AppState,
   HistorySession,
@@ -225,7 +229,8 @@ function statusLabel(
 
 
 export default function App() {
-  const { locale, setLocale } = useI18n();
+  const { locale, localePreference, setLocalePreference } = useI18n();
+  const { themePreference, setThemePreference } = useTheme();
   const [state, setState] = useState<AppState>(getDefaultState);
   const [bridgeError, setBridgeError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -243,6 +248,7 @@ export default function App() {
   );
   const [instructionsDraft, setInstructionsDraft] = useState("");
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
+  const [sidebarSettingsOpen, setSidebarSettingsOpen] = useState(false);
   const [sessions, setSessions] = useState<HistorySession[]>([]);
   const [playback, setPlayback] = useState<PlaybackState>("idle");
   const copyTimer = useRef<number | null>(null);
@@ -787,30 +793,100 @@ export default function App() {
               })
             )}
           </div>
-          <div className="history-sidebar-footer" aria-label={t("sidebar.settingsAria")}>
-            <div className="sidebar-setting">
-              <span className="sidebar-setting-label" id="sidebar-ui-language">
-                {t("sidebar.uiLanguage")}
-              </span>
+          <div
+            className={`history-sidebar-footer ${sidebarSettingsOpen ? "open" : ""}`}
+          >
+            {sidebarSettingsOpen && (
               <div
-                className="segmented sidebar-locale"
-                role="group"
-                aria-labelledby="sidebar-ui-language"
+                id="sidebar-settings-panel"
+                className="sidebar-settings-panel"
+                role="region"
+                aria-label={t("sidebar.settingsAria")}
               >
-                {LOCALE_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={locale === option.id ? "active" : ""}
-                    aria-pressed={locale === option.id}
-                    title={option.label}
-                    onClick={() => setLocale(option.id)}
+                <div className="sidebar-setting">
+                  <span className="sidebar-setting-label" id="sidebar-ui-language">
+                    {t("sidebar.uiLanguage")}
+                  </span>
+                  <div
+                    className="segmented sidebar-locale"
+                    role="group"
+                    aria-labelledby="sidebar-ui-language"
                   >
-                    {option.short}
-                  </button>
-                ))}
+                    {LOCALE_OPTIONS.map((option) => {
+                      const short = option.shortKey
+                        ? t(option.shortKey)
+                        : option.short || option.id;
+                      const label = option.labelKey
+                        ? t(option.labelKey)
+                        : option.label || option.id;
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className={localePreference === option.id ? "active" : ""}
+                          aria-pressed={localePreference === option.id}
+                          title={label}
+                          onClick={() => setLocalePreference(option.id)}
+                        >
+                          {short}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="sidebar-setting">
+                  <span className="sidebar-setting-label" id="sidebar-ui-theme">
+                    {t("sidebar.theme")}
+                  </span>
+                  <div
+                    className="segmented sidebar-theme"
+                    role="group"
+                    aria-labelledby="sidebar-ui-theme"
+                  >
+                    <button
+                      type="button"
+                      className={themePreference === "system" ? "active" : ""}
+                      aria-pressed={themePreference === "system"}
+                      title={t("sidebar.themeSystem")}
+                      aria-label={t("sidebar.themeSystem")}
+                      onClick={() => setThemePreference("system")}
+                    >
+                      <IconMonitor />
+                    </button>
+                    <button
+                      type="button"
+                      className={themePreference === "light" ? "active" : ""}
+                      aria-pressed={themePreference === "light"}
+                      title={t("sidebar.themeLight")}
+                      aria-label={t("sidebar.themeLight")}
+                      onClick={() => setThemePreference("light")}
+                    >
+                      <IconSun />
+                    </button>
+                    <button
+                      type="button"
+                      className={themePreference === "dark" ? "active" : ""}
+                      aria-pressed={themePreference === "dark"}
+                      title={t("sidebar.themeDark")}
+                      aria-label={t("sidebar.themeDark")}
+                      onClick={() => setThemePreference("dark")}
+                    >
+                      <IconMoon />
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+            <button
+              type="button"
+              className="sidebar-settings-toggle"
+              aria-expanded={sidebarSettingsOpen}
+              aria-controls="sidebar-settings-panel"
+              onClick={() => setSidebarSettingsOpen((open) => !open)}
+            >
+              <span>{t("sidebar.settings")}</span>
+              <span className="sidebar-settings-chevron" aria-hidden="true" />
+            </button>
           </div>
         </div>
       </aside>
