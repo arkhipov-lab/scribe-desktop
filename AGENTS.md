@@ -64,6 +64,7 @@ backend/                  Python desktop shell + ML pipeline
   profile_config.py       app name / identity helpers
   model_catalog.py        runtime Whisper / summary choices + token caps
   hardware.py             local Mac probe for recommended defaults
+  history.py              on-disk session history (transcript/summary/audio)
   macos_app.py            menu-bar name + system About panel
   memory.py               unload models / clear MLX cache between stages
   logger.py               rotating file log (no transcript body)
@@ -133,6 +134,7 @@ The React UI talks only through `window.pywebview.api` (`Api` in `backend/app.py
 | `start_transcription` / `cancel_transcription` | Whisper pipeline |
 | `start_summary` / `cancel_summary` | Local LLM notes |
 | `get_summary_presets` / `get_whisper_models` / `get_summary_models` / `get_settings` / `update_settings` | Processing options + local prefs |
+| `list_sessions` / `open_session` / `delete_session` | Local history sidebar |
 | `check_ffmpeg` / `get_app_info` / `get_languages` | Capability / metadata |
 
 Heavy work runs on **background threads**; the UI polls state. Do not block the pywebview main thread with long ML calls.

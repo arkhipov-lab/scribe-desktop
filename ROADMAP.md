@@ -41,9 +41,10 @@ Allow e.g. transcribe in Russian, summarize in English (and the reverse). Whispe
 
 On-disk only (no cloud):
 
-- [ ] Recent sessions with date, file name, languages, transcript, summary  
-- [ ] Optional path to a saved audio copy when the user exported one  
-- [ ] Open / delete / re-summarize from history  
+- [x] Recent sessions with date, file name, languages, transcript, summary  
+- [x] Optional audio copy into history (skipped if file is very large)  
+- [x] Open / delete / re-summarize from history  
+- [x] Local LLM title after transcription (updates sidebar)  
 
 ---
 

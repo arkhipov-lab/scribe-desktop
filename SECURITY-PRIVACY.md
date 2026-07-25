@@ -50,10 +50,13 @@ File open/save uses standard macOS dialogs via pywebview; the app reads user-sel
 ~/Library/Logs/Scribe/app.log          # rotating application log
 ~/Library/Caches/Scribe/recordings/    # temporary WAVs from Record
 ~/Library/Application Support/Scribe/settings.json  # local prefs (language, summary controls)
+~/Library/Application Support/Scribe/history/       # local session history (texts + optional audio)
 ~/.cache/huggingface/                  # typical model cache location (HF / MLX)
 ```
 
-`settings.json` stores only preferences (language, summary preset/length, optional additional instructions, auto-summary). It must not contain transcripts or summaries.
+`settings.json` stores only preferences (language, summary preset/length, optional additional instructions, auto-summary, model choices, sidebar open). It must not contain transcripts or summaries.
+
+History sessions live under `history/sessions/<id>/` (`transcript.md`, `summary.md`, optional `audio.*`, `meta.json`) plus a light `history/index.json` for the sidebar. History content is on-device only; logs must still omit transcript/summary bodies.
 
 Temp recordings owned by the session are removed when the user selects, drops, or records another file. Do not leave orphaned sensitive audio in world-readable locations.
 
