@@ -740,15 +740,10 @@ export default function App() {
             </button>
           </div>
         ) : audioLocked ? (
-          <div className="file-locked">
-            <div className="file-locked-meta">
-              <p className="file-locked-name">
-                {state.file_name || "Audio on file"}
-              </p>
-            </div>
-            <div className="file-locked-actions">
-              {renderPlaybackControls()}
-              {state.file_path && (
+          <div className="file-locked" aria-label="Source audio">
+            {state.file_path ? (
+              <div className="file-locked-actions">
+                {renderPlaybackControls()}
                 <button
                   type="button"
                   className="btn secondary icon-btn"
@@ -759,8 +754,10 @@ export default function App() {
                 >
                   <IconSave />
                 </button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <p className="file-locked-empty">No audio available</p>
+            )}
           </div>
         ) : (
           <div
