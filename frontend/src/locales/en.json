@@ -1,0 +1,146 @@
+{
+  "history": {
+    "aria": "Session history",
+    "newTranscript": "New Transcript",
+    "empty": "History will appear here",
+    "deleteConfirm": "Delete “{title}” from history?",
+    "sessionFallback": "this session",
+    "session": "session",
+    "deleteAria": "Delete {title}"
+  },
+  "sidebar": {
+    "settingsAria": "Quick settings",
+    "uiLanguage": "Language"
+  },
+  "common": {
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "stop": "Stop",
+    "play": "Play",
+    "pause": "Pause",
+    "copy": "Copy",
+    "copied": "Copied",
+    "export": "Export",
+    "exported": "Exported",
+    "selectEllipsis": "Select…",
+    "searchEllipsis": "Search…",
+    "noMatches": "No matches",
+    "options": "Options"
+  },
+  "errors": {
+    "bridgeUnavailable": "Desktop bridge is not available.",
+    "playbackUnavailable": "Playback is not available in this build. Rebuild the app.",
+    "playbackPrepare": "Could not prepare audio playback.",
+    "playbackPlay": "Could not play this audio file.",
+    "playbackStart": "Could not start playback.",
+    "exportUnavailable": "Export is not available in this build. Rebuild the app."
+  },
+  "file": {
+    "title": "File",
+    "recording": "Recording",
+    "recordingHint": "Microphone + system audio",
+    "stopRecording": "Stop recording",
+    "sourceAudio": "Source audio",
+    "saveCopy": "Save copy",
+    "noAudio": "No audio available",
+    "dropHere": "Drop audio or video here",
+    "supported": "Supported: {formats}",
+    "selectFile": "Select file",
+    "record": "Record",
+    "recordAria": "Record audio"
+  },
+  "language": {
+    "title": "Language",
+    "search": "Search language…",
+    "listAria": "Languages"
+  },
+  "actions": {
+    "transcribe": "Transcribe"
+  },
+  "processing": {
+    "title": "Processing options",
+    "hint": "Models, summary style, and auto-summary",
+    "recommended": "Recommended for this Mac ({tier}): {reason}",
+    "tierAuto": "auto",
+    "transcriptionModel": "Transcription model",
+    "transcriptionModelsAria": "Transcription models",
+    "summaryModel": "Summary model",
+    "summaryModelsAria": "Summary models",
+    "searchModel": "Search model…",
+    "preset": "Preset",
+    "presetsAria": "Summary presets",
+    "searchPreset": "Search preset…",
+    "length": "Length",
+    "additionalInstructions": "Additional instructions",
+    "instructionsPlaceholder": "e.g. highlight risks, keep technical terms in English",
+    "autoSummary": "Auto-summarize after transcription"
+  },
+  "length": {
+    "short": "Short",
+    "normal": "Normal",
+    "detailed": "Detailed"
+  },
+  "presets": {
+    "meeting_notes": "Meeting notes",
+    "action_items": "Action items only",
+    "executive": "Executive summary",
+    "customer_interview": "Customer interview",
+    "lecture": "Lecture / research notes",
+    "cleaned_transcript": "Cleaned transcript"
+  },
+  "models": {
+    "whisper": {
+      "small": {
+        "label": "Small",
+        "hint": "Faster, lower memory"
+      },
+      "medium": {
+        "label": "Medium",
+        "hint": "Better accuracy, more memory"
+      }
+    },
+    "summary": {
+      "1.5b": {
+        "label": "1.5B",
+        "hint": "Lighter notes model"
+      },
+      "3b": {
+        "label": "3B",
+        "hint": "Higher-quality notes"
+      }
+    }
+  },
+  "status": {
+    "idle": "Idle",
+    "ready": "Ready",
+    "recording": "Recording",
+    "loadingModel": "Loading model",
+    "transcribing": "Transcribing",
+    "completed": "Completed",
+    "error": "Error",
+    "loadingSummaryModel": "Loading summary model",
+    "summarizing": "Summarizing",
+    "processing": "Processing",
+    "usedSettingsAria": "Settings used for this run"
+  },
+  "meta": {
+    "whisper": "Whisper {name}",
+    "notes": "Notes {name}",
+    "customInstructions": "Custom instructions"
+  },
+  "result": {
+    "aria": "Result",
+    "transcript": "Transcript",
+    "summary": "Summary",
+    "generateSummary": "Generate summary",
+    "regenerateSummary": "Regenerate summary",
+    "exportNotes": "Export notes",
+    "transcriptEmpty": "Transcript will appear here.",
+    "summaryEmpty": "Summary will appear here.",
+    "loadingSummaryModel": "Loading summary model…",
+    "writingSummary": "Writing summary…",
+    "summaryFailed": "Summary failed. You can try again.",
+    "summaryAfterTranscription": "Summary will appear here after transcription finishes.",
+    "autoSummaryOff": "Auto-summary is off. Generate when you are ready."
+  }
+}

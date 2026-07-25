@@ -143,6 +143,42 @@ textarea {
   padding-right: 2px;
 }
 
+.history-sidebar-footer {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.sidebar-setting-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sidebar-locale {
+  width: 100%;
+}
+
+.sidebar-locale button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 8px;
+  font-size: 0.82rem;
+}
+
 .history-empty {
   margin: 10px 8px;
   color: var(--muted);

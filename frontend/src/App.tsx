@@ -5,6 +5,7 @@ import {
   getDefaultState,
   resetApi,
 } from "./api";
+import { LOCALE_OPTIONS, t, useI18n } from "./i18n";
 import LanguageSelect from "./LanguageSelect";
 import MarkdownBody from "./MarkdownBody";
 import PresetSelect from "./PresetSelect";
@@ -34,30 +35,19 @@ const ACCEPTED = ".m4a,.mp3,.wav,.mp4,.mov";
 
 type PlaybackState = "idle" | "playing" | "paused";
 
-const LENGTH_OPTIONS: { id: SummaryLength; label: string }[] = [
-  { id: "short", label: "Short" },
-  { id: "normal", label: "Normal" },
-  { id: "detailed", label: "Detailed" },
-];
+const LENGTH_IDS: SummaryLength[] = ["short", "normal", "detailed"];
 
-const FALLBACK_PRESETS: SummaryPresetOption[] = [
-  { id: "meeting_notes", label: "Meeting notes" },
-  { id: "action_items", label: "Action items only" },
-  { id: "executive", label: "Executive summary" },
-  { id: "customer_interview", label: "Customer interview" },
-  { id: "lecture", label: "Lecture / research notes" },
-  { id: "cleaned_transcript", label: "Cleaned transcript" },
-];
+const FALLBACK_PRESET_IDS = [
+  "meeting_notes",
+  "action_items",
+  "executive",
+  "customer_interview",
+  "lecture",
+  "cleaned_transcript",
+] as const;
 
-const FALLBACK_WHISPER: ModelOption[] = [
-  { id: "small", label: "Small", hint: "Faster, lower memory" },
-  { id: "medium", label: "Medium", hint: "Better accuracy, more memory" },
-];
-
-const FALLBACK_SUMMARY_MODELS: ModelOption[] = [
-  { id: "1.5b", label: "1.5B", hint: "Lighter notes model" },
-  { id: "3b", label: "3B", hint: "Higher-quality notes" },
-];
+const FALLBACK_WHISPER_IDS = ["small", "medium"] as const;
+const FALLBACK_SUMMARY_IDS = ["1.5b", "3b"] as const;
 
 type ResultTab = "transcript" | "summary";
 
@@ -107,9 +97,64 @@ function mergeState(next: AppState): AppState {
   };
 }
 
-function labelFromOptions(id: string | null | undefined, options: { id: string; label: string }[]): string | null {
+function labelFromOptions(
+  id: string | null | undefined,
+  options: { id: string; label: string }[],
+): string | null {
   if (!id) return null;
   return options.find((o) => o.id === id)?.label ?? id;
+}
+
+function localizePresets(
+  items: SummaryPresetOption[],
+): SummaryPresetOption[] {
+  return items.map((item) => ({
+    ...item,
+    label: t(`presets.${item.id}`, undefined, item.label),
+  }));
+}
+
+function localizeWhisperModels(items: ModelOption[]): ModelOption[] {
+  return items.map((item) => ({
+    ...item,
+    label: t(`models.whisper.${item.id}.label`, undefined, item.label),
+    hint: item.hint
+      ? t(`models.whisper.${item.id}.hint`, undefined, item.hint)
+      : item.hint,
+  }));
+}
+
+function localizeSummaryModels(items: ModelOption[]): ModelOption[] {
+  return items.map((item) => ({
+    ...item,
+    label: t(`models.summary.${item.id}.label`, undefined, item.label),
+    hint: item.hint
+      ? t(`models.summary.${item.id}.hint`, undefined, item.hint)
+      : item.hint,
+  }));
+}
+
+function fallbackPresets(): SummaryPresetOption[] {
+  return FALLBACK_PRESET_IDS.map((id) => ({
+    id,
+    label: t(`presets.${id}`),
+  }));
+}
+
+function fallbackWhisper(): ModelOption[] {
+  return FALLBACK_WHISPER_IDS.map((id) => ({
+    id,
+    label: t(`models.whisper.${id}.label`),
+    hint: t(`models.whisper.${id}.hint`),
+  }));
+}
+
+function fallbackSummaryModels(): ModelOption[] {
+  return FALLBACK_SUMMARY_IDS.map((id) => ({
+    id,
+    label: t(`models.summary.${id}.label`),
+    hint: t(`models.summary.${id}.hint`),
+  }));
 }
 
 function buildUsedMetaTags(
@@ -124,37 +169,78 @@ function buildUsedMetaTags(
   }
   const whisper = labelFromOptions(state.used_whisper_model, whisperModels);
   if (whisper) {
-    tags.push({ key: "whisper", label: `Whisper ${whisper}` });
+    tags.push({ key: "whisper", label: t("meta.whisper", { name: whisper }) });
   }
   const summaryModel = labelFromOptions(state.used_summary_model, summaryModels);
   if (summaryModel) {
-    tags.push({ key: "summary-model", label: `Notes ${summaryModel}` });
+    tags.push({
+      key: "summary-model",
+      label: t("meta.notes", { name: summaryModel }),
+    });
   }
   const preset = labelFromOptions(state.used_summary_preset, presets);
   if (preset) {
     tags.push({ key: "preset", label: preset });
   }
-  const length = labelFromOptions(state.used_summary_length, LENGTH_OPTIONS);
-  if (length) {
-    tags.push({ key: "length", label: length });
+  if (state.used_summary_length) {
+    tags.push({
+      key: "length",
+      label: t(`length.${state.used_summary_length}`, undefined, state.used_summary_length),
+    });
   }
   if (state.used_has_extra_instructions) {
-    tags.push({ key: "extra", label: "Custom instructions" });
+    tags.push({ key: "extra", label: t("meta.customInstructions") });
   }
   return tags;
 }
 
+function statusLabel(
+  status: AppState["status"],
+  summaryStatus: SummaryStatus,
+): string {
+  if (status === "completed" && isSummaryBusy(summaryStatus)) {
+    return summaryStatus === "loading_model"
+      ? t("status.loadingSummaryModel")
+      : t("status.summarizing");
+  }
+  switch (status) {
+    case "idle":
+      return t("status.idle");
+    case "ready":
+      return t("status.ready");
+    case "recording":
+      return t("status.recording");
+    case "loading_model":
+      return t("status.loadingModel");
+    case "transcribing":
+      return t("status.transcribing");
+    case "completed":
+      return t("status.completed");
+    case "error":
+      return t("status.error");
+    default:
+      return status;
+  }
+}
+
+
 export default function App() {
+  const { locale, setLocale } = useI18n();
   const [state, setState] = useState<AppState>(getDefaultState);
   const [bridgeError, setBridgeError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [resultTab, setResultTab] = useState<ResultTab>("transcript");
-  const [presets, setPresets] = useState<SummaryPresetOption[]>(FALLBACK_PRESETS);
-  const [whisperModels, setWhisperModels] = useState<ModelOption[]>(FALLBACK_WHISPER);
-  const [summaryModels, setSummaryModels] =
-    useState<ModelOption[]>(FALLBACK_SUMMARY_MODELS);
+  const [presetsRaw, setPresetsRaw] = useState<SummaryPresetOption[]>(() =>
+    fallbackPresets(),
+  );
+  const [whisperModelsRaw, setWhisperModelsRaw] = useState<ModelOption[]>(() =>
+    fallbackWhisper(),
+  );
+  const [summaryModelsRaw, setSummaryModelsRaw] = useState<ModelOption[]>(() =>
+    fallbackSummaryModels(),
+  );
   const [instructionsDraft, setInstructionsDraft] = useState("");
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
   const [sessions, setSessions] = useState<HistorySession[]>([]);
@@ -167,6 +253,12 @@ export default function App() {
   const audioUrlRef = useRef<string | null>(null);
   const audioPathRef = useRef<string | null>(null);
 
+  // Recompute catalog labels whenever the active locale changes.
+  void locale;
+  const presets = localizePresets(presetsRaw);
+  const whisperModels = localizeWhisperModels(whisperModelsRaw);
+  const summaryModels = localizeSummaryModels(summaryModelsRaw);
+
   useEffect(() => {
     let cancelled = false;
     let intervalId = 0;
@@ -178,27 +270,27 @@ export default function App() {
         const [initial, presetList, whisperList, summaryList] = await Promise.all([
           api.get_state(),
           api.get_summary_presets
-            ? api.get_summary_presets().catch(() => FALLBACK_PRESETS)
-            : Promise.resolve(FALLBACK_PRESETS),
+            ? api.get_summary_presets().catch(() => fallbackPresets())
+            : Promise.resolve(fallbackPresets()),
           api.get_whisper_models
-            ? api.get_whisper_models().catch(() => FALLBACK_WHISPER)
-            : Promise.resolve(FALLBACK_WHISPER),
+            ? api.get_whisper_models().catch(() => fallbackWhisper())
+            : Promise.resolve(fallbackWhisper()),
           api.get_summary_models
-            ? api.get_summary_models().catch(() => FALLBACK_SUMMARY_MODELS)
-            : Promise.resolve(FALLBACK_SUMMARY_MODELS),
+            ? api.get_summary_models().catch(() => fallbackSummaryModels())
+            : Promise.resolve(fallbackSummaryModels()),
         ]);
         if (cancelled) return;
         const merged = mergeState(initial);
         setState(merged);
         setInstructionsDraft(merged.additional_instructions);
         if (Array.isArray(presetList) && presetList.length > 0) {
-          setPresets(presetList);
+          setPresetsRaw(presetList);
         }
         if (Array.isArray(whisperList) && whisperList.length > 0) {
-          setWhisperModels(whisperList);
+          setWhisperModelsRaw(whisperList);
         }
         if (Array.isArray(summaryList) && summaryList.length > 0) {
-          setSummaryModels(summaryList);
+          setSummaryModelsRaw(summaryList);
         }
         if (api.list_sessions) {
           try {
@@ -221,7 +313,7 @@ export default function App() {
       } catch (err) {
         if (!cancelled) {
           setBridgeError(
-            err instanceof Error ? err.message : "Desktop bridge is not available.",
+            err instanceof Error ? err.message : t("errors.bridgeUnavailable"),
           );
         }
       }
@@ -315,7 +407,7 @@ export default function App() {
       return merged;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Desktop bridge is not available.";
+        err instanceof Error ? err.message : t("errors.bridgeUnavailable");
       if (message.includes("Desktop bridge is not available")) {
         resetApi();
       }
@@ -358,12 +450,12 @@ export default function App() {
     try {
       const api = await getApi();
       if (!api.get_playback_src) {
-        setBridgeError("Playback is not available in this build. Rebuild the app.");
+        setBridgeError(t("errors.playbackUnavailable"));
         return null;
       }
       const result = await api.get_playback_src();
       if (!result.ok || !result.data_base64 || !result.mime) {
-        setBridgeError(result.error || "Could not prepare audio playback.");
+        setBridgeError(result.error || t("errors.playbackPrepare"));
         return null;
       }
       const binary = atob(result.data_base64);
@@ -376,7 +468,7 @@ export default function App() {
       const el = new Audio(url);
       el.addEventListener("ended", () => setPlayback("idle"));
       el.addEventListener("error", () => {
-        setBridgeError("Could not play this audio file.");
+        setBridgeError(t("errors.playbackPlay"));
         setPlayback("idle");
       });
       audioRef.current = el;
@@ -386,7 +478,7 @@ export default function App() {
       return el;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Desktop bridge is not available.";
+        err instanceof Error ? err.message : t("errors.bridgeUnavailable");
       setBridgeError(message);
       return null;
     }
@@ -399,7 +491,7 @@ export default function App() {
       await el.play();
       setPlayback("playing");
     } catch {
-      setBridgeError("Could not start playback.");
+      setBridgeError(t("errors.playbackStart"));
       setPlayback("idle");
     }
   }
@@ -431,8 +523,8 @@ export default function App() {
             type="button"
             className="btn secondary icon-btn"
             onClick={onPauseAudio}
-            title="Pause"
-            aria-label="Pause"
+            title={t("common.pause")}
+            aria-label={t("common.pause")}
           >
             <IconPause />
           </button>
@@ -440,8 +532,8 @@ export default function App() {
             type="button"
             className="btn secondary icon-btn"
             onClick={onStopAudio}
-            title="Stop"
-            aria-label="Stop"
+            title={t("common.stop")}
+            aria-label={t("common.stop")}
           >
             <IconStop />
           </button>
@@ -455,8 +547,8 @@ export default function App() {
             type="button"
             className="btn secondary icon-btn"
             onClick={() => void onPlayAudio()}
-            title="Play"
-            aria-label="Play"
+            title={t("common.play")}
+            aria-label={t("common.play")}
           >
             <IconPlay />
           </button>
@@ -464,8 +556,8 @@ export default function App() {
             type="button"
             className="btn secondary icon-btn"
             onClick={onStopAudio}
-            title="Stop"
-            aria-label="Stop"
+            title={t("common.stop")}
+            aria-label={t("common.stop")}
           >
             <IconStop />
           </button>
@@ -477,8 +569,8 @@ export default function App() {
         type="button"
         className="btn secondary icon-btn"
         onClick={() => void onPlayAudio()}
-        title="Play"
-        aria-label="Play"
+        title={t("common.play")}
+        aria-label={t("common.play")}
       >
         <IconPlay />
       </button>
@@ -489,7 +581,7 @@ export default function App() {
     try {
       const api = await getApi();
       if (!api.export_notes) {
-        setBridgeError("Export is not available in this build. Rebuild the app.");
+        setBridgeError(t("errors.exportUnavailable"));
         return;
       }
       const next = await api.export_notes();
@@ -502,7 +594,7 @@ export default function App() {
       }
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Desktop bridge is not available.";
+        err instanceof Error ? err.message : t("errors.bridgeUnavailable");
       if (message.includes("Desktop bridge is not available")) {
         resetApi();
       }
@@ -544,8 +636,9 @@ export default function App() {
 
   async function onDeleteSession(sessionId: string) {
     const label =
-      sessions.find((s) => s.id === sessionId)?.title || "this session";
-    if (!window.confirm(`Delete “${label}” from history?`)) return;
+      sessions.find((s) => s.id === sessionId)?.title ||
+      t("history.sessionFallback");
+    if (!window.confirm(t("history.deleteConfirm", { title: label }))) return;
     await withApi((api) => api.delete_session(sessionId));
     try {
       const api = await getApi();
@@ -643,12 +736,12 @@ export default function App() {
     (Boolean(state.transcript) && state.status !== "error");
 
   const summaryBanner = state.summary_error;
-  const pageTitle = (state.session_title || "").trim() || "New Transcript";
+  const pageTitle = (state.session_title || "").trim() || t("history.newTranscript");
   const isNewTranscript = !state.session_id;
 
   return (
     <div className="shell">
-      <aside className="history-sidebar" aria-label="Session history">
+      <aside className="history-sidebar" aria-label={t("history.aria")}>
         <div className="history-sidebar-inner">
           <button
             type="button"
@@ -657,11 +750,11 @@ export default function App() {
             onClick={() => void onNewTranscript()}
           >
             <IconPlus className="history-new-icon" />
-            New Transcript
+            {t("history.newTranscript")}
           </button>
           <div className="history-list">
             {sessions.length === 0 ? (
-              <p className="history-empty">History will appear here</p>
+              <p className="history-empty">{t("history.empty")}</p>
             ) : (
               sessions.map((session) => {
                 const active = session.id === state.session_id;
@@ -677,14 +770,14 @@ export default function App() {
                       onClick={() => void onOpenSession(session.id)}
                     >
                       <span className="history-item-title">
-                        {session.title || "New Transcript"}
+                        {session.title || t("history.newTranscript")}
                       </span>
                     </button>
                     <button
                       type="button"
                       className="history-item-delete"
                       disabled={locked || summaryBusy}
-                      aria-label={`Delete ${session.title || "session"}`}
+                      aria-label={t("history.deleteAria", { title: session.title || t("history.session") })}
                       onClick={() => void onDeleteSession(session.id)}
                     >
                       ×
@@ -693,6 +786,31 @@ export default function App() {
                 );
               })
             )}
+          </div>
+          <div className="history-sidebar-footer" aria-label={t("sidebar.settingsAria")}>
+            <div className="sidebar-setting">
+              <span className="sidebar-setting-label" id="sidebar-ui-language">
+                {t("sidebar.uiLanguage")}
+              </span>
+              <div
+                className="segmented sidebar-locale"
+                role="group"
+                aria-labelledby="sidebar-ui-language"
+              >
+                {LOCALE_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={locale === option.id ? "active" : ""}
+                    aria-pressed={locale === option.id}
+                    title={option.label}
+                    onClick={() => setLocale(option.id)}
+                  >
+                    {option.short}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </aside>
@@ -712,7 +830,7 @@ export default function App() {
                 className="btn ghost banner-retry"
                 onClick={() => retryBridge()}
               >
-                Retry
+                {t("common.retry")}
               </button>
             )}
           </div>
@@ -720,14 +838,14 @@ export default function App() {
       )}
 
       <section className="panel">
-        <h2>File</h2>
+        <h2>{t("file.title")}</h2>
         {recording ? (
           <div className="record-active" aria-live="polite">
             <div className="record-active-meta">
               <span className="record-pulse" aria-hidden="true" />
               <div>
-                <p className="record-active-title">Recording</p>
-                <p className="record-active-hint">Microphone + system audio</p>
+                <p className="record-active-title">{t("file.recording")}</p>
+                <p className="record-active-hint">{t("file.recordingHint")}</p>
               </div>
             </div>
             <p className="record-timer">{formatElapsed(state.elapsed_seconds)}</p>
@@ -735,14 +853,14 @@ export default function App() {
               type="button"
               className="btn stop-record"
               onClick={() => void onStopRecord()}
-              aria-label="Stop recording"
+              aria-label={t("file.stopRecording")}
             >
               <span className="stop-square" aria-hidden="true" />
-              Stop
+              {t("common.stop")}
             </button>
           </div>
         ) : audioLocked ? (
-          <div className="file-locked" aria-label="Source audio">
+          <div className="file-locked" aria-label={t("file.sourceAudio")}>
             {state.file_path ? (
               <div className="file-locked-actions">
                 {renderPlaybackControls()}
@@ -751,14 +869,14 @@ export default function App() {
                   className="btn secondary icon-btn"
                   onClick={() => void onSaveAudioCopy()}
                   disabled={locked}
-                  title="Save copy"
-                  aria-label="Save copy"
+                  title={t("file.saveCopy")}
+                  aria-label={t("file.saveCopy")}
                 >
                   <IconSave />
                 </button>
               </div>
             ) : (
-              <p className="file-locked-empty">No audio available</p>
+              <p className="file-locked-empty">{t("file.noAudio")}</p>
             )}
           </div>
         ) : (
@@ -771,10 +889,10 @@ export default function App() {
             onDrop={(e) => void onDrop(e)}
           >
             <p className="drop-title">
-              {state.file_name ? state.file_name : "Drop audio or video here"}
+              {state.file_name ? state.file_name : t("file.dropHere")}
             </p>
             <p className="drop-hint">
-              Supported: {ACCEPTED.replaceAll(",", " ")}
+              {t("file.supported", { formats: ACCEPTED.replaceAll(",", " ") })}
             </p>
             <div className="drop-actions">
               <button
@@ -783,7 +901,7 @@ export default function App() {
                 onClick={() => void onSelectFile()}
                 disabled={locked}
               >
-                Select file
+                {t("file.selectFile")}
               </button>
               {renderPlaybackControls()}
               {state.file_path && (
@@ -803,10 +921,10 @@ export default function App() {
                 className="btn record"
                 onClick={() => void onRecord()}
                 disabled={locked}
-                aria-label="Record audio"
+                aria-label={t("file.recordAria")}
               >
                 <span className="record-dot" aria-hidden="true" />
-                Record
+                {t("file.record")}
               </button>
             </div>
           </div>
@@ -815,9 +933,9 @@ export default function App() {
 
       <section className="panel row">
         <div className="field">
-          <h2>Language</h2>
+          <h2>{t("language.title")}</h2>
           <label className="sr-only" htmlFor="language-select">
-            Language
+            {t("language.title")}
           </label>
           <LanguageSelect
             value={language}
@@ -833,7 +951,7 @@ export default function App() {
             disabled={!canTranscribe}
             onClick={() => void onTranscribe()}
           >
-            Transcribe
+            {t("actions.transcribe")}
           </button>
           {busy && (
             <button
@@ -841,7 +959,7 @@ export default function App() {
               className="btn ghost"
               onClick={() => void onCancel()}
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </div>
@@ -858,9 +976,9 @@ export default function App() {
           onClick={() => setSummaryOptionsOpen((open) => !open)}
         >
           <span className="disclosure-copy">
-            <span className="disclosure-title">Processing options</span>
+            <span className="disclosure-title">{t("processing.title")}</span>
             <span className="disclosure-hint">
-              Models, summary style, and auto-summary
+              {t("processing.hint")}
             </span>
           </span>
           <span className="disclosure-chevron" aria-hidden="true" />
@@ -870,22 +988,24 @@ export default function App() {
           <div id="summary-options-body" className="summary-settings-body">
             {state.hardware_reason && (
               <p className="hardware-hint">
-                Recommended for this Mac ({state.performance_tier || "auto"}):{" "}
-                {state.hardware_reason}
+                {t("processing.recommended", {
+                  tier: state.performance_tier || t("processing.tierAuto"),
+                  reason: state.hardware_reason,
+                })}
               </p>
             )}
 
             <div className="summary-settings-grid">
               <div className="field">
                 <label className="field-label" htmlFor="whisper-model">
-                  Transcription model
+                  {t("processing.transcriptionModel")}
                 </label>
                 <PresetSelect
                   value={state.whisper_model || "medium"}
                   options={whisperModels}
                   inputId="whisper-model"
-                  ariaLabel="Transcription models"
-                  searchPlaceholder="Search model…"
+                  ariaLabel={t("processing.transcriptionModelsAria")}
+                  searchPlaceholder={t("processing.searchModel")}
                   disabled={locked || summaryBusy}
                   onChange={(next) => void onSettingsPatch({ whisper_model: next })}
                 />
@@ -893,14 +1013,14 @@ export default function App() {
 
               <div className="field">
                 <label className="field-label" htmlFor="summary-model">
-                  Summary model
+                  {t("processing.summaryModel")}
                 </label>
                 <PresetSelect
                   value={state.summary_model || "3b"}
                   options={summaryModels}
                   inputId="summary-model"
-                  ariaLabel="Summary models"
-                  searchPlaceholder="Search model…"
+                  ariaLabel={t("processing.summaryModelsAria")}
+                  searchPlaceholder={t("processing.searchModel")}
                   disabled={locked || summaryBusy}
                   onChange={(next) => void onSettingsPatch({ summary_model: next })}
                 />
@@ -910,14 +1030,14 @@ export default function App() {
             <div className="summary-settings-grid">
               <div className="field">
                 <label className="field-label" htmlFor="summary-preset">
-                  Preset
+                  {t("processing.preset")}
                 </label>
                 <PresetSelect
                   value={state.summary_preset || "meeting_notes"}
                   options={presets}
                   inputId="summary-preset"
-                  ariaLabel="Summary presets"
-                  searchPlaceholder="Search preset…"
+                  ariaLabel={t("processing.presetsAria")}
+                  searchPlaceholder={t("processing.searchPreset")}
                   disabled={locked || summaryBusy}
                   onChange={(next) => void onSettingsPatch({ summary_preset: next })}
                 />
@@ -925,23 +1045,23 @@ export default function App() {
 
               <div className="field">
                 <span className="field-label" id="summary-length-label">
-                  Length
+                  {t("processing.length")}
                 </span>
                 <div
                   className="segmented"
                   role="group"
                   aria-labelledby="summary-length-label"
                 >
-                  {LENGTH_OPTIONS.map((option) => (
+                  {LENGTH_IDS.map((id) => (
                     <button
-                      key={option.id}
+                      key={id}
                       type="button"
-                      className={summaryLength === option.id ? "active" : ""}
+                      className={summaryLength === id ? "active" : ""}
                       disabled={locked || summaryBusy}
-                      aria-pressed={summaryLength === option.id}
-                      onClick={() => void onSettingsPatch({ summary_length: option.id })}
+                      aria-pressed={summaryLength === id}
+                      onClick={() => void onSettingsPatch({ summary_length: id })}
                     >
-                      {option.label}
+                      {t(`length.${id}`)}
                     </button>
                   ))}
                 </div>
@@ -950,14 +1070,14 @@ export default function App() {
 
             <div className="field instructions-field">
               <label className="field-label" htmlFor="summary-instructions">
-                Additional instructions
+                {t("processing.additionalInstructions")}
               </label>
               <textarea
                 id="summary-instructions"
                 className="instructions-input"
                 rows={2}
                 maxLength={800}
-                placeholder="e.g. highlight risks, keep technical terms in English"
+                placeholder={t("processing.instructionsPlaceholder")}
                 value={instructionsDraft}
                 disabled={locked || summaryBusy}
                 onChange={(e) => onInstructionsChange(e.target.value)}
@@ -973,7 +1093,7 @@ export default function App() {
                   void onSettingsPatch({ auto_summary: e.target.checked })
                 }
               />
-              <span>Auto-summarize after transcription</span>
+              <span>{t("processing.autoSummary")}</span>
             </label>
           </div>
         )}
@@ -995,7 +1115,7 @@ export default function App() {
           </p>
         </div>
         {usedMetaTags.length > 0 && (
-          <ul className="meta-tags" aria-label="Settings used for this run">
+          <ul className="meta-tags" aria-label={t("status.usedSettingsAria")}>
             {usedMetaTags.map((tag) => (
               <li key={tag.key} className="meta-tag">
                 {tag.label}
@@ -1008,7 +1128,11 @@ export default function App() {
             className="progress indeterminate"
             role="progressbar"
             aria-valuetext={
-              recording ? "Recording" : summaryBusy ? "Summarizing" : "Processing"
+              recording
+                ? t("status.recording")
+                : summaryBusy
+                  ? t("status.summarizing")
+                  : t("status.processing")
             }
           >
             <div className="bar" />
@@ -1019,7 +1143,7 @@ export default function App() {
       {showResult && (
         <section className="panel result-panel">
           <div className="result-header">
-            <div className="result-tabs" role="tablist" aria-label="Result">
+            <div className="result-tabs" role="tablist" aria-label={t("result.aria")}>
               <button
                 type="button"
                 role="tab"
@@ -1027,7 +1151,7 @@ export default function App() {
                 className={`result-tab ${resultTab === "transcript" ? "active" : ""}`}
                 onClick={() => setResultTab("transcript")}
               >
-                Transcript
+                {t("result.transcript")}
               </button>
               <button
                 type="button"
@@ -1036,7 +1160,7 @@ export default function App() {
                 className={`result-tab ${resultTab === "summary" ? "active" : ""}`}
                 onClick={() => setResultTab("summary")}
               >
-                Summary
+                {t("result.summary")}
               </button>
             </div>
             <div className="result-actions">
@@ -1046,7 +1170,7 @@ export default function App() {
                   className="btn ghost"
                   onClick={() => void onCancelSummary()}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
               )}
               {resultTab === "summary" &&
@@ -1057,8 +1181,8 @@ export default function App() {
                     type="button"
                     className="btn ghost icon-btn"
                     onClick={() => void onSummarize()}
-                    title="Generate summary"
-                    aria-label="Generate summary"
+                    title={t("result.generateSummary")}
+                    aria-label={t("result.generateSummary")}
                   >
                     <IconSparkles />
                   </button>
@@ -1070,8 +1194,8 @@ export default function App() {
                     type="button"
                     className="btn ghost icon-btn"
                     onClick={() => void onSummarize()}
-                    title="Regenerate summary"
-                    aria-label="Regenerate summary"
+                    title={t("result.regenerateSummary")}
+                    aria-label={t("result.regenerateSummary")}
                   >
                     <IconRefresh />
                   </button>
@@ -1081,8 +1205,8 @@ export default function App() {
                 className="btn ghost icon-btn"
                 onClick={() => void onExportNotes()}
                 disabled={!canExport}
-                title={exported ? "Exported" : "Export"}
-                aria-label={exported ? "Exported" : "Export notes"}
+                title={exported ? t("common.exported") : t("common.export")}
+                aria-label={exported ? t("common.exported") : t("result.exportNotes")}
               >
                 {exported ? <IconCheck /> : <IconExport />}
               </button>
@@ -1091,8 +1215,8 @@ export default function App() {
                 className="btn secondary icon-btn"
                 onClick={() => void onCopy()}
                 disabled={!canCopy}
-                title={copied ? "Copied" : "Copy"}
-                aria-label={copied ? "Copied" : "Copy"}
+                title={copied ? t("common.copied") : t("common.copy")}
+                aria-label={copied ? t("common.copied") : t("common.copy")}
               >
                 {copied ? <IconCheck /> : <IconCopy />}
               </button>
@@ -1102,7 +1226,7 @@ export default function App() {
           {resultTab === "transcript" ? (
             <MarkdownBody
               content={state.transcript}
-              emptyLabel="Transcript will appear here."
+              emptyLabel={t("result.transcriptEmpty")}
             />
           ) : summaryBusy ? (
             <div className="summary-empty" aria-live="polite">
@@ -1110,32 +1234,32 @@ export default function App() {
                 <span className="spinner" aria-hidden="true" />
                 <p>
                   {state.summary_status === "loading_model"
-                    ? "Loading summary model…"
-                    : "Writing summary…"}
+                    ? t("result.loadingSummaryModel")
+                    : t("result.writingSummary")}
                 </p>
               </div>
             </div>
           ) : state.summary ? (
             <MarkdownBody
               content={state.summary}
-              emptyLabel="Summary will appear here."
+              emptyLabel={t("result.summaryEmpty")}
             />
           ) : (
             <div className="summary-empty">
               <p>
                 {state.summary_status === "error"
-                  ? "Summary failed. You can try again."
+                  ? t("result.summaryFailed")
                   : state.auto_summary
-                    ? "Summary will appear here after transcription finishes."
-                    : "Auto-summary is off. Generate when you are ready."}
+                    ? t("result.summaryAfterTranscription")
+                    : t("result.autoSummaryOff")}
               </p>
               {Boolean(state.transcript) && (
                 <button
                   type="button"
                   className="btn secondary icon-btn"
                   onClick={() => void onSummarize()}
-                  title="Generate summary"
-                  aria-label="Generate summary"
+                  title={t("result.generateSummary")}
+                  aria-label={t("result.generateSummary")}
                 >
                   <IconSparkles />
                 </button>
@@ -1147,33 +1271,4 @@ export default function App() {
     </div>
     </div>
   );
-}
-
-function statusLabel(
-  status: AppState["status"],
-  summaryStatus: SummaryStatus,
-): string {
-  if (status === "completed" && isSummaryBusy(summaryStatus)) {
-    return summaryStatus === "loading_model"
-      ? "Loading summary model"
-      : "Summarizing";
-  }
-  switch (status) {
-    case "idle":
-      return "Idle";
-    case "ready":
-      return "Ready";
-    case "recording":
-      return "Recording";
-    case "loading_model":
-      return "Loading model";
-    case "transcribing":
-      return "Transcribing";
-    case "completed":
-      return "Completed";
-    case "error":
-      return "Error";
-    default:
-      return status;
-  }
 }

@@ -1,9 +1,10 @@
 import type { AppState, PywebviewApi } from "./vite-env";
+import { t } from "./i18n";
 import { DEFAULT_LANGUAGE } from "./languages";
 
 const DEFAULT_STATE: AppState = {
   status: "idle",
-  message: "Drop an audio file, select a file, or record notes.",
+  message: "",
   file_path: null,
   file_name: null,
   language: DEFAULT_LANGUAGE,
@@ -52,7 +53,7 @@ function waitForApi(timeoutMs = 20000): Promise<PywebviewApi> {
       settled = true;
       if (interval) window.clearInterval(interval);
       window.removeEventListener("pywebviewready", onReady);
-      reject(new Error("Desktop bridge is not available."));
+      reject(new Error(t("errors.bridgeUnavailable")));
     };
 
     const tryResolve = () => {
@@ -103,7 +104,11 @@ export function getApi(): Promise<PywebviewApi> {
 }
 
 export function getDefaultState(): AppState {
-  return { ...DEFAULT_STATE };
+  return {
+    ...DEFAULT_STATE,
+    // Localized idle hint; backend replaces this after first poll.
+    message: t("file.dropHere"),
+  };
 }
 
 export function formatElapsed(seconds: number): string {

@@ -44,6 +44,9 @@ chmod +x scripts/*.sh
 | Production UI build inside the window | `USE_VITE_DEV=0 ./scripts/run-dev.sh` |
 | Frontend typecheck + Vite build only | `(cd frontend && npm run build)` |
 | Local Finder-friendly `.app` (uses `.venv`) | `./scripts/build.sh` — see [BUILDING.md](BUILDING.md) |
+| Fill / refresh a UI locale from `en.json` | `./scripts/translate-locales.py --to ru` (dev tooling; uses Google Translate) |
+
+UI strings live in `frontend/src/locales/*.json`. Runtime picks `navigator.language` (or `localStorage.scribe.locale`). Backend status messages are still English.
 
 ## Environment variables
 

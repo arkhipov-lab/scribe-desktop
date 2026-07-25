@@ -6,6 +6,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { t, useI18n } from "./i18n";
 import {
   languageLabel,
   WHISPER_LANGUAGES,
@@ -32,6 +33,7 @@ export default function LanguageSelect({
   disabled = false,
   onChange,
 }: LanguageSelectProps) {
+  useI18n();
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -138,7 +140,7 @@ export default function LanguageSelect({
           aria-activedescendant={
             filtered[highlight] ? `${listId}-${filtered[highlight].code}` : undefined
           }
-          placeholder="Search language…"
+          placeholder={t("language.search")}
           value={query}
           disabled={disabled}
           onChange={(e) => setQuery(e.target.value)}
@@ -164,11 +166,11 @@ export default function LanguageSelect({
           id={listId}
           className="language-menu"
           role="listbox"
-          aria-label="Languages"
+          aria-label={t("language.listAria")}
         >
           {filtered.length === 0 ? (
             <li className="language-empty" role="presentation">
-              No matches
+              {t("common.noMatches")}
             </li>
           ) : (
             filtered.map((lang, index) => (

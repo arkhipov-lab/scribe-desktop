@@ -1,0 +1,146 @@
+{
+  "history": {
+    "aria": "История сессий",
+    "newTranscript": "Новый транскрипт",
+    "empty": "Здесь появится история",
+    "deleteConfirm": "Удалить «{title}» из истории?",
+    "sessionFallback": "эту сессию",
+    "session": "сессию",
+    "deleteAria": "Удалить {title}"
+  },
+  "sidebar": {
+    "settingsAria": "Быстрые настройки",
+    "uiLanguage": "Язык"
+  },
+  "common": {
+    "retry": "Повторить",
+    "cancel": "Отмена",
+    "stop": "Стоп",
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "copy": "Копировать",
+    "copied": "Скопировано",
+    "export": "Экспорт",
+    "exported": "Экспортировано",
+    "selectEllipsis": "Выбрать…",
+    "searchEllipsis": "Поиск…",
+    "noMatches": "Нет совпадений",
+    "options": "Варианты"
+  },
+  "errors": {
+    "bridgeUnavailable": "Мост рабочего стола недоступен.",
+    "playbackUnavailable": "Воспроизведение недоступно в этой сборке. Пересоберите приложение.",
+    "playbackPrepare": "Не удалось подготовить воспроизведение аудио.",
+    "playbackPlay": "Не удалось воспроизвести этот аудиофайл.",
+    "playbackStart": "Не удалось начать воспроизведение.",
+    "exportUnavailable": "Экспорт недоступен в этой сборке. Пересоберите приложение."
+  },
+  "file": {
+    "title": "Файл",
+    "recording": "Запись",
+    "recordingHint": "Микрофон + системный звук",
+    "stopRecording": "Остановить запись",
+    "sourceAudio": "Исходное аудио",
+    "saveCopy": "Сохранить копию",
+    "noAudio": "Аудио недоступно",
+    "dropHere": "Перетащите аудио или видео сюда",
+    "supported": "Поддерживается: {formats}",
+    "selectFile": "Выбрать файл",
+    "record": "Запись",
+    "recordAria": "Записать аудио"
+  },
+  "language": {
+    "title": "Язык",
+    "search": "Поиск языка…",
+    "listAria": "Языки"
+  },
+  "actions": {
+    "transcribe": "Транскрибировать"
+  },
+  "processing": {
+    "title": "Параметры обработки",
+    "hint": "Модели, стиль саммари и автосаммари",
+    "recommended": "Рекомендовано для этого Mac ({tier}): {reason}",
+    "tierAuto": "авто",
+    "transcriptionModel": "Модель транскрипции",
+    "transcriptionModelsAria": "Модели транскрипции",
+    "summaryModel": "Модель саммари",
+    "summaryModelsAria": "Модели саммари",
+    "searchModel": "Поиск модели…",
+    "preset": "Пресет",
+    "presetsAria": "Пресеты саммари",
+    "searchPreset": "Поиск пресета…",
+    "length": "Длина",
+    "additionalInstructions": "Дополнительные инструкции",
+    "instructionsPlaceholder": "напр. выделить риски, оставить термины на английском",
+    "autoSummary": "Автосаммари после транскрипции"
+  },
+  "length": {
+    "short": "Кратко",
+    "normal": "Обычно",
+    "detailed": "Подробно"
+  },
+  "presets": {
+    "meeting_notes": "Заметки со встречи",
+    "action_items": "Только задачи",
+    "executive": "Краткое резюме",
+    "customer_interview": "Интервью с клиентом",
+    "lecture": "Лекция / исследовательские заметки",
+    "cleaned_transcript": "Очищенный транскрипт"
+  },
+  "models": {
+    "whisper": {
+      "small": {
+        "label": "Small",
+        "hint": "Быстрее, меньше памяти"
+      },
+      "medium": {
+        "label": "Medium",
+        "hint": "Точнее, больше памяти"
+      }
+    },
+    "summary": {
+      "1.5b": {
+        "label": "1.5B",
+        "hint": "Более лёгкая модель заметок"
+      },
+      "3b": {
+        "label": "3B",
+        "hint": "Заметки выше качества"
+      }
+    }
+  },
+  "status": {
+    "idle": "Ожидание",
+    "ready": "Готово",
+    "recording": "Запись",
+    "loadingModel": "Загрузка модели",
+    "transcribing": "Транскрипция",
+    "completed": "Готово",
+    "error": "Ошибка",
+    "loadingSummaryModel": "Загрузка модели саммари",
+    "summarizing": "Саммари",
+    "processing": "Обработка",
+    "usedSettingsAria": "Настройки этого прогона"
+  },
+  "meta": {
+    "whisper": "Whisper {name}",
+    "notes": "Заметки {name}",
+    "customInstructions": "Свои инструкции"
+  },
+  "result": {
+    "aria": "Результат",
+    "transcript": "Транскрипт",
+    "summary": "Саммари",
+    "generateSummary": "Создать саммари",
+    "regenerateSummary": "Пересоздать саммари",
+    "exportNotes": "Экспортировать заметки",
+    "transcriptEmpty": "Здесь появится транскрипт.",
+    "summaryEmpty": "Здесь появится саммари.",
+    "loadingSummaryModel": "Загрузка модели саммари…",
+    "writingSummary": "Пишем саммари…",
+    "summaryFailed": "Саммари не удалось. Можно попробовать снова.",
+    "summaryAfterTranscription": "Саммари появится здесь после транскрипции.",
+    "autoSummaryOff": "Автосаммари выключено. Создайте, когда будете готовы."
+  }
+}

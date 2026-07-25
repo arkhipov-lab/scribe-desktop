@@ -6,6 +6,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { t, useI18n } from "./i18n";
 import type { ModelOption, SummaryPresetOption } from "./vite-env";
 
 type SelectOption = SummaryPresetOption | ModelOption;
@@ -34,10 +35,13 @@ export default function PresetSelect({
   options,
   disabled = false,
   inputId = "summary-preset",
-  ariaLabel = "Options",
-  searchPlaceholder = "Search…",
+  ariaLabel,
+  searchPlaceholder,
   onChange,
 }: PresetSelectProps) {
+  useI18n();
+  const resolvedAria = ariaLabel ?? t("common.options");
+  const resolvedSearch = searchPlaceholder ?? t("common.searchEllipsis");
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -48,7 +52,9 @@ export default function PresetSelect({
   const [highlight, setHighlight] = useState(0);
 
   const selectedLabel =
-    options.find((preset) => preset.id === value)?.label || value || "Select…";
+    options.find((preset) => preset.id === value)?.label ||
+    value ||
+    t("common.selectEllipsis");
   const filtered = useMemo(() => filterPresets(options, query), [options, query]);
 
   useEffect(() => {
@@ -145,7 +151,7 @@ export default function PresetSelect({
           aria-activedescendant={
             filtered[highlight] ? `${listId}-${filtered[highlight].id}` : undefined
           }
-          placeholder={searchPlaceholder}
+          placeholder={resolvedSearch}
           value={query}
           disabled={disabled}
           onChange={(e) => setQuery(e.target.value)}
@@ -171,11 +177,11 @@ export default function PresetSelect({
           id={listId}
           className="language-menu"
           role="listbox"
-          aria-label={ariaLabel}
+          aria-label={resolvedAria}
         >
           {filtered.length === 0 ? (
             <li className="language-empty" role="presentation">
-              No matches
+              {t("common.noMatches")}
             </li>
           ) : (
             filtered.map((preset, index) => (
