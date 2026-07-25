@@ -48,4 +48,4 @@ jobs:
         if: steps.bump.outputs.changed == 'true'
         run: |
           git push origin HEAD:main --follow-tags
-          echo "Pushed release tag — release-build.yml should build DMGs/.app zips."
+          echo "Pushed release tag v$(./scripts/read-version.sh) — local dist builds run on git pull of main."

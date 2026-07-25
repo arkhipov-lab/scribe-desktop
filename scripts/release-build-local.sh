@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build relocatable Scribe.app (+ versioned DMG) into dist/.
-# Used by the post-merge hook after a local version bump on main.
+# Used by the post-merge hook after git pull on main when VERSION/tag advanced.
 #
 # Env:
 #   SKIP_RELEASE_BUILD=1        no-op
@@ -65,7 +65,7 @@ if [[ "${SCRIBE_RELEASE_BUILD_FG:-0}" == "1" ]]; then
   exit 0
 fi
 
-# Background so git merge/pull returns quickly; builds can take a long time.
+# Background so git pull returns quickly; builds can take a long time.
 (
   set -euo pipefail
   echo "======== $(date '+%Y-%m-%d %H:%M:%S') release-build-local v${VERSION} ========"
@@ -73,7 +73,7 @@ fi
   echo "======== $(date '+%Y-%m-%d %H:%M:%S') SUCCESS ========"
 ) >>"$LOG_FILE" 2>&1 &
 pid=$!
-echo "post-merge: dist build started in background (pid $pid)"
+echo "pull main: dist build started in background (pid $pid)"
 echo "  log: $LOG_FILE"
 echo "  expect: dist/Scribe.app, dist/Scribe-${VERSION}.dmg"
 echo "  foreground instead: SCRIBE_RELEASE_BUILD_FG=1"

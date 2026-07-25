@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-# Ensure merge-to-main version bumps work in this clone
+# Ensure pull-on-main version bump + local dist hooks work in this clone
 if [[ -d "$ROOT/.git" ]]; then
   "$ROOT/scripts/install-git-hooks.sh" >/dev/null || true
 fi

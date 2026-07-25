@@ -7,7 +7,11 @@ Personal macOS (Apple Silicon) desktop utility for fully local audio transcripti
 | Doc | Contents |
 | --- | --- |
 | [AGENTS.md](AGENTS.md) | Entry point for AI coding agents |
+| [PRODUCT.md](PRODUCT.md) | Vision, design principles, non-goals |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Frontend → pywebview → Python → MLX / native flow |
+| [AI_PIPELINE.md](AI_PIPELINE.md) | On-device transcription and summary pipeline |
+| [LOCAL_DATA.md](LOCAL_DATA.md) | Settings, history, caches, logs, bridge state |
+| [DECISIONS.md](DECISIONS.md) | Architecture decision records |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Local setup, env vars, logs |
 | [BUILDING.md](BUILDING.md) | Local `.app`, dist DMG |
 | [TESTING.md](TESTING.md) | Smoke checks and validation matrix |
@@ -15,6 +19,10 @@ Personal macOS (Apple Silicon) desktop utility for fully local audio transcripti
 | [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md) | Local-only processing, permissions, logging |
 | [ROADMAP.md](ROADMAP.md) | Planned work |
 | [SYSTEM-REQUIREMENTS.md](SYSTEM-REQUIREMENTS.md) | Hardware and model defaults |
+| [docs/MANIFEST.md](docs/MANIFEST.md) | Product + AI development process constitution |
+| [docs/workflows/](docs/workflows/) | AI-assisted planning / review / QA / commit loop |
+| [docs/scenarios/](docs/scenarios/) | Behavioral scenarios for implementation and QA |
+| [`.ai/skills/`](.ai/skills/) | One-line skills (`Use roadmap-planner.`, …) |
 
 ## Requirements
 
@@ -76,7 +84,7 @@ Self-contained `.app` + versioned DMG for sharing:
 ./scripts/build-dist.sh   # → dist/Scribe.app + dist/Scribe-<version>.dmg
 ```
 
-Version comes from the repo-root `VERSION` file (auto-bumped on merge to `main` from conventional commits — see [CONTRIBUTING.md](CONTRIBUTING.md)). After that bump, local hooks build the versioned DMG and `.app` into `dist/`.
+Version comes from the repo-root `VERSION` file (auto-bumped on push to `main` from conventional commits — see [CONTRIBUTING.md](CONTRIBUTING.md)). After you `git pull` that release on `main`, local hooks build the versioned DMG and `.app` into `dist/`.
 
 Full packaging details, env knobs, runtime pruning, and Gatekeeper notes: **[BUILDING.md](BUILDING.md)**.
 

@@ -6,7 +6,11 @@ Read this file first. Then open the linked docs for depth.
 
 | Doc | When to read |
 | --- | --- |
+| [PRODUCT.md](PRODUCT.md) | Vision, design principles, non-goals |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Understanding frontend / backend / native boundaries |
+| [AI_PIPELINE.md](AI_PIPELINE.md) | File/record → Whisper → summary → local outputs |
+| [LOCAL_DATA.md](LOCAL_DATA.md) | Settings, history, caches, logs, bridge state |
+| [DECISIONS.md](DECISIONS.md) | Why key architecture choices were made |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Local run, env vars, logs |
 | [BUILDING.md](BUILDING.md) | `.app` / DMG packaging |
 | [TESTING.md](TESTING.md) | How to validate changes |
@@ -15,6 +19,24 @@ Read this file first. Then open the linked docs for depth.
 | [ROADMAP.md](ROADMAP.md) | Planned work (do not implement unless asked) |
 | [README.md](README.md) | User-facing overview |
 | [SYSTEM-REQUIREMENTS.md](SYSTEM-REQUIREMENTS.md) | Hardware and model defaults |
+| [docs/MANIFEST.md](docs/MANIFEST.md) | Dual goals: product + AI development process |
+| [docs/workflows/](docs/workflows/) | Planning → implement → review → QA → commit loop |
+| [docs/scenarios/](docs/scenarios/) | Concrete user/system behavior specs |
+| [`.ai/skills/`](.ai/skills/) | Invoke with `Use roadmap-planner.` / `Use feature-manager.` / etc. |
+
+For planning, independent review, supervisor QA, and commit preparation, use the workflow docs and [`.ai/skills/`](.ai/skills/) rather than inventing a one-off process. Human approval is still required for product direction, major docs/process changes, and every commit.
+
+### Experimental process rule (hard)
+
+In this repo’s AI-organization experiment:
+
+- The **human does not write or edit code or docs by hand**.
+- Human roles: customer, Product Owner, supervisor QA, product reviewer, commit approver.
+- **All** durable code and documentation changes are made by an AI agent.
+- The human may describe requirements, accept/reject product behavior, defer debt, and **request an AI fix** — not patch the working tree themselves.
+- Low review findings: AI fix via a bounded fix prompt, or explicit human accept/defer as debt — never “human will fix it in the editor.”
+
+See [docs/MANIFEST.md](docs/MANIFEST.md) and [docs/workflows/feature-development-pipeline.md](docs/workflows/feature-development-pipeline.md).
 
 ---
 
@@ -81,13 +103,13 @@ scripts/
   build-dist.sh           self-contained .app + versioned DMG
   bump-version.sh         conventional-commit semver bump
   read-version.sh         print VERSION
-  release-build-local.sh  .app/DMG after release bump
+  release-build-local.sh  .app/DMG after pull of a new release on main
   install-git-hooks.sh    core.hooksPath → .githooks
   bundle-ffmpeg.sh / prune-runtime.sh / …
 
 VERSION                   semver source of truth (baked into .app / DMG name)
-.githooks/                post-merge: bump on main, then local dist builds
-.github/workflows/        optional remote bump + GitHub Release publish
+.githooks/                post-merge: on git pull of main, bump if needed + local dist builds
+.github/workflows/        version bump on push to main (no remote dist packaging)
 
 requirements-runtime.txt  deps embedded in dist .app
 requirements.txt          local/dev (-r runtime)

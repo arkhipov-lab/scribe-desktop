@@ -9,12 +9,40 @@ Thanks for helping with Scribe. This document covers contribution norms for huma
 3. **Privacy-aware logging** — never write transcript or summary text to logs, crash reports, or analytics.
 4. **macOS permissions honesty** — recording uses microphone + system audio (ScreenCaptureKit). Do not claim “screen video is saved” in user-facing copy; video is not persisted.
 
+## Experimental contribution model (hard)
+
+This repository runs an AI-organization experiment (see [docs/MANIFEST.md](docs/MANIFEST.md)):
+
+1. **Humans do not hand-edit code or docs** in this repo. Product Owner / supervisor / commit-approver roles only.
+2. **AI agents** perform all durable code and documentation changes.
+3. Humans may specify requirements, run supervisor QA on the product, accept/reject/defer, and ask an agent to fix — they do not “quick-fix” findings themselves.
+4. Commits still require **explicit human approval**; agents never auto-commit.
+
 ## Before you start
 
 - Prefer a focused change that solves one problem.
 - Skim [ARCHITECTURE.md](ARCHITECTURE.md) so edits land in the right layer.
 - For packaging work, read [BUILDING.md](BUILDING.md).
 - Validate with [TESTING.md](TESTING.md).
+- For planning / review / QA / commit flows, see [docs/workflows/](docs/workflows/) and [`.ai/skills/`](.ai/skills/).
+
+## Documentation updates
+
+When behavior or intent changes, update the matching doc (do not leave the roadmap as the only record of shipped behavior):
+
+| Change | Update |
+| --- | --- |
+| Product vision, principles, or non-goals | [PRODUCT.md](PRODUCT.md) |
+| Architecture decision / rationale | [DECISIONS.md](DECISIONS.md) |
+| Transcription / summary / record pipeline | [AI_PIPELINE.md](AI_PIPELINE.md) |
+| Settings, history, caches, logs, bridge state shapes | [LOCAL_DATA.md](LOCAL_DATA.md) |
+| User-facing flow / acceptance behavior | Relevant [docs/scenarios/](docs/scenarios/) |
+| Layer boundaries | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| Privacy, permissions, network, logging | [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md) |
+| Smoke checks | [TESTING.md](TESTING.md) |
+| Packaging | [BUILDING.md](BUILDING.md) |
+
+Do not add unsolicited markdown; keep authoritative docs linked rather than duplicated. Process/constitution changes go through [docs/MANIFEST.md](docs/MANIFEST.md) with human approval for major revisions.
 
 ## What not to commit
 
@@ -38,7 +66,6 @@ Do **not** regenerate or commit bundled dist artifacts unless the maintainer exp
 
 - Match existing style in the file you edit.
 - Keep diffs small; avoid unrelated refactors and drive-by formatting.
-- Do not add unsolicited markdown docs; update existing docs when behavior changes.
 - Prefer clear user-facing errors (`TranscribeError`, `SummaryError`, `RecorderError`) over stack traces in the UI.
 
 ### Backend (Python)
@@ -60,7 +87,7 @@ Do **not** regenerate or commit bundled dist artifacts unless the maintainer exp
 - `AudioRecorder.swift` is the system-audio path — change carefully and retest permissions + restart behavior.
 - Keep `MACOSX_DEPLOYMENT_TARGET` / arm64 assumptions aligned with packaging scripts.
 
-## AI-assisted edits (extra rules)
+## AI agent edits (extra rules)
 
 | Do | Don’t |
 | --- | --- |
@@ -68,6 +95,8 @@ Do **not** regenerate or commit bundled dist artifacts unless the maintainer exp
 | Update docs when packaging or privacy behavior changes | Commit `dist/` “to make the PR easier to try” |
 | Run frontend build + relevant smoke checks | Log full transcript “for debugging” |
 | Ask before notarization, signing, or license changes | Broaden scope into ROADMAP items unprompted |
+| Fix Lows via bounded AI fix prompts when human requests | Expect the human to edit the working tree by hand |
+| Leave `ai-md-condidates/` unstaged unless human explicitly asks | Stage candidate-folder additions, edits, or deletions by default |
 
 ## Pull requests
 
@@ -80,7 +109,7 @@ When PRs are used:
 
 ## Commit messages
 
-Use [Conventional Commits](https://www.conventionalcommits.org/). The type drives the automatic semver bump on merge to `main`:
+Use [Conventional Commits](https://www.conventionalcommits.org/). The type drives the automatic semver bump on push to `main`:
 
 | Prefix | Bump |
 | --- | --- |
@@ -95,18 +124,19 @@ Do not create commits unless the maintainer asks you to.
 ### Versioning
 
 - Source of truth: repo-root `VERSION` (also synced to `frontend/package.json`).
-- After a merge into `main`, `.githooks/post-merge`:
-  1. runs `scripts/bump-version.sh --commit`
-  2. if the version/tag changed, runs `scripts/release-build-local.sh` (Scribe `.app` + DMG into `dist/`)
+- On GitHub, `.github/workflows/version-bump.yml` bumps on push to `main` and pushes `chore(release): vX.Y.Z` + tag `vX.Y.Z`.
+- Locally, after `git pull` on `main`, `.githooks/post-merge`:
+  1. runs `scripts/bump-version.sh --commit` (no-op if GitHub already released)
+  2. if `VERSION`/tag advanced vs pre-pull `ORIG_HEAD`, runs `scripts/release-build-local.sh` (Scribe `.app` + DMG into `dist/`)
+- Local `git merge` into `main` does **not** trigger bump or dist builds — only `git pull` on `main` does (`git pull --rebase` does not run this hook).
 - Hook install: `scripts/install-git-hooks.sh` (`run-dev.sh` does this automatically).
-- On GitHub, `.github/workflows/version-bump.yml` still bumps on push to `main`; `.github/workflows/release-build.yml` can publish GitHub Release assets from tags (optional).
 - Manual bump: `./scripts/bump-version.sh` (plan), `--apply`, `--commit`, or `--force patch|minor|major`.
 - Manual local package: `./scripts/release-build-local.sh`
 - Skip once: `SKIP_VERSION_BUMP=1` (skip bump+build) or `SKIP_RELEASE_BUILD=1` (bump only).
 - Foreground builds: `SCRIBE_RELEASE_BUILD_FG=1` (default is background; log at `.cache/release-build.log`).
 - Release commits look like `chore(release): v1.2.3` and create annotated tag `v1.2.3`.
 
-### Release artifacts (local, after merge bump)
+### Release artifacts (local, after pull on main)
 
 | Artifact | Example |
 | --- | --- |
