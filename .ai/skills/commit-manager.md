@@ -1,0 +1,184 @@
+# Commit Manager
+
+## Purpose
+
+Final step before landing an iteration: verify the review gate, run final checks, prepare a commit summary and message, and **request human approval before creating the commit**.
+
+---
+
+## Invocation
+
+```
+Use commit-manager.
+```
+
+---
+
+## Automatic Context Loading
+
+| Source | Purpose |
+|--------|---------|
+| Latest review + triage | Gate status, accepted Lows |
+| Implementation summary | Behavior, files, verification |
+| Supervisor QA plan + outcome | Pass / fail / explicit skip |
+| Approved slice | Scope match |
+| Git working tree | `git status`, `git diff`, `git diff --cached` |
+| [CONTRIBUTING.md](../../CONTRIBUTING.md) | Conventional Commits / what not to commit |
+
+---
+
+## Preconditions
+
+- No unresolved High/Medium
+- Lows fixed or **explicitly accepted**
+- Supervisor QA **passed** or **explicitly skipped** (record skip)
+- Verification reported
+- Human has **not** yet authorized the commit in the current message — prepare first
+
+---
+
+## Responsibilities
+
+### Check gate
+
+If not clean, stop and route to review-triage / codex-review / supervisor-qa. Do not prepare a commit.
+
+### Run final verification
+
+Relevant checks only:
+
+- [ ] `(cd frontend && npm run build)` if frontend/TS touched
+- [ ] `./scripts/run-dev.sh` smoke for affected flows
+- [ ] `USE_VITE_DEV=0 ./scripts/run-dev.sh` if needed
+- [ ] Packaging builds **only** if packaging-related
+- [ ] Confirm no transcript/summary logging if ML/logging touched
+
+### Prepare artifacts
+
+1. Commit summary (Output Contract)
+2. Suggested Conventional Commits message
+3. Changed files with one-line purpose
+4. Accepted Lows + QA skip notes
+5. **Ask for explicit commit approval** — do not commit until requested
+
+### Exclude from commit
+
+Never stage:
+
+- `dist/`, `.cache/`, `.venv/`, `node_modules/`, `frontend/dist/`, `native/build/`
+- logs, recordings, HF caches, secrets
+- **`ai-md-condidates/`** — never stage additions, modifications, **or** deletions unless the human **explicitly** asks to include that folder
+
+### Staging check (required)
+
+Before asking for commit approval, verify:
+
+```bash
+git status --short --untracked-files=all
+git diff --cached --name-only
+```
+
+Confirm **no** path under `ai-md-condidates/` is staged. If any candidate path is staged, unstage it and report that fact in the commit preparation output.
+
+### After commit (only when human approved)
+
+Produce a short implementation summary for the next roadmap-planner cycle.
+
+---
+
+## Non-responsibilities
+
+- Does **not** commit without explicit human approval in the current message
+- Does **not** bypass review or QA (unless QA explicitly skipped)
+- Does **not** silently accept Lows
+
+---
+
+## Output Contract
+
+```markdown
+## Commit preparation — <iteration name>
+
+### Review gate
+- High/Medium: none unresolved
+- Low: <fixed / accepted with reasons>
+
+### Supervisor QA
+- Status: <passed / skipped with reason>
+- Notes: ...
+
+### Changed files
+
+| File | Purpose |
+|------|---------|
+| `path` | ... |
+
+### Staging hygiene
+
+- [ ] No `ai-md-condidates/` paths staged (additions, modifications, or deletions)
+- [ ] No `dist/`, `.cache/`, recordings, secrets, or other forbidden artifacts staged
+
+### Behavior implemented
+
+- ...
+
+### Documentation changes
+
+- ...
+
+### Known limitations
+
+- ...
+
+### Accepted Low findings (if any)
+
+| Finding | Reason accepted |
+|---------|-----------------|
+| ... | ... |
+
+### Verification results
+
+| Check | Result |
+|-------|--------|
+| `(cd frontend && npm run build)` | pass/fail/skipped |
+| `./scripts/run-dev.sh` smoke | ... |
+
+### Suggested commit message
+
+```
+<type>(<scope>): <short description>
+
+<optional body — why, not what>
+```
+
+Types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `build`, `ci`, `perf`, `style`, `revert`
+
+### Approval needed
+
+Human must explicitly request the commit before it is created.
+```
+
+When the human approves, create the commit per repo conventions ([CONTRIBUTING.md](../../CONTRIBUTING.md)) and produce the post-commit summary.
+
+---
+
+## Human Checkpoints
+
+Required:
+
+- Before skipping supervisor QA
+- Before every commit
+- Before accepting unresolved Lows
+
+---
+
+## Rules
+
+| Rule | Detail |
+|------|--------|
+| Human approval | Required for every commit |
+| High/Medium block | Never commit with open blockers |
+| Low / QA skip | Must be explicit and documented |
+| Message format | Conventional Commits |
+| Scope | Only current iteration files |
+| Candidate folder | Never stage `ai-md-condidates/` unless human explicitly requests |

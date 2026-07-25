@@ -2,6 +2,8 @@
 
 Forward-looking ideas for Scribe. **Not a commitment** — order and scope may change. Agents should not implement these unless explicitly asked.
 
+This roadmap is a **hypothesis**. Prioritize using [PRODUCT.md](PRODUCT.md) and [docs/scenarios/](docs/scenarios/) when they conflict with checkbox order; propose roadmap edits for human approval rather than shipping low-value polish. Planning skill: [`.ai/skills/roadmap-planner.md`](.ai/skills/roadmap-planner.md).
+
 ## Suggested priority
 
 1. **Summary presets + additional instructions + summary length** — high value, limited app restructuring  
