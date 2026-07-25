@@ -80,7 +80,9 @@ score=0
 classify_message() {
   local msg="$1"
   local first
-  first="$(printf '%s\n' "$msg" | head -n 1)"
+  # First non-empty line (subjects only from tformat:%s; still safe if body is passed)
+  first="$(printf '%s\n' "$msg" | awk 'NF { print; exit }')"
+  [[ -n "$first" ]] || return 0
 
   # Ignore our own release commits
   if printf '%s\n' "$first" | grep -qE '^chore\(release\)(:|!)'; then
@@ -109,6 +111,25 @@ classify_message() {
   fi
 }
 
+# Subjects via tformat:%s — one line per commit, no inter-commit newline/NUL hazards
+# from git log --format=%B%x00 (which left a leading \n on every commit after the first).
+log_subjects() {
+  if [[ -n "$RANGE" ]]; then
+    git log --pretty=tformat:%s "$RANGE" 2>/dev/null || true
+  else
+    git log --pretty=tformat:%s HEAD 2>/dev/null || true
+  fi
+}
+
+# Full bodies for BREAKING CHANGE footers (tformat + %x00 = record terminator, not separator)
+log_bodies() {
+  if [[ -n "$RANGE" ]]; then
+    git log --pretty=tformat:%B%x00 "$RANGE" 2>/dev/null || true
+  else
+    git log --pretty=tformat:%B%x00 HEAD 2>/dev/null || true
+  fi
+}
+
 if [[ -n "$FORCE_LEVEL" ]]; then
   case "$FORCE_LEVEL" in
     major) score=3 ;;
@@ -116,15 +137,17 @@ if [[ -n "$FORCE_LEVEL" ]]; then
     patch) score=1 ;;
   esac
 else
-  if [[ -n "$RANGE" ]]; then
-    while IFS= read -r -d '' msg; do
-      classify_message "$msg"
-    done < <(git log --format=%B%x00 "$RANGE" 2>/dev/null || true)
-  else
-    while IFS= read -r -d '' msg; do
-      classify_message "$msg"
-    done < <(git log --format=%B%x00 HEAD 2>/dev/null || true)
-  fi
+  while IFS= read -r subject || [[ -n "${subject:-}" ]]; do
+    [[ -z "${subject:-}" ]] && continue
+    classify_message "$subject"
+  done < <(log_subjects)
+
+  while IFS= read -r -d '' body || [[ -n "${body:-}" ]]; do
+    if printf '%s\n' "$body" | grep -qiE '^BREAKING([ -]CHANGE)?([[:space:]]|:|$)'; then
+      score=3
+      break
+    fi
+  done < <(log_bodies)
 fi
 
 if [[ "$score" -eq 0 ]]; then
