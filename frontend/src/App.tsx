@@ -8,6 +8,14 @@ import {
 import LanguageSelect from "./LanguageSelect";
 import MarkdownBody from "./MarkdownBody";
 import PresetSelect from "./PresetSelect";
+import {
+  IconCheck,
+  IconCopy,
+  IconExport,
+  IconRefresh,
+  IconSave,
+  IconSparkles,
+} from "./icons";
 import { DEFAULT_LANGUAGE } from "./languages";
 import type {
   AppState,
@@ -520,11 +528,13 @@ export default function App() {
             {state.file_path && (
               <button
                 type="button"
-                className="btn secondary"
+                className="btn secondary icon-btn"
                 onClick={() => void onSaveAudioCopy()}
                 disabled={locked}
+                title="Save copy"
+                aria-label="Save copy"
               >
-                Save copy
+                <IconSave />
               </button>
             )}
           </div>
@@ -555,11 +565,13 @@ export default function App() {
               {state.file_path && (
                 <button
                   type="button"
-                  className="btn secondary"
+                  className="btn secondary icon-btn"
                   onClick={() => void onSaveAudioCopy()}
                   disabled={locked}
+                  title="Save copy"
+                  aria-label="Save copy"
                 >
-                  Save copy
+                  <IconSave />
                 </button>
               )}
               <button
@@ -810,10 +822,12 @@ export default function App() {
                 Boolean(state.transcript) && (
                   <button
                     type="button"
-                    className="btn ghost"
+                    className="btn ghost icon-btn"
                     onClick={() => void onSummarize()}
+                    title="Generate summary"
+                    aria-label="Generate summary"
                   >
-                    Generate summary
+                    <IconSparkles />
                   </button>
                 )}
               {resultTab === "summary" &&
@@ -821,27 +835,33 @@ export default function App() {
                 !summaryBusy && (
                   <button
                     type="button"
-                    className="btn ghost"
+                    className="btn ghost icon-btn"
                     onClick={() => void onSummarize()}
+                    title="Regenerate summary"
+                    aria-label="Regenerate summary"
                   >
-                    Regenerate
+                    <IconRefresh />
                   </button>
                 )}
               <button
                 type="button"
-                className="btn ghost"
+                className="btn ghost icon-btn"
                 onClick={() => void onExportNotes()}
                 disabled={!canExport}
+                title={exported ? "Exported" : "Export"}
+                aria-label={exported ? "Exported" : "Export notes"}
               >
-                {exported ? "Exported" : "Export"}
+                {exported ? <IconCheck /> : <IconExport />}
               </button>
               <button
                 type="button"
-                className="btn secondary"
+                className="btn secondary icon-btn"
                 onClick={() => void onCopy()}
                 disabled={!canCopy}
+                title={copied ? "Copied" : "Copy"}
+                aria-label={copied ? "Copied" : "Copy"}
               >
-                {copied ? "Copied" : "Copy"}
+                {copied ? <IconCheck /> : <IconCopy />}
               </button>
             </div>
           </div>
@@ -879,10 +899,12 @@ export default function App() {
               {Boolean(state.transcript) && (
                 <button
                   type="button"
-                  className="btn secondary"
+                  className="btn secondary icon-btn"
                   onClick={() => void onSummarize()}
+                  title="Generate summary"
+                  aria-label="Generate summary"
                 >
-                  Generate summary
+                  <IconSparkles />
                 </button>
               )}
             </div>

@@ -759,6 +759,36 @@ h1.page-title {
   border: 1px solid var(--line);
 }
 
+.btn.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  min-width: 42px;
+  border-radius: 12px;
+}
+
+.btn.icon-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.btn.icon-btn:hover:not(:disabled) {
+  color: var(--ink);
+  background: rgba(28, 25, 21, 0.06);
+}
+
+.btn.secondary.icon-btn:hover:not(:disabled) {
+  background: rgba(28, 25, 21, 0.12);
+}
+
+.btn.ghost.icon-btn:hover:not(:disabled) {
+  border-color: rgba(28, 25, 21, 0.18);
+}
+
 .status-panel {
   display: grid;
   gap: 12px;
