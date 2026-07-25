@@ -124,7 +124,7 @@ Do not create commits unless the maintainer asks you to.
 ### Versioning
 
 - Source of truth: repo-root `VERSION` (also synced to `frontend/package.json`).
-- On GitHub, `.github/workflows/version-bump.yml` bumps on push to `main` and pushes `chore(release): vX.Y.Z` + tag `vX.Y.Z`.
+- On GitHub, `.github/workflows/version-bump.yml` bumps on push to `main` and pushes `chore(release): vX.Y.Z` + tag `vX.Y.Z`. Requires repo secret `VERSION_BUMP_TOKEN` (PAT with Contents: read/write for a user that can push to `main` / bypass PR-only rules). `GITHUB_TOKEN` alone cannot push when `main` requires a pull request.
 - Locally, after `git pull` on `main`, `.githooks/post-merge`:
   1. runs `scripts/bump-version.sh --commit` (no-op if GitHub already released)
   2. if `VERSION`/tag advanced vs pre-pull `ORIG_HEAD`, runs `scripts/release-build-local.sh` (Scribe `.app` + DMG into `dist/`)
