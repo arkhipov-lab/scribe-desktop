@@ -196,7 +196,15 @@ def update_session_title(session_id: str, title: str) -> dict[str, Any] | None:
         return _index_entry_from_meta(meta)
 
 
-def update_session_summary(session_id: str, summary: str) -> dict[str, Any] | None:
+def update_session_summary(
+    session_id: str,
+    summary: str,
+    *,
+    summary_model: str | None = None,
+    summary_preset: str | None = None,
+    summary_length: str | None = None,
+    has_extra_instructions: bool | None = None,
+) -> dict[str, Any] | None:
     sid = (session_id or "").strip()
     if not sid:
         return None
@@ -210,6 +218,14 @@ def update_session_summary(session_id: str, summary: str) -> dict[str, Any] | No
         _atomic_write_text(session_path / "summary.md", text.rstrip() + ("\n" if text else ""))
         meta["has_summary"] = bool(text.strip())
         meta["updated_at"] = _now_iso()
+        if summary_model is not None:
+            meta["summary_model"] = summary_model
+        if summary_preset is not None:
+            meta["summary_preset"] = summary_preset
+        if summary_length is not None:
+            meta["summary_length"] = summary_length
+        if has_extra_instructions is not None:
+            meta["has_extra_instructions"] = bool(has_extra_instructions)
         _atomic_write_json(meta_path, meta)
         entries = _load_index()
         for i, entry in enumerate(entries):
@@ -231,9 +247,6 @@ def upsert_after_transcript(
     source_name: str | None,
     language: str,
     whisper_model: str,
-    summary_model: str,
-    summary_preset: str,
-    summary_length: str,
     clear_summary: bool = True,
 ) -> dict[str, Any]:
     """Create or update a session after a successful transcription. Copies audio when feasible."""
@@ -262,6 +275,10 @@ def upsert_after_transcript(
             if summary_file.is_file():
                 summary_file.unlink()
             meta["has_summary"] = False
+            meta["summary_model"] = None
+            meta["summary_preset"] = None
+            meta["summary_length"] = None
+            meta["has_extra_instructions"] = False
 
         has_audio = False
         copied_from = None
@@ -304,9 +321,6 @@ def upsert_after_transcript(
                 "has_transcript": bool(text.strip()),
                 "language": language,
                 "whisper_model": whisper_model,
-                "summary_model": summary_model,
-                "summary_preset": summary_preset,
-                "summary_length": summary_length,
             }
         )
         if "has_summary" not in meta:

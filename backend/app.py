@@ -155,6 +155,12 @@ class Api:
             "session_id": None,
             "session_title": None,
             "history_sidebar_open": bool(prefs.get("history_sidebar_open", True)),
+            "used_language": None,
+            "used_whisper_model": None,
+            "used_summary_model": None,
+            "used_summary_preset": None,
+            "used_summary_length": None,
+            "used_has_extra_instructions": False,
         }
         self._timer_stop = threading.Event()
         self._timer_thread: threading.Thread | None = None
@@ -216,17 +222,25 @@ class Api:
 
     def _persist_after_transcript(self, transcript: str) -> None:
         snap = self._snapshot()
+        language = str(snap.get("language") or DEFAULT_LANGUAGE)
+        whisper_model = str(snap.get("whisper_model") or "")
+        # Reflect what actually ran, even if history write fails.
+        self._update(
+            used_language=language,
+            used_whisper_model=whisper_model,
+            used_summary_model=None,
+            used_summary_preset=None,
+            used_summary_length=None,
+            used_has_extra_instructions=False,
+        )
         try:
             entry = upsert_after_transcript(
                 session_id=snap.get("session_id"),
                 transcript=transcript,
                 audio_path=snap.get("file_path"),
                 source_name=snap.get("file_name"),
-                language=str(snap.get("language") or DEFAULT_LANGUAGE),
-                whisper_model=str(snap.get("whisper_model") or ""),
-                summary_model=str(snap.get("summary_model") or ""),
-                summary_preset=str(snap.get("summary_preset") or ""),
-                summary_length=str(snap.get("summary_length") or ""),
+                language=language,
+                whisper_model=whisper_model,
                 clear_summary=True,
             )
             self._update(
@@ -237,13 +251,31 @@ class Api:
             log_exception("Failed to persist history after transcript")
 
     def _persist_summary(self, summary: str) -> None:
-        sid = self._snapshot().get("session_id")
+        snap = self._snapshot()
+        summary_model = str(snap.get("summary_model") or "")
+        summary_preset = str(snap.get("summary_preset") or "")
+        summary_length = str(snap.get("summary_length") or "")
+        has_extra = bool(str(snap.get("additional_instructions") or "").strip())
+        self._update(
+            used_summary_model=summary_model,
+            used_summary_preset=summary_preset,
+            used_summary_length=summary_length,
+            used_has_extra_instructions=has_extra,
+        )
+        sid = snap.get("session_id")
         if not sid:
             return
         try:
-            entry = update_session_summary(str(sid), summary)
+            entry = update_session_summary(
+                str(sid),
+                summary,
+                summary_model=summary_model,
+                summary_preset=summary_preset,
+                summary_length=summary_length,
+                has_extra_instructions=has_extra,
+            )
             if entry:
-                self._update(session_title=entry.get("title"))
+                self._update(session_title=entry.get("title") or snap.get("session_title"))
         except Exception:
             log_exception("Failed to persist history summary")
 
@@ -1015,6 +1047,12 @@ class Api:
             summary_length=meta.get("summary_length") or self._snapshot().get("summary_length"),
             whisper_model=meta.get("whisper_model") or self._snapshot().get("whisper_model"),
             summary_model=meta.get("summary_model") or self._snapshot().get("summary_model"),
+            used_language=meta.get("language"),
+            used_whisper_model=meta.get("whisper_model"),
+            used_summary_model=meta.get("summary_model"),
+            used_summary_preset=meta.get("summary_preset"),
+            used_summary_length=meta.get("summary_length"),
+            used_has_extra_instructions=bool(meta.get("has_extra_instructions")),
         )
         self.logger.info("Opened history session id=%s", meta.get("id"))
         return self._snapshot() | {"ok": True}
@@ -1042,6 +1080,12 @@ class Api:
                 started_at=None,
                 session_id=None,
                 session_title=None,
+                used_language=None,
+                used_whisper_model=None,
+                used_summary_model=None,
+                used_summary_preset=None,
+                used_summary_length=None,
+                used_has_extra_instructions=False,
             )
         return self._snapshot() | {"ok": True}
 
@@ -1082,6 +1126,12 @@ class Api:
             started_at=None,
             session_id=None,
             session_title=None,
+            used_language=None,
+            used_whisper_model=None,
+            used_summary_model=None,
+            used_summary_preset=None,
+            used_summary_length=None,
+            used_has_extra_instructions=False,
         )
         return self._snapshot() | {"ok": True}
 

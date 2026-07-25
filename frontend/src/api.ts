@@ -25,6 +25,12 @@ const DEFAULT_STATE: AppState = {
   session_id: null,
   session_title: null,
   history_sidebar_open: true,
+  used_language: null,
+  used_whisper_model: null,
+  used_summary_model: null,
+  used_summary_preset: null,
+  used_summary_length: null,
+  used_has_extra_instructions: false,
 };
 
 function waitForApi(timeoutMs = 20000): Promise<PywebviewApi> {

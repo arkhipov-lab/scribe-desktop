@@ -44,6 +44,13 @@ export interface AppState {
   session_id?: string | null;
   session_title?: string | null;
   history_sidebar_open?: boolean;
+  /** Settings actually used for the last successful run (not live Processing options). */
+  used_language?: string | null;
+  used_whisper_model?: string | null;
+  used_summary_model?: string | null;
+  used_summary_preset?: string | null;
+  used_summary_length?: string | null;
+  used_has_extra_instructions?: boolean;
 }
 
 export interface ApiResult extends AppState {

@@ -19,7 +19,7 @@ import {
   IconSparkles,
   IconStop,
 } from "./icons";
-import { DEFAULT_LANGUAGE } from "./languages";
+import { DEFAULT_LANGUAGE, languageLabel } from "./languages";
 import type {
   AppState,
   HistorySession,
@@ -97,7 +97,50 @@ function mergeState(next: AppState): AppState {
     session_id: next.session_id ?? null,
     session_title: next.session_title ?? null,
     history_sidebar_open: next.history_sidebar_open ?? true,
+    used_language: next.used_language ?? null,
+    used_whisper_model: next.used_whisper_model ?? null,
+    used_summary_model: next.used_summary_model ?? null,
+    used_summary_preset: next.used_summary_preset ?? null,
+    used_summary_length: next.used_summary_length ?? null,
+    used_has_extra_instructions: Boolean(next.used_has_extra_instructions),
   };
+}
+
+function labelFromOptions(id: string | null | undefined, options: { id: string; label: string }[]): string | null {
+  if (!id) return null;
+  return options.find((o) => o.id === id)?.label ?? id;
+}
+
+function buildUsedMetaTags(
+  state: AppState,
+  whisperModels: ModelOption[],
+  summaryModels: ModelOption[],
+  presets: SummaryPresetOption[],
+): { key: string; label: string }[] {
+  const tags: { key: string; label: string }[] = [];
+  if (state.used_language) {
+    tags.push({ key: "lang", label: languageLabel(state.used_language) });
+  }
+  const whisper = labelFromOptions(state.used_whisper_model, whisperModels);
+  if (whisper) {
+    tags.push({ key: "whisper", label: `Whisper ${whisper}` });
+  }
+  const summaryModel = labelFromOptions(state.used_summary_model, summaryModels);
+  if (summaryModel) {
+    tags.push({ key: "summary-model", label: `Notes ${summaryModel}` });
+  }
+  const preset = labelFromOptions(state.used_summary_preset, presets);
+  if (preset) {
+    tags.push({ key: "preset", label: preset });
+  }
+  const length = labelFromOptions(state.used_summary_length, LENGTH_OPTIONS);
+  if (length) {
+    tags.push({ key: "length", label: length });
+  }
+  if (state.used_has_extra_instructions) {
+    tags.push({ key: "extra", label: "Custom instructions" });
+  }
+  return tags;
 }
 
 export default function App() {
@@ -283,6 +326,7 @@ export default function App() {
   const busy = isBusy(state.status);
   const recording = isRecording(state.status);
   const summaryBusy = isSummaryBusy(state.summary_status);
+  const usedMetaTags = buildUsedMetaTags(state, whisperModels, summaryModels, presets);
   const locked = busy || recording;
   const canTranscribe = Boolean(state.file_path) && !locked;
   const language = state.language || DEFAULT_LANGUAGE;
@@ -951,6 +995,15 @@ export default function App() {
             {formatElapsed(state.elapsed_seconds)}
           </p>
         </div>
+        {usedMetaTags.length > 0 && (
+          <ul className="meta-tags" aria-label="Settings used for this run">
+            {usedMetaTags.map((tag) => (
+              <li key={tag.key} className="meta-tag">
+                {tag.label}
+              </li>
+            ))}
+          </ul>
+        )}
         {(busy || recording || summaryBusy) && (
           <div
             className="progress indeterminate"
