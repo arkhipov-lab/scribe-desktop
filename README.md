@@ -84,7 +84,7 @@ Self-contained `.app` + versioned DMG for sharing:
 ./scripts/build-dist.sh   # → dist/Scribe.app + dist/Scribe-<version>.dmg
 ```
 
-Version comes from the repo-root `VERSION` file (auto-bumped on merge to `main` from conventional commits — see [CONTRIBUTING.md](CONTRIBUTING.md)). After that bump, local hooks build the versioned DMG and `.app` into `dist/`.
+Version comes from the repo-root `VERSION` file (auto-bumped on push to `main` from conventional commits — see [CONTRIBUTING.md](CONTRIBUTING.md)). After you `git pull` that release on `main`, local hooks build the versioned DMG and `.app` into `dist/`.
 
 Full packaging details, env knobs, runtime pruning, and Gatekeeper notes: **[BUILDING.md](BUILDING.md)**.
 

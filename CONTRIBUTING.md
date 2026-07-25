@@ -109,7 +109,7 @@ When PRs are used:
 
 ## Commit messages
 
-Use [Conventional Commits](https://www.conventionalcommits.org/). The type drives the automatic semver bump on merge to `main`:
+Use [Conventional Commits](https://www.conventionalcommits.org/). The type drives the automatic semver bump on push to `main`:
 
 | Prefix | Bump |
 | --- | --- |
@@ -124,18 +124,19 @@ Do not create commits unless the maintainer asks you to.
 ### Versioning
 
 - Source of truth: repo-root `VERSION` (also synced to `frontend/package.json`).
-- After a merge into `main`, `.githooks/post-merge`:
-  1. runs `scripts/bump-version.sh --commit`
-  2. if the version/tag changed, runs `scripts/release-build-local.sh` (Scribe `.app` + DMG into `dist/`)
+- On GitHub, `.github/workflows/version-bump.yml` bumps on push to `main` and pushes `chore(release): vX.Y.Z` + tag `vX.Y.Z`.
+- Locally, after `git pull` on `main`, `.githooks/post-merge`:
+  1. runs `scripts/bump-version.sh --commit` (no-op if GitHub already released)
+  2. if `VERSION`/tag advanced vs pre-pull `ORIG_HEAD`, runs `scripts/release-build-local.sh` (Scribe `.app` + DMG into `dist/`)
+- Local `git merge` into `main` does **not** trigger bump or dist builds — only `git pull` on `main` does (`git pull --rebase` does not run this hook).
 - Hook install: `scripts/install-git-hooks.sh` (`run-dev.sh` does this automatically).
-- On GitHub, `.github/workflows/version-bump.yml` still bumps on push to `main`; `.github/workflows/release-build.yml` can publish GitHub Release assets from tags (optional).
 - Manual bump: `./scripts/bump-version.sh` (plan), `--apply`, `--commit`, or `--force patch|minor|major`.
 - Manual local package: `./scripts/release-build-local.sh`
 - Skip once: `SKIP_VERSION_BUMP=1` (skip bump+build) or `SKIP_RELEASE_BUILD=1` (bump only).
 - Foreground builds: `SCRIBE_RELEASE_BUILD_FG=1` (default is background; log at `.cache/release-build.log`).
 - Release commits look like `chore(release): v1.2.3` and create annotated tag `v1.2.3`.
 
-### Release artifacts (local, after merge bump)
+### Release artifacts (local, after pull on main)
 
 | Artifact | Example |
 | --- | --- |

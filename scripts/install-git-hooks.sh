@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Point this repo at .githooks/ (version bump on merge to main).
+# Point this repo at .githooks/ (version bump + local dist build on pull of main).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

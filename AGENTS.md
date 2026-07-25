@@ -103,13 +103,13 @@ scripts/
   build-dist.sh           self-contained .app + versioned DMG
   bump-version.sh         conventional-commit semver bump
   read-version.sh         print VERSION
-  release-build-local.sh  .app/DMG after release bump
+  release-build-local.sh  .app/DMG after pull of a new release on main
   install-git-hooks.sh    core.hooksPath → .githooks
   bundle-ffmpeg.sh / prune-runtime.sh / …
 
 VERSION                   semver source of truth (baked into .app / DMG name)
-.githooks/                post-merge: bump on main, then local dist builds
-.github/workflows/        optional remote bump + GitHub Release publish
+.githooks/                post-merge: on git pull of main, bump if needed + local dist builds
+.github/workflows/        version bump on push to main (no remote dist packaging)
 
 requirements-runtime.txt  deps embedded in dist .app
 requirements.txt          local/dev (-r runtime)

@@ -70,16 +70,16 @@ App / DMG version comes from the repo-root [`VERSION`](VERSION) file (semver). I
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how `VERSION` is bumped from conventional commits.
 
-### Local release builds (after merge bump)
+### Local release builds (after pull on main)
 
-On merge into `main`, if the version bump created a new `VERSION`/tag, `scripts/release-build-local.sh` builds:
+After `git pull` on `main`, if `VERSION`/tag advanced (from the remote release commit and/or a local bump), `scripts/release-build-local.sh` builds:
 
 - `Scribe.app`
 - `Scribe-X.Y.Z.dmg`
 
 Default: background (log `.cache/release-build.log`). Foreground: `SCRIBE_RELEASE_BUILD_FG=1`. Skip builds: `SKIP_RELEASE_BUILD=1`.
 
-Optional CI (`.github/workflows/release-build.yml`) can still publish the same artifacts to a GitHub Release when a `v*` tag is pushed.
+Packaging is local-only — there is no GitHub Actions workflow that builds or publishes DMG/`.app` assets.
 
 Examples:
 

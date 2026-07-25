@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# After merging into main: bump VERSION from conventional commits, then build dist.
+# After git pull on main: bump VERSION from conventional commits (if needed),
+# then build dist when VERSION/tag advanced (from the pull and/or bump).
+#
+# Skips local `git merge` into main — only runs for pull. Dist builds are
+# local-only (no GitHub Actions release packaging).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,13 +18,29 @@ if [[ "$branch" != "main" ]]; then
   exit 0
 fi
 
+# post-merge also fires after `git merge`; only run dist/release for pulls.
+is_pull=0
+if [[ "${GIT_REFLOG_ACTION:-}" == pull* ]]; then
+  is_pull=1
+elif git reflog -1 --format='%gs' 2>/dev/null | grep -qiE '^pull(\b|[[:space:]])'; then
+  is_pull=1
+fi
+if [[ "$is_pull" -ne 1 ]]; then
+  exit 0
+fi
+
 chmod +x \
   "$ROOT/scripts/bump-version.sh" \
   "$ROOT/scripts/read-version.sh" \
   "$ROOT/scripts/release-build-local.sh" 2>/dev/null || true
 
-before_ver="$("$ROOT/scripts/read-version.sh")"
-before_tag="$(git describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null || true)"
+# Pre-pull tip (git sets ORIG_HEAD for merge/pull).
+before_ver=""
+before_tag=""
+if git rev-parse --verify ORIG_HEAD >/dev/null 2>&1; then
+  before_ver="$(git show ORIG_HEAD:VERSION 2>/dev/null | tr -d '[:space:]' || true)"
+  before_tag="$(git describe --tags --match 'v[0-9]*' --abbrev=0 ORIG_HEAD 2>/dev/null || true)"
+fi
 
 "$ROOT/scripts/bump-version.sh" --commit || {
   echo "post-merge: version bump failed" >&2
@@ -31,9 +51,9 @@ after_ver="$("$ROOT/scripts/read-version.sh")"
 after_tag="$(git describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null || true)"
 
 if [[ "$before_ver" == "$after_ver" && "$before_tag" == "$after_tag" ]]; then
-  # Merge did not produce a new release — nothing to package.
+  # Pull did not bring / create a new release — nothing to package.
   exit 0
 fi
 
-echo "post-merge: released v${after_ver} — starting local dist builds"
+echo "post-merge: main pulled to v${after_ver} — starting local dist builds"
 "$ROOT/scripts/release-build-local.sh"
