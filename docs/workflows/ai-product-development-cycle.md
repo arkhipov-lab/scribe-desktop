@@ -109,6 +109,8 @@ The human reviews the **product**, not the code: observable user actions in Scri
 
 Separate from product validation. Analyze review-cycle count, defects, rework, scope creep, failed verification, and expensive AI-role behavior.
 
+**Role:** [iteration-retrospective](../../.ai/skills/iteration-retrospective.md)
+
 ### 5. Product retrospective
 
 Did the user receive meaningful value? Did assumptions in PRODUCT, ROADMAP, or scenarios change? Should planned work be postponed?
@@ -118,6 +120,8 @@ Did the user receive meaningful value? Did assumptions in PRODUCT, ROADMAP, or s
 Primary dimensions: task completion, elapsed time, AI resource use. Secondary: human effort, review loops, defects, rework, abandoned work.
 
 Distinguish **observed facts** from **AI estimates**. Measurement does not replace Product Owner decisions.
+
+Retrospective metrics must record value, source type, and evidence separately so future planning can tell measured facts from estimates.
 
 ### 7. Process evolution
 
@@ -218,6 +222,7 @@ A single commit is not necessarily completion of a product goal.
 | Triage | [review-triage](../../.ai/skills/review-triage.md) |
 | Manual QA plan | [supervisor-qa](../../.ai/skills/supervisor-qa.md) |
 | Commit preparation | [commit-manager](../../.ai/skills/commit-manager.md) |
+| Retrospective + metrics | [iteration-retrospective](../../.ai/skills/iteration-retrospective.md) |
 | Skill index | [`.ai/skills/README.md`](../../.ai/skills/README.md) |
 
 ---

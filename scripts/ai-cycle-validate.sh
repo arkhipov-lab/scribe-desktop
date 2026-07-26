@@ -39,6 +39,10 @@ is_qa_complete_status() {
   [[ "$1" == "passed" || "$1" == "skipped" || "$1" == "explicitly_skipped" ]]
 }
 
+looks_like_commit_hash() {
+  [[ "$1" =~ ^[0-9a-fA-F]{7,40}$ ]]
+}
+
 check_state_json() {
   if [[ ! -f "$STATE_FILE" ]]; then
     fail "state file missing: $STATE_FILE"
@@ -152,6 +156,33 @@ check_phase_gates() {
         fail "phase=commit-ready requires supervisor QA passed/skipped (found: $supervisor_qa)"
       fi
       ;;
+    retrospective)
+      local commit errors_before=$errors
+      commit="$(jq_raw '.artifacts.commit // ""')"
+      if ! is_truthy "$implementation_finished"; then
+        fail "phase=retrospective requires gates.implementation_finished=true"
+      fi
+      if ! is_clean_review_status "$review_gate"; then
+        fail "phase=retrospective requires gates.review_gate=clean (found: $review_gate)"
+      fi
+      if ! is_clean_review_status "$triage_status"; then
+        fail "phase=retrospective requires gates.triage_status=clean (found: $triage_status)"
+      fi
+      if ! is_qa_complete_status "$supervisor_qa"; then
+        fail "phase=retrospective requires supervisor QA passed/skipped (found: $supervisor_qa)"
+      fi
+      if ! is_truthy "$committed"; then
+        fail "phase=retrospective requires gates.committed=true"
+      fi
+      if [[ -z "$commit" || "$commit" == "null" || "$commit" == "pending" ]]; then
+        fail "phase=retrospective requires artifacts.commit"
+      elif ! looks_like_commit_hash "$commit"; then
+        fail "phase=retrospective commit does not look like a git hash: $commit"
+      fi
+      if (( errors == errors_before )); then
+        ok "phase=retrospective has clean gates, committed=true, and commit hash"
+      fi
+      ;;
     shipped)
       if ! is_truthy "$committed"; then
         fail "phase=shipped requires gates.committed=true"
@@ -168,6 +199,31 @@ check_phase_gates() {
   esac
 }
 
+check_committed_phase() {
+  local phase committed commit errors_before=$errors
+  phase="$(jq_raw '.phase // ""')"
+  committed="$(jq_raw '.gates.committed // false')"
+  commit="$(jq_raw '.artifacts.commit // ""')"
+
+  if ! is_truthy "$committed"; then
+    ok "commit not yet recorded"
+    return
+  fi
+
+  if [[ "$phase" != "retrospective" && "$phase" != "shipped" ]]; then
+    fail "gates.committed=true requires phase=retrospective or shipped (found: $phase)"
+  fi
+  if [[ -z "$commit" || "$commit" == "null" || "$commit" == "pending" ]]; then
+    fail "gates.committed=true requires artifacts.commit"
+  elif ! looks_like_commit_hash "$commit"; then
+    fail "gates.committed=true commit does not look like a git hash: $commit"
+  fi
+
+  if (( errors == errors_before )); then
+    ok "committed=true is paired with phase=$phase and commit hash"
+  fi
+}
+
 check_shipped_consistency() {
   local phase status commit committed errors_before
   local phase_shipped=false status_shipped=false any_shipped_marker=false
@@ -179,7 +235,8 @@ check_shipped_consistency() {
 
   [[ "$phase" == "shipped" ]] && phase_shipped=true
   [[ "$status" == "shipped" ]] && status_shipped=true
-  if [[ "$phase_shipped" == true || "$status_shipped" == true ]] || is_truthy "$committed"; then
+  # committed=true alone is not a shipped marker — post-commit retrospective uses it first.
+  if [[ "$phase_shipped" == true || "$status_shipped" == true ]]; then
     any_shipped_marker=true
   fi
 
@@ -201,9 +258,7 @@ check_shipped_consistency() {
 
   if [[ -z "$commit" || "$commit" == "null" || "$commit" == "pending" ]]; then
     fail "shipped iteration must record artifacts.commit"
-  elif [[ "$commit" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
-    :
-  else
+  elif ! looks_like_commit_hash "$commit"; then
     fail "shipped iteration commit does not look like a git hash: $commit"
   fi
 
@@ -288,6 +343,7 @@ main() {
     check_ledger_exists
     check_phase_gates
     check_commit_gate_order
+    check_committed_phase
     check_shipped_consistency
     check_unresolved_findings
     check_forbidden_paths

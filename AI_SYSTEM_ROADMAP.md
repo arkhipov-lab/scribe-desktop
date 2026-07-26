@@ -80,7 +80,7 @@ Separate observed facts from AI estimates.
 
 ## Retrospective role
 
-Add an `iteration-retrospective` skill.
+Status: initial `iteration-retrospective` skill added at [`.ai/skills/iteration-retrospective.md`](.ai/skills/iteration-retrospective.md). Future work should improve evidence quality and automation only when real iterations show the need.
 
 Responsibilities:
 
@@ -261,4 +261,3 @@ The AI development system is improving when a small iteration can move from appr
 - a better-informed next planning step.
 
 The system is failing when the human must reconstruct state, repeat standing rules, manually clear process gaps, or decide routine engineering questions that were already delegated.
-

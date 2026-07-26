@@ -53,6 +53,7 @@ Self-contained skills in [`.ai/skills/`](../../.ai/skills/). Invoke with a one-l
 | `Use review-triage.` | Finding interpretation |
 | `Use supervisor-qa.` | Manual QA plan for Product Owner |
 | `Use commit-manager.` | Pre-commit preparation |
+| `Use iteration-retrospective.` | Metrics, retrospective, repeated-failure analysis |
 
 See [`.ai/skills/README.md`](../../.ai/skills/README.md) for the full index.
 

@@ -13,6 +13,7 @@ Self-contained skills for the Scribe feature development pipeline. Each skill is
 | [review-triage.md](./review-triage.md) | `Use review-triage.` |
 | [supervisor-qa.md](./supervisor-qa.md) | `Use supervisor-qa.` |
 | [commit-manager.md](./commit-manager.md) | `Use commit-manager.` |
+| [iteration-retrospective.md](./iteration-retrospective.md) | `Use iteration-retrospective.` |
 
 Each skill defines its own context loading, preconditions, responsibilities, output contract, and human checkpoints.
 
@@ -25,6 +26,7 @@ Use codex-review.        → Use review-triage.
                          → (fix loop if needed)
 Use supervisor-qa.       → human manual QA
 Use commit-manager.      → human approves commit
+Use iteration-retrospective. → metrics + repeated-failure analysis
 ```
 
 Full pipeline: [docs/workflows/feature-development-pipeline.md](../../docs/workflows/feature-development-pipeline.md).

@@ -32,6 +32,7 @@ Each pipeline step is a self-contained skill in [`.ai/skills/`](../../.ai/skills
 | Triage findings | `Use review-triage.` |
 | Generate manual QA plan | `Use supervisor-qa.` |
 | Prepare commit | `Use commit-manager.` |
+| Run retrospective | `Use iteration-retrospective.` |
 
 See [`.ai/skills/README.md`](../../.ai/skills/README.md).
 
@@ -84,7 +85,7 @@ roadmap-planner → Cursor implements → Codex reviews → review-triage
         │                         High/Medium? → AI fix → re-review
         │                                    │
         ▼                                    ▼
-supervisor-qa → human product QA → commit-manager (human approves) → summary → next
+supervisor-qa → human product QA → commit-manager (human approves) → iteration-retrospective → next
 ```
 
 ### Step detail
@@ -99,8 +100,9 @@ supervisor-qa → human product QA → commit-manager (human approves) → summa
 8. **Supervisor QA** — `Use supervisor-qa.`
 9. **Manual product QA** — human pass/fail (or explicit skip). This is product review, not code review.
 10. **Commit** — `Use commit-manager.` Human approves before commit is created.
-11. **Implementation summary** — for the next cycle.
-12. **Next iteration** — return to step 1.
+11. **Retrospective** — `Use iteration-retrospective.` Record metrics, rework, repeated failures, and next planning input.
+12. **Implementation summary** — for the next cycle.
+13. **Next iteration** — return to step 1.
 
 ---
 
@@ -121,7 +123,8 @@ Every phase transition must update the active ledger and `current-cycle.json`.
 | Codex review completes | Orchestrator/review-triage records findings and counts; set review gate |
 | Triage completes | Record blocking and non-blocking decisions; update debt for accepted/deferred items |
 | Supervisor QA generated / executed | Record plan, pass/fail/skip, and human decision |
-| Commit prepared / created | Record staging hygiene, message, approval, and commit hash |
+| Commit prepared / created | Record staging hygiene, message, approval, and commit hash; set `phase=retrospective`, `status=retrospective`, `committed=true` |
+| Retrospective completed | Record metrics, repeated failures, process recommendations, and next planning input; set `phase=shipped` / `status=shipped` |
 | Iteration cancelled | Record cancellation reason and stop the cycle |
 
 State is the durable record of prior decisions. A newer explicit human instruction overrides stale or incorrect state and must be recorded back into the ledger/current-cycle state before the workflow continues.

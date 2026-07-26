@@ -72,7 +72,8 @@ When docs conflict, stop and ask the human.
 10. `Use supervisor-qa.` → human manual QA
 11. Record QA outcome in the active ledger and current-cycle state
 12. `Use commit-manager.` only after QA pass or explicit skip
-13. Implementation summary after commit and final ledger/current-cycle update
+13. After human-approved commit, set post-commit `phase=retrospective` (via commit-manager), then `Use iteration-retrospective.`
+14. After retrospective completes (`phase=shipped`), produce the implementation summary for the next cycle
 
 ### Scope preservation
 
@@ -108,6 +109,7 @@ Produce the artifact for the **current phase only** (unless human asked for stat
 - Fix prompt → bounded list of findings only
 - Supervisor QA → [supervisor-qa.md](./supervisor-qa.md)
 - Commit → [commit-manager.md](./commit-manager.md)
+- Retrospective → [iteration-retrospective.md](./iteration-retrospective.md)
 
 Every phase output must also state which ledger/current-cycle/debt updates were made or why no update was required.
 
@@ -167,7 +169,7 @@ Never ask the human to edit the working tree themselves — offer an AI fix prom
 roadmap-planner → human approves → Cursor prompt
   → Cursor implements → Codex review → review-triage
   → (AI fix loop) → supervisor-qa → product QA (human)
-  → commit-manager → summary → next
+  → commit-manager → iteration-retrospective → summary → next
 ```
 
 See [docs/workflows/feature-development-pipeline.md](../../docs/workflows/feature-development-pipeline.md).

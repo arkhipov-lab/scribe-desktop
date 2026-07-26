@@ -88,7 +88,7 @@ Confirm **no** path under `ai-md-condidates/` is staged. If any candidate path i
 
 ### After commit (only when human approved)
 
-Record the commit hash in the active ledger, update `.ai/state/current-cycle.json` to `shipped`, and produce a short implementation summary for the next roadmap-planner cycle.
+Record the commit hash in the active ledger and update `.ai/state/current-cycle.json` to post-commit retrospective state: `phase=retrospective`, `iteration.status=retrospective`, `gates.committed=true`, and `artifacts.commit=<hash>`. Then route to `Use iteration-retrospective.` The retrospective role sets `phase=shipped` / `status=shipped` after it completes.
 
 ---
 

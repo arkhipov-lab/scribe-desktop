@@ -79,7 +79,7 @@ Agents must read the active ledger at the start of each workflow step and update
 ```markdown
 # Iteration: <name>
 
-**Status:** planned / implementing / review / fixing / QA / commit-ready / shipped / cancelled
+**Status:** planned / implementing / review / fixing / QA / commit-ready / retrospective / shipped / cancelled
 **Date started:** YYYY-MM-DD
 **Date completed:** YYYY-MM-DD or pending
 **Commit:** <hash or pending>
@@ -171,6 +171,23 @@ Separate observed facts from estimates.
 | Medium findings | ... | observed |
 | Low findings | ... | observed |
 | Human decisions | ... | observed |
+| QA outcome | ... | observed |
+| Outcome | ... | observed |
+
+Preferred expanded form when evidence matters:
+
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ... | observed/estimated | ... |
+| Agent turns | ... | observed/estimated | ... |
+| Approx token use | ... | estimated | ... |
+| Review loops | ... | observed | ... |
+| High findings | ... | observed | ... |
+| Medium findings | ... | observed | ... |
+| Low findings | ... | observed | ... |
+| Human decisions | ... | observed | ... |
+| QA outcome | ... | observed | ... |
+| Outcome | ... | observed | ... |
 
 ## Retrospective
 
@@ -179,6 +196,10 @@ Separate observed facts from estimates.
 **What caused rework:**
 
 **Repeated failure patterns:**
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| ... | ... | yes/no/unknown | none/docs/skill/gate/test |
 
 **Process change recommended:**
 
@@ -212,6 +233,8 @@ Use:
 - **estimated** for token counts, inferred human effort, or partial timing.
 
 Do not hide uncertainty. A rough estimate is useful when labelled as an estimate.
+
+The retrospective should compare at least the active ledger and the most recent relevant ledgers before calling something a repeated failure.
 
 ---
 
