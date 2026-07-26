@@ -104,6 +104,30 @@ supervisor-qa → human product QA → commit-manager (human approves) → summa
 
 ---
 
+## Mandatory State Updates
+
+Every step must read:
+
+- [`.ai/state/current-cycle.json`](../../.ai/state/current-cycle.json) for the active iteration, phase, and gate status;
+- the active ledger under [`docs/iterations/`](../iterations/);
+- [`.ai/state/debt.md`](../../.ai/state/debt.md) for accepted/deferred debt.
+
+Every phase transition must update the active ledger and `current-cycle.json`.
+
+| Transition | Required state update |
+| --- | --- |
+| Human approves scope | Create ledger; set phase to `implementation-prompt` or `implementing` |
+| Cursor finishes implementation | Record files, behavior, assumptions, verification; set phase to `review` |
+| Codex review completes | Orchestrator/review-triage records findings and counts; set review gate |
+| Triage completes | Record blocking and non-blocking decisions; update debt for accepted/deferred items |
+| Supervisor QA generated / executed | Record plan, pass/fail/skip, and human decision |
+| Commit prepared / created | Record staging hygiene, message, approval, and commit hash |
+| Iteration cancelled | Record cancellation reason and stop the cycle |
+
+State is the durable record of prior decisions. A newer explicit human instruction overrides stale or incorrect state and must be recorded back into the ledger/current-cycle state before the workflow continues.
+
+---
+
 ## Review Gate
 
 | Severity | Rule |

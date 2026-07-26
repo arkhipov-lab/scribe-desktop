@@ -23,6 +23,9 @@ Use review-triage.
 | Approved slice | In / out of scope |
 | [ROADMAP.md](../../ROADMAP.md) | Later-iteration leakage |
 | [PRODUCT.md](../../PRODUCT.md) / [SECURITY-PRIVACY.md](../../SECURITY-PRIVACY.md) | Invariant violations |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, review gate, phase |
+| [`.ai/state/debt.md`](../state/debt.md) | Previously accepted/deferred findings |
+| Active ledger in [docs/iterations/](../../docs/iterations/) | Review findings and implementation summary |
 | Previously accepted Lows | Avoid re-litigation |
 
 ---
@@ -31,6 +34,7 @@ Use review-triage.
 
 - A review exists for the current iteration (`Use codex-review.` first if missing)
 - Implementation summary exists
+- Active ledger and current-cycle state exist
 
 ---
 
@@ -60,6 +64,12 @@ Update when public Api/UX/architecture behavior changes. Do not churn docs for p
 ### Prevent endless Low loops
 
 At most one dedicated Low AI-fix pass; then human accepts or defers. Do not full re-review for Low-only polish unless High/Medium were also fixed. Human never clears Lows by editing the tree.
+
+### Update durable memory
+
+- Record triage decisions in the active ledger
+- Update `.ai/state/current-cycle.json` with the next phase/gate state
+- Add accepted or deferred findings to `.ai/state/debt.md` with revisit conditions
 
 ---
 
@@ -103,6 +113,11 @@ At most one dedicated Low AI-fix pass; then human accepts or defers. Do not full
 - [ ] Write Cursor fix prompt
 - [ ] Ask human: request AI fix vs accept/defer each Low
 - [ ] Invoke supervisor-qa
+
+### State updates
+- Ledger:
+- Current cycle:
+- Debt register:
 ```
 
 ---
@@ -124,4 +139,3 @@ If no High/Medium and Low items are fixed via AI or explicitly accepted/deferred
 3. Wait for the human to execute **product** QA and report pass/fail
 4. After QA passes (or human explicitly skips), invoke `Use commit-manager.`
 5. Ask human for commit approval
-

@@ -25,6 +25,9 @@ Use supervisor-qa.
 | [docs/scenarios/](../../docs/scenarios/) | Expected flows |
 | [TESTING.md](../../TESTING.md) | Smoke vocabulary |
 | [README.md](../../README.md) / [DEVELOPMENT.md](../../DEVELOPMENT.md) | How to run the app |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration and gate state |
+| [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt to mention as watch-outs |
+| Active ledger in [docs/iterations/](../../docs/iterations/) | Approved scope, review/triage status, accepted Lows |
 | Implementation summary + approved slice | What shipped |
 | Latest review + accepted Lows | Watch-outs only |
 
@@ -40,6 +43,7 @@ When docs conflict on expected behavior, stop and ask the human.
 - Review gate clean (no unresolved High/Medium)
 - Lows fixed or explicitly accepted
 - Approved slice exists
+- Active ledger and current-cycle state exist
 
 If gate not clean, stop and route to review-triage / codex-review.
 
@@ -52,6 +56,7 @@ If gate not clean, stop and route to review-triage / codex-review.
 - Pass / fail criteria
 - Out of scope (do not fail the iteration for postponed work)
 - Environment: prefer `./scripts/run-dev.sh` (and note Vite vs `USE_VITE_DEV=0` if relevant)
+- Record the generated plan in the active ledger and update current-cycle state to `QA`
 
 ---
 
@@ -111,13 +116,18 @@ If gate not clean, stop and route to review-triage / codex-review.
 ## Notes
 
 Accepted Lows, assumptions, suggested order (e.g. permissions before record).
+
+## State updates
+
+- Ledger:
+- Current cycle:
 ```
 
 ---
 
 ## Human Checkpoints
 
-Skill ends after generating the plan. Human executes QA, reports pass/fail, or **explicitly skips** (must be recorded by commit-manager).
+Skill ends after generating the plan and recording that the plan was generated. Human executes QA, reports pass/fail, or **explicitly skips** (must be recorded in the active ledger, `.ai/state/current-cycle.json`, and by commit-manager).
 
 On failure → bounded fix prompt → review loop. Do not invoke commit-manager until pass or explicit skip.
 

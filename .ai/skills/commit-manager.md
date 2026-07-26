@@ -22,6 +22,9 @@ Use commit-manager.
 | Implementation summary | Behavior, files, verification |
 | Supervisor QA plan + outcome | Pass / fail / explicit skip |
 | Approved slice | Scope match |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, gate state, QA status |
+| [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt that must be recorded before commit |
+| Active ledger in [docs/iterations/](../../docs/iterations/) | Full iteration record and handoffs |
 | Git working tree | `git status`, `git diff`, `git diff --cached` |
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | Conventional Commits / what not to commit |
 
@@ -33,6 +36,7 @@ Use commit-manager.
 - Lows fixed or **explicitly accepted**
 - Supervisor QA **passed** or **explicitly skipped** (record skip)
 - Verification reported
+- Active ledger and current-cycle state are up to date through QA
 - Human has **not** yet authorized the commit in the current message — prepare first
 
 ---
@@ -59,7 +63,8 @@ Relevant checks only:
 2. Suggested Conventional Commits message
 3. Changed files with one-line purpose
 4. Accepted Lows + QA skip notes
-5. **Ask for explicit commit approval** — do not commit until requested
+5. Update the active ledger and `.ai/state/current-cycle.json` to `commit-ready`
+6. **Ask for explicit commit approval** — do not commit until requested
 
 ### Exclude from commit
 
@@ -82,7 +87,7 @@ Confirm **no** path under `ai-md-condidates/` is staged. If any candidate path i
 
 ### After commit (only when human approved)
 
-Produce a short implementation summary for the next roadmap-planner cycle.
+Record the commit hash in the active ledger, update `.ai/state/current-cycle.json` to `shipped`, and produce a short implementation summary for the next roadmap-planner cycle.
 
 ---
 
@@ -96,7 +101,7 @@ Produce a short implementation summary for the next roadmap-planner cycle.
 
 ## Output Contract
 
-```markdown
+````markdown
 ## Commit preparation — <iteration name>
 
 ### Review gate
@@ -156,7 +161,13 @@ Types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `build`, `ci`, `perf`
 ### Approval needed
 
 Human must explicitly request the commit before it is created.
-```
+
+### State updates
+
+- Ledger:
+- Current cycle:
+- Debt register:
+````
 
 When the human approves, create the commit per repo conventions ([CONTRIBUTING.md](../../CONTRIBUTING.md)) and produce the post-commit summary.
 

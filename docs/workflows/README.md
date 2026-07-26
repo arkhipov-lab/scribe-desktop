@@ -4,9 +4,25 @@ Current version: **v1.0** (adapted for Scribe)
 
 Status: Stable starting point — expect evolution through use.
 
+## Mandatory iteration memory
+
+Every approved product or process iteration must have durable memory before implementation starts:
+
+- a ledger in [`docs/iterations/`](../iterations/);
+- current phase and gate state in [`.ai/state/current-cycle.json`](../../.ai/state/current-cycle.json);
+- accepted or deferred debt in [`.ai/state/debt.md`](../../.ai/state/debt.md).
+
+Agents must read these artifacts at the start of each workflow step and update them when the phase changes. Chat history is supporting context, not the source of truth.
+
 ## Operating model
 
 [AI Product Development Cycle](./ai-product-development-cycle.md) — product-level loop: planning → engineering delivery → demo → retrospectives → analytics → process evolution → next priority.
+
+[Iteration Ledger](./iteration-ledger.md) — durable per-iteration memory: approved scope, role handoffs, findings, QA outcome, metrics, debt, retrospective, and commit link.
+
+[AI Development System Convention](../../AI_CONVENTION.md) — product convention for the broader AI development system.
+
+[AI Development System Roadmap](../../AI_SYSTEM_ROADMAP.md) — roadmap for turning the workflow into a stateful, measurable AI organization.
 
 ## Pipeline
 

@@ -30,6 +30,9 @@ Use cursor-implementation-prompt.
 | [TESTING.md](../../TESTING.md) | Verification baseline |
 | [docs/scenarios/](../../docs/scenarios/) | If user-facing flow touched |
 | [AGENTS.md](../../AGENTS.md) | Hard constraints |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Approved active iteration and current phase |
+| [`.ai/state/debt.md`](../state/debt.md) | Relevant accepted/deferred debt |
+| Active ledger in [docs/iterations/](../../docs/iterations/) | Approved scope and prior handoffs |
 | Approved roadmap recommendation | In/out of scope |
 | Latest implementation summary | Current gaps |
 
@@ -38,6 +41,7 @@ Use cursor-implementation-prompt.
 ## Preconditions
 
 - Human approved a bounded roadmap slice
+- Active iteration ledger and `.ai/state/current-cycle.json` exist
 - Slice fits one review cycle
 
 ---
@@ -49,6 +53,7 @@ Use cursor-implementation-prompt.
 - Scribe-appropriate verification commands
 - Require final response format from Cursor
 - Remind: do not commit unless asked; do not log meeting content; sync bridge types
+- Require Cursor to report the exact implementation summary needed for the ledger
 
 ---
 
@@ -80,6 +85,9 @@ DOCUMENTS TO READ
 - docs/scenarios/<name>.md — <if applicable>
 - TESTING.md — relevant smoke rows
 - ROADMAP.md — <reference only>
+- .ai/state/current-cycle.json — active phase and approved scope
+- .ai/state/debt.md — relevant accepted/deferred debt
+- docs/iterations/<active-ledger>.md — approved scope and handoffs
 
 =========================================
 CURRENT STATE
@@ -175,6 +183,7 @@ Report:
 4. **Verification results**
 5. **Remaining work**
 6. **Documentation changes**
+7. **Ledger update details** — summary fields the agent manager should record
 
 Do not commit unless explicitly asked.
 ```

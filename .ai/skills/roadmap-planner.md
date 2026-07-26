@@ -34,6 +34,9 @@ Read these **before doing anything**:
 | [TESTING.md](../../TESTING.md) | Smoke expectations |
 | [AGENTS.md](../../AGENTS.md) | Agent constraints |
 | [docs/scenarios/](../../docs/scenarios/) | Relevant behavior specs |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active/previous iteration state |
+| [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred product, engineering, and process debt |
+| [docs/iterations/](../../docs/iterations/) | Latest iteration ledgers and retrospectives |
 | Latest implementation summary / review / QA notes | Current cycle context |
 
 When docs conflict on **scope or architecture**, stop and ask the human.
@@ -55,6 +58,7 @@ When ROADMAP and PRODUCT diverge, **PRODUCT wins for value decisions**.
 - Evaluate 2–3 candidate slices with product-value heuristics and ROI trade-offs
 - Prefer small shippable slices (one review cycle, one coherent behavior)
 - Prefer finishing open user-facing gaps over polish
+- Use the latest ledger, current-cycle state, and debt register as the durable source for previous iteration outcomes
 - Prefer foundational UX/reliability before speculative ML (diarization, etc.) unless value is clear
 - Never recommend cloud sync, remote AI APIs, telemetry of meeting content, or non-arm64 platforms
 - Ask for explicit human approval before any implementation prompt
@@ -96,6 +100,7 @@ Recommend **pause implementation** when remaining candidates are polish-only, pr
 - Does **not** write code, review prompts, triage, or commit
 - Does **not** change ROADMAP/PRODUCT without human approval
 - Does **not** force a slice when pausing is higher value
+- Does **not** start implementation without creating or confirming the required iteration memory after approval
 
 ---
 
@@ -176,6 +181,8 @@ Yes — confirm before implementation prompt.
 ```
 
 End with an approval question.
+
+If the human approves the recommendation in the same turn, create or update the iteration ledger and `.ai/state/current-cycle.json` before any implementation prompt is generated.
 
 ---
 

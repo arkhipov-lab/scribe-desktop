@@ -29,6 +29,9 @@ Use codex-review.
 | [AGENTS.md](../../AGENTS.md) | Always |
 | [docs/scenarios/](../../docs/scenarios/) | If user-facing flow changed |
 | [BUILDING.md](../../BUILDING.md) | If packaging touched |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, approved scope, and gate state |
+| [`.ai/state/debt.md`](../state/debt.md) | Previously accepted/deferred debt |
+| Active ledger in [docs/iterations/](../../docs/iterations/) | Role handoffs, implementation summary, verification evidence |
 | Implementation summary + approved slice | Always |
 
 Also inspect the working tree (see below).
@@ -38,6 +41,7 @@ Also inspect the working tree (see below).
 ## Preconditions
 
 - Cursor implemented and reported a summary
+- Active ledger and current-cycle state exist for the iteration
 - Uncommitted working tree exists (or human explicitly asked to review committed state — note that)
 
 Do **not** require a specific Node.js patch version; follow [DEVELOPMENT.md](../../DEVELOPMENT.md) / README (Node 20+).
@@ -77,12 +81,17 @@ Include unstaged, staged, and untracked files (read contents of untracked).
 
 Cite file and line. Judge against **docs and iteration scope**, not personal style.
 
+### Propose durable memory updates
+
+After review, output proposed ledger/current-cycle updates for the orchestrator or review-triage role to apply. Do not edit the working tree or mutate state files as part of the review; the reviewed diff must remain stable.
+
 ---
 
 ## Non-responsibilities
 
 - Does not implement fixes, triage, or commit
 - Does not expand scope or request unrelated features
+- Does not edit ledger, current-cycle state, debt register, or any other working-tree file during review
 
 ---
 
@@ -110,6 +119,11 @@ Cite file and line. Judge against **docs and iteration scope**, not personal sty
 ## Summary
 
 <2–4 sentences>
+
+## Proposed state updates
+
+- Ledger:
+- Current cycle:
 ```
 
 ### Severity guide

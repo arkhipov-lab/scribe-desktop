@@ -30,6 +30,9 @@ For a single step, invoke the specialized skill (e.g. `Use roadmap-planner.`, `U
 | [TESTING.md](../../TESTING.md) | Smoke matrix |
 | [AGENTS.md](../../AGENTS.md) | Agent rules |
 | [docs/scenarios/](../../docs/scenarios/) | Behavior specs |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, phase, and gate state |
+| [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt |
+| [docs/iterations/](../../docs/iterations/) | Active and previous iteration ledgers |
 | Latest summaries / reviews / git tree | Cycle state |
 
 When docs conflict, stop and ask the human.
@@ -40,6 +43,7 @@ When docs conflict, stop and ask the human.
 
 - Docs exist
 - **New cycle:** run roadmap-planner first; wait for human approval
+- **After scope approval:** create or update the iteration ledger and `.ai/state/current-cycle.json` before implementation prompt generation
 - **Review/fix:** implementation summary exists
 - **Supervisor QA:** review gate clean
 - **Commit:** review gate clean; QA passed or explicitly skipped
@@ -52,26 +56,35 @@ When docs conflict, stop and ask the human.
 
 1. Run [roadmap-planner.md](./roadmap-planner.md)
 2. Wait for human approval
-3. Generate Cursor prompt via [cursor-implementation-prompt.md](./cursor-implementation-prompt.md)
-4. After implementation: `Use codex-review.`
+3. Create/update the active ledger under `docs/iterations/` and `.ai/state/current-cycle.json`
+4. Generate Cursor prompt via [cursor-implementation-prompt.md](./cursor-implementation-prompt.md)
+5. After implementation: update state to `review`, then `Use codex-review.`
 
 ### Review and fix loop
 
-5. `Use review-triage.`
-6. High/Medium → bounded fix prompt → re-implement → re-review
-7. Low only → ask human to **request an AI fix** or **explicitly accept/defer** each as debt (human never edits the tree)
+6. `Use review-triage.`
+7. High/Medium → bounded fix prompt → re-implement → re-review
+8. Low only → ask human to **request an AI fix** or **explicitly accept/defer** each as debt (human never edits the tree)
+9. Record accepted/deferred items in `.ai/state/debt.md`
 
 ### Supervisor QA and commit
 
-8. `Use supervisor-qa.` → human manual QA
-9. `Use commit-manager.` only after QA pass or explicit skip
-10. Implementation summary after commit
+10. `Use supervisor-qa.` → human manual QA
+11. Record QA outcome in the active ledger and current-cycle state
+12. `Use commit-manager.` only after QA pass or explicit skip
+13. Implementation summary after commit and final ledger/current-cycle update
 
 ### Scope preservation
 
 - Match approved slice only
 - Flag out-of-scope work from Cursor summaries
 - Never bundle unrelated ROADMAP items silently
+
+### Durable memory
+
+- Read `.ai/state/current-cycle.json`, `.ai/state/debt.md`, and the active ledger before choosing the next action
+- Update the ledger and current-cycle state at every phase transition
+- Treat state files as the durable record of prior decisions; a newer explicit human instruction overrides stale or incorrect state and must be recorded back into the ledger/current-cycle state
 
 ---
 
@@ -93,6 +106,8 @@ Produce the artifact for the **current phase only** (unless human asked for stat
 - Fix prompt → bounded list of findings only
 - Supervisor QA → [supervisor-qa.md](./supervisor-qa.md)
 - Commit → [commit-manager.md](./commit-manager.md)
+
+Every phase output must also state which ledger/current-cycle/debt updates were made or why no update was required.
 
 ### Cursor fix prompt template
 

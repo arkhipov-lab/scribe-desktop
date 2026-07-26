@@ -17,6 +17,8 @@ Read this file first. Then open the linked docs for depth.
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Change style, what not to commit |
 | [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md) | Local-only processing, permissions, logging rules |
 | [ROADMAP.md](ROADMAP.md) | Planned work (do not implement unless asked) |
+| [AI_CONVENTION.md](AI_CONVENTION.md) | Product convention for the AI development system |
+| [AI_SYSTEM_ROADMAP.md](AI_SYSTEM_ROADMAP.md) | Roadmap for process / AI-organization evolution |
 | [README.md](README.md) | User-facing overview |
 | [SYSTEM-REQUIREMENTS.md](SYSTEM-REQUIREMENTS.md) | Hardware and model defaults |
 | [docs/MANIFEST.md](docs/MANIFEST.md) | Dual goals: product + AI development process |

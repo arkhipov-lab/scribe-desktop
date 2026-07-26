@@ -31,6 +31,16 @@ Full pipeline: [docs/workflows/feature-development-pipeline.md](../../docs/workf
 
 Product cycle (above the pipeline): [docs/workflows/ai-product-development-cycle.md](../../docs/workflows/ai-product-development-cycle.md).
 
+## Mandatory state
+
+Every approved iteration must have:
+
+- an active ledger under [`docs/iterations/`](../../docs/iterations/);
+- current phase and gate status in [`.ai/state/current-cycle.json`](../state/current-cycle.json);
+- accepted or deferred debt in [`.ai/state/debt.md`](../state/debt.md).
+
+Each skill must read these artifacts before acting and update them when it completes a phase transition. Chat history is not durable process memory.
+
 ## Scribe invariants (all skills)
 
 - Local-only audio/transcript/summary processing

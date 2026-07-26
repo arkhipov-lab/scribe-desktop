@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "iteration": {
+    "id": "2026-07-26-ai-memory-foundation",
+    "name": "AI Memory Foundation",
+    "ledger_path": "docs/iterations/2026-07-26-ai-memory-foundation.md",
+    "status": "commit-ready",
+    "date_started": "2026-07-26",
+    "date_completed": null
+  },
+  "approved_scope": {
+    "source": "explicit user request in chat",
+    "date": "2026-07-26",
+    "goal": "Make durable AI development memory mandatory for future iterations.",
+    "in_scope": [
+      "Create docs/iterations/.",
+      "Use a ledger for every iteration.",
+      "Create .ai/state/current-cycle.json.",
+      "Create .ai/state/debt.md or .json.",
+      "Update skills so they read and update these artifacts."
+    ],
+    "out_of_scope": [
+      "Cycle validator scripts.",
+      "Full structured schemas.",
+      "New AI roles.",
+      "Product-facing Scribe behavior changes."
+    ]
+  },
+  "phase": "commit-ready",
+  "gates": {
+    "scope_approved": true,
+    "implementation_finished": true,
+    "review_gate": "clean",
+    "triage_status": "clean",
+    "supervisor_qa": "passed",
+    "commit_allowed": true
+  },
+  "artifacts": {
+    "debt_register": ".ai/state/debt.md",
+    "iteration_directory": "docs/iterations",
+    "latest_review": "re-review loop 3 clean (no High/Medium/Low)",
+    "latest_triage": "review gate clean; route to supervisor-qa",
+    "latest_qa": "passed 2026-07-27 by human Product Owner",
+    "latest_commit_prep": "commit-manager prepared 2026-07-27; awaiting explicit human commit approval"
+  },
+  "metrics": {
+    "review_loops": 3,
+    "human_decisions": 2,
+    "high_findings": 0,
+    "medium_findings": 0,
+    "low_findings": 0
+  },
+  "last_updated": "2026-07-27"
+}
