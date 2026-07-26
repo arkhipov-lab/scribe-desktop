@@ -1,9 +1,9 @@
 # Iteration: Validator Shipped-State Consistency
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `49643564806fcc0353dbe5e4e5da1ebfdfece137`
 
 ## Approved Scope
 
@@ -35,7 +35,7 @@
 | Review | Codex | loop 1 clean (no open findings) | done |
 | Triage | review-triage | review gate clean; route to supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated 2026-07-27; human passed 2026-07-27 | done |
-| Commit prep | commit-manager | commit prep ready 2026-07-27; awaiting approval | pending |
+| Commit prep | commit-manager | commit `4964356` created 2026-07-27 | done |
 | Retrospective | iteration-retrospective | pending role not yet implemented | pending |
 
 ## Implementation Summary
@@ -186,7 +186,7 @@ Confirm that the AI cycle validator rejects half-shipped state (disagreeing `pha
 | High findings | 0 | observed |
 | Medium findings | 0 | observed |
 | Low findings | 0 | observed |
-| Human decisions | 2 | observed (scope approval + QA pass) |
+| Human decisions | 3 | observed (scope approval + QA pass + commit approval) |
 
 ## Retrospective
 
