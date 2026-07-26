@@ -1,9 +1,9 @@
 # Iteration: AI Cycle Validator
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `ebc506a3b00ca22e74f78ba2aef1e1238fedc9ec`
 
 ## Approved Scope
 
@@ -46,7 +46,7 @@
 | Re-review | Codex independent review | loop 2 clean (no open findings); R1–R3 verified fixed | done |
 | Triage | review-triage | review gate clean; route to supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated 2026-07-27; human passed 2026-07-27 | done |
-| Commit prep | commit-manager | pending human commit approval | pending |
+| Commit prep | commit-manager | commit `ebc506a` created 2026-07-27 | done |
 
 ## Implementation Summary
 
@@ -229,16 +229,16 @@ Separate observed facts from estimates.
 | High findings | 0 | observed |
 | Medium findings | 0 open (1 fixed in loop 1: R1) | observed |
 | Low findings | 0 open (2 fixed in loop 1: R2–R3) | observed |
-| Human decisions | 2 | observed |
+| Human decisions | 3 | observed |
 
 ## Retrospective
 
-**What worked:** pending
+**What worked:** Approved scope was narrow and matched the planned process item from the memory-foundation iteration; validator regressions caught the findings-status bug before QA.
 
-**What caused rework:** pending
+**What caused rework:** Loop 1 unresolved-findings matcher used exact status equality and broke on annotated `fixed (...)` statuses and `|` inside finding text.
 
-**Repeated failure patterns:** pending
+**Repeated failure patterns:** Gate/check implementations that assume overly strict string equality against human-readable ledger conventions.
 
-**Process change recommended:** pending
+**Process change recommended:** Prefer prefix/column-robust parsing when validating markdown tables; keep negative regression checks for process scripts.
 
-**Next planning input:** pending
+**Next planning input:** Structured role output schemas are now unblocked (`P-2026-07-26-002`); retrospective role remains next after at least one complete ledger-backed iteration.
