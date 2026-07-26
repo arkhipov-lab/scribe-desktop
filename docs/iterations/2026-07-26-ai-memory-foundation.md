@@ -1,9 +1,9 @@
 # Iteration: AI Memory Foundation
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-26
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `8f7730098ef2969f6ecad823e2ce07ba3f9d8261`
 
 ## Approved Scope
 
@@ -38,7 +38,7 @@
 | Review | Codex independent review | re-review loop 3 clean (no open findings) | done |
 | Triage | review-triage | clean gate; route to supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated 2026-07-27; human passed 2026-07-27 | done |
-| Commit prep | commit-manager | prepared 2026-07-27; awaiting explicit human commit approval | done |
+| Commit prep | commit-manager | commit `8f77300` created 2026-07-27 | done |
 | Retrospective | iteration-retrospective | pending role not yet implemented | pending |
 
 ## Implementation Summary
@@ -237,7 +237,7 @@ Separate observed facts from estimates.
 | High findings | 0 (open) | observed |
 | Medium findings | 0 open (3 in loop 1; 1 in loop 2; all fixed) | observed |
 | Low findings | 0 open (1 in loop 2; fixed) | observed |
-| Human decisions | 2 | observed |
+| Human decisions | 3 | observed |
 
 ## Retrospective
 
