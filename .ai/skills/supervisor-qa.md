@@ -44,6 +44,7 @@ When docs conflict on expected behavior, stop and ask the human.
 - Lows fixed or explicitly accepted
 - Approved slice exists
 - Active ledger and current-cycle state exist
+- `scripts/ai-cycle-validate.sh` passes for the current state
 
 If gate not clean, stop and route to review-triage / codex-review.
 

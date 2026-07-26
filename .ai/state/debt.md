@@ -24,6 +24,6 @@ Keep debt separate from planned process roadmap work:
 
 | ID | Title | Source iteration | Priority | Type | Why planned | Owner role | Start condition | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| P-2026-07-26-001 | Cycle validator | `2026-07-26-ai-memory-foundation` | P2 | process_roadmap | Mandatory memory should exist before gates are enforced by scripts. | feature-manager | Start of enforceable gates work | planned |
+| P-2026-07-26-001 | Cycle validator | `2026-07-26-ai-memory-foundation` | P2 | process_roadmap | Mandatory memory should exist before gates are enforced by scripts. | feature-manager | Start of enforceable gates work | in_progress |
 | P-2026-07-26-002 | Structured role output schemas | `2026-07-26-ai-memory-foundation` | P2 | process_roadmap | Markdown remains the primary record until validator scripts or other machine consumers exist. | feature-manager | First validator/schema consumer is introduced | planned |
 | P-2026-07-26-003 | Retrospective role | `2026-07-26-ai-memory-foundation` | P1 | process_roadmap | Durable memory is needed before retrospectives can reliably compare iteration evidence. | feature-manager | After at least one complete ledger-backed iteration | planned |

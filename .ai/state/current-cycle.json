@@ -1,32 +1,37 @@
 {
   "schema_version": 1,
   "iteration": {
-    "id": "2026-07-26-ai-memory-foundation",
-    "name": "AI Memory Foundation",
-    "ledger_path": "docs/iterations/2026-07-26-ai-memory-foundation.md",
-    "status": "shipped",
-    "date_started": "2026-07-26",
-    "date_completed": "2026-07-27"
+    "id": "2026-07-27-ai-cycle-validator",
+    "name": "AI Cycle Validator",
+    "ledger_path": "docs/iterations/2026-07-27-ai-cycle-validator.md",
+    "status": "commit-ready",
+    "date_started": "2026-07-27",
+    "date_completed": null
   },
   "approved_scope": {
     "source": "explicit user request in chat",
-    "date": "2026-07-26",
-    "goal": "Make durable AI development memory mandatory for future iterations.",
+    "date": "2026-07-27",
+    "goal": "Add lightweight AI cycle validator scripts for the durable process state.",
     "in_scope": [
-      "Create docs/iterations/.",
-      "Use a ledger for every iteration.",
-      "Create .ai/state/current-cycle.json.",
-      "Create .ai/state/debt.md or .json.",
-      "Update skills so they read and update these artifacts."
+      "Add scripts/ai-cycle-status.sh.",
+      "Add scripts/ai-cycle-validate.sh.",
+      "Validate .ai/state/current-cycle.json.",
+      "Validate that the active ledger file exists.",
+      "Validate gate order for commit_allowed.",
+      "Validate shipped iterations have a commit hash.",
+      "Check unresolved findings.",
+      "Check forbidden paths.",
+      "Add short documentation for when to run the validator.",
+      "Update only workflow/skills locations that actually use the validator."
     ],
     "out_of_scope": [
-      "Cycle validator scripts.",
       "Full structured schemas.",
-      "New AI roles.",
-      "Product-facing Scribe behavior changes."
+      "Replacing human approval gates.",
+      "Product-facing Scribe behavior changes.",
+      "CI integration."
     ]
   },
-  "phase": "shipped",
+  "phase": "commit-ready",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
@@ -34,20 +39,22 @@
     "triage_status": "clean",
     "supervisor_qa": "passed",
     "commit_allowed": true,
-    "committed": true
+    "committed": false
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
     "iteration_directory": "docs/iterations",
-    "latest_review": "re-review loop 3 clean (no High/Medium/Low)",
+    "latest_review": "loop 2 clean (no open High/Medium/Low; R1–R3 remain fixed)",
     "latest_triage": "review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-27 by human Product Owner",
-    "latest_commit_prep": "commit-manager prepared 2026-07-27",
-    "commit": "8f7730098ef2969f6ecad823e2ce07ba3f9d8261"
+    "latest_commit_prep": "commit-manager prepared 2026-07-27; awaiting human commit approval",
+    "commit": null,
+    "previous_iteration": "2026-07-26-ai-memory-foundation",
+    "latest_fix": "R1–R3 applied 2026-07-27; verified on re-review"
   },
   "metrics": {
-    "review_loops": 3,
-    "human_decisions": 3,
+    "review_loops": 2,
+    "human_decisions": 2,
     "high_findings": 0,
     "medium_findings": 0,
     "low_findings": 0

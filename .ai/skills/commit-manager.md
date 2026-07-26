@@ -37,6 +37,7 @@ Use commit-manager.
 - Supervisor QA **passed** or **explicitly skipped** (record skip)
 - Verification reported
 - Active ledger and current-cycle state are up to date through QA
+- `scripts/ai-cycle-validate.sh` passes
 - Human has **not** yet authorized the commit in the current message — prepare first
 
 ---
@@ -45,7 +46,7 @@ Use commit-manager.
 
 ### Check gate
 
-If not clean, stop and route to review-triage / codex-review / supervisor-qa. Do not prepare a commit.
+Run `scripts/ai-cycle-validate.sh`. If it fails, stop and route to review-triage / codex-review / supervisor-qa or state repair. Do not prepare a commit.
 
 ### Run final verification
 
@@ -147,6 +148,7 @@ Record the commit hash in the active ledger, update `.ai/state/current-cycle.jso
 |-------|--------|
 | `(cd frontend && npm run build)` | pass/fail/skipped |
 | `./scripts/run-dev.sh` smoke | ... |
+| `scripts/ai-cycle-validate.sh` | pass/fail |
 
 ### Suggested commit message
 

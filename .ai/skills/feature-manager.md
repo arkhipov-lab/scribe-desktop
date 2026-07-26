@@ -83,7 +83,9 @@ When docs conflict, stop and ask the human.
 ### Durable memory
 
 - Read `.ai/state/current-cycle.json`, `.ai/state/debt.md`, and the active ledger before choosing the next action
+- Run `scripts/ai-cycle-status.sh` when resuming or reporting the active cycle
 - Update the ledger and current-cycle state at every phase transition
+- Run `scripts/ai-cycle-validate.sh` after state updates that move the cycle toward QA or commit
 - Treat state files as the durable record of prior decisions; a newer explicit human instruction overrides stale or incorrect state and must be recorded back into the ledger/current-cycle state
 
 ---

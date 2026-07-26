@@ -126,6 +126,8 @@ Every phase transition must update the active ledger and `current-cycle.json`.
 
 State is the durable record of prior decisions. A newer explicit human instruction overrides stale or incorrect state and must be recorded back into the ledger/current-cycle state before the workflow continues.
 
+Run `scripts/ai-cycle-status.sh` when resuming an iteration. Run `scripts/ai-cycle-validate.sh` after state edits, before supervisor QA, and before commit preparation. Validation must pass before commit prep begins.
+
 ---
 
 ## Review Gate

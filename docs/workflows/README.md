@@ -14,6 +14,19 @@ Every approved product or process iteration must have durable memory before impl
 
 Agents must read these artifacts at the start of each workflow step and update them when the phase changes. Chat history is supporting context, not the source of truth.
 
+## Cycle validator
+
+Use the lightweight validator when checking or advancing cycle state:
+
+```bash
+scripts/ai-cycle-status.sh
+scripts/ai-cycle-validate.sh
+```
+
+Run `scripts/ai-cycle-status.sh` when resuming work or before choosing the next workflow action. Run `scripts/ai-cycle-validate.sh` after state edits, before supervisor QA, and before commit preparation.
+
+The validator checks JSON validity, ledger existence, phase gates, unresolved High/Medium findings, QA/commit prerequisites, shipped commit hashes, and forbidden paths.
+
 ## Operating model
 
 [AI Product Development Cycle](./ai-product-development-cycle.md) — product-level loop: planning → engineering delivery → demo → retrospectives → analytics → process evolution → next priority.
