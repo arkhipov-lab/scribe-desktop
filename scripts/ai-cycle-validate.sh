@@ -168,26 +168,47 @@ check_phase_gates() {
   esac
 }
 
-check_shipped_commit_hash() {
-  local phase status commit
+check_shipped_consistency() {
+  local phase status commit committed errors_before
+  local phase_shipped=false status_shipped=false any_shipped_marker=false
+  errors_before=$errors
   phase="$(jq_raw '.phase // ""')"
   status="$(jq_raw '.iteration.status // ""')"
   commit="$(jq_raw '.artifacts.commit // ""')"
+  committed="$(jq_raw '.gates.committed // false')"
 
-  if [[ "$phase" != "shipped" && "$status" != "shipped" ]]; then
+  [[ "$phase" == "shipped" ]] && phase_shipped=true
+  [[ "$status" == "shipped" ]] && status_shipped=true
+  if [[ "$phase_shipped" == true || "$status_shipped" == true ]] || is_truthy "$committed"; then
+    any_shipped_marker=true
+  fi
+
+  if [[ "$any_shipped_marker" != true ]]; then
     ok "iteration is not shipped"
     return
   fi
 
-  if [[ -z "$commit" || "$commit" == "null" || "$commit" == "pending" ]]; then
-    fail "shipped iteration must record artifacts.commit"
-    return
+  # Any shipped marker requires phase, status, and committed to agree.
+  if [[ "$phase_shipped" != true ]]; then
+    fail "shipped markers disagree: phase=$phase (expected shipped) with status=$status gates.committed=$committed"
+  fi
+  if [[ "$status_shipped" != true ]]; then
+    fail "shipped markers disagree: iteration.status=$status (expected shipped) with phase=$phase gates.committed=$committed"
+  fi
+  if ! is_truthy "$committed"; then
+    fail "shipped markers disagree: gates.committed=$committed (expected true) with phase=$phase iteration.status=$status"
   fi
 
-  if [[ "$commit" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
-    ok "shipped iteration records commit hash"
+  if [[ -z "$commit" || "$commit" == "null" || "$commit" == "pending" ]]; then
+    fail "shipped iteration must record artifacts.commit"
+  elif [[ "$commit" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+    :
   else
     fail "shipped iteration commit does not look like a git hash: $commit"
+  fi
+
+  if (( errors == errors_before )); then
+    ok "shipped markers are consistent (phase, status, committed, commit hash)"
   fi
 }
 
@@ -267,7 +288,7 @@ main() {
     check_ledger_exists
     check_phase_gates
     check_commit_gate_order
-    check_shipped_commit_hash
+    check_shipped_consistency
     check_unresolved_findings
     check_forbidden_paths
   fi

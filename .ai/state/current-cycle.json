@@ -1,37 +1,32 @@
 {
   "schema_version": 1,
   "iteration": {
-    "id": "2026-07-27-ai-cycle-validator",
-    "name": "AI Cycle Validator",
-    "ledger_path": "docs/iterations/2026-07-27-ai-cycle-validator.md",
-    "status": "shipped",
+    "id": "2026-07-27-validator-shipped-consistency",
+    "name": "Validator Shipped-State Consistency",
+    "ledger_path": "docs/iterations/2026-07-27-validator-shipped-consistency.md",
+    "status": "commit-ready",
     "date_started": "2026-07-27",
-    "date_completed": "2026-07-27"
+    "date_completed": null
   },
   "approved_scope": {
-    "source": "explicit user request in chat",
+    "source": "explicit approval of Option A in chat",
     "date": "2026-07-27",
-    "goal": "Add lightweight AI cycle validator scripts for the durable process state.",
+    "goal": "Make scripts/ai-cycle-validate.sh reject inconsistent shipped markers.",
     "in_scope": [
-      "Add scripts/ai-cycle-status.sh.",
-      "Add scripts/ai-cycle-validate.sh.",
-      "Validate .ai/state/current-cycle.json.",
-      "Validate that the active ledger file exists.",
-      "Validate gate order for commit_allowed.",
-      "Validate shipped iterations have a commit hash.",
-      "Check unresolved findings.",
-      "Check forbidden paths.",
-      "Add short documentation for when to run the validator.",
-      "Update only workflow/skills locations that actually use the validator."
+      "Tighten shipped consistency in scripts/ai-cycle-validate.sh.",
+      "Require gates.committed=true when iteration.status=shipped and align phase/status/commit fields.",
+      "Add regression check for status=shipped + phase=QA + committed=false + real artifacts.commit → fail.",
+      "Minimal ledger/docs/skill touch only if needed."
     ],
     "out_of_scope": [
-      "Full structured schemas.",
-      "Replacing human approval gates.",
+      "Full JSON schemas.",
+      "CI integration.",
+      "Retrospective role.",
       "Product-facing Scribe behavior changes.",
-      "CI integration."
+      "Broader validator redesign."
     ]
   },
-  "phase": "shipped",
+  "phase": "commit-ready",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
@@ -39,22 +34,22 @@
     "triage_status": "clean",
     "supervisor_qa": "passed",
     "commit_allowed": true,
-    "committed": true
+    "committed": false
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
     "iteration_directory": "docs/iterations",
-    "latest_review": "loop 2 clean (no open High/Medium/Low; R1–R3 remain fixed)",
+    "latest_review": "loop 1 clean (no open High/Medium/Low)",
     "latest_triage": "review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-27 by human Product Owner",
-    "latest_commit_prep": "commit-manager prepared 2026-07-27",
-    "commit": "ebc506a3b00ca22e74f78ba2aef1e1238fedc9ec",
-    "previous_iteration": "2026-07-26-ai-memory-foundation",
-    "latest_fix": "R1–R3 applied 2026-07-27; verified on re-review"
+    "latest_commit_prep": "commit-manager prepared 2026-07-27; awaiting human commit approval",
+    "commit": null,
+    "previous_iteration": "2026-07-27-ai-cycle-validator",
+    "latest_fix": null
   },
   "metrics": {
-    "review_loops": 2,
-    "human_decisions": 3,
+    "review_loops": 1,
+    "human_decisions": 2,
     "high_findings": 0,
     "medium_findings": 0,
     "low_findings": 0
