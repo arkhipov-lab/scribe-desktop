@@ -1,9 +1,9 @@
 # Iteration: Retrospective Metrics
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `0f73cc394824e04a04a2e0c64a2330ea34a7e081`
 
 ## Approved Scope
 
@@ -43,8 +43,8 @@
 | Triage | review-triage | loop 2: human requested AI fix for R5–R6 | done |
 | Fix | Cursor | R5–R6 Low polish 2026-07-27 | done |
 | Supervisor QA | supervisor-qa | plan generated 2026-07-27; human passed 2026-07-27 | done |
-| Commit prep | commit-manager | commit-ready prep 2026-07-27; awaiting approval | pending |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `0f73cc3` created 2026-07-27 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-27; next planning → P-002 schemas | done |
 
 ## Implementation Summary
 
@@ -217,25 +217,41 @@ Separate observed facts from estimates.
 
 | Metric | Value | Source type | Evidence |
 | --- | --- | --- | --- |
-| Elapsed time | pending | observed | Ledger timestamps pending completion |
-| Agent turns | pending | observed | Conversation turns pending completion |
-| Approx token use | pending | estimated | Estimate unavailable during implementation |
-| Review loops | 2 | observed | Loop 1 fix + loop 2 re-review |
-| High findings | 0 | observed | Loop 2 re-review |
-| Medium findings | 0 | observed | Loop 2 re-review; R1–R3 fixed |
-| Low findings | 0 | observed | R5–R6 fixed; no open Lows |
-| Human decisions | 3 | observed | Scope request + AI-fix R5–R6 + QA pass |
-| QA outcome | passed | observed | Human Product Owner 2026-07-27 |
-| Outcome | pending | observed | Awaiting commit |
+| Elapsed time | same calendar day (2026-07-27) | estimated | `date_started` = `date_completed`; wall-clock span not instrumented |
+| Agent turns | ~20 across implement/review/QA/commit | estimated | Skill invocations in this chat cycle; exact turn counter unavailable |
+| Approx token use | unavailable | estimated | No token meter in this session |
+| Review loops | 2 | observed | Ledger handoffs: loop 1 Mediums → fix → loop 2 Lows |
+| High findings | 0 | observed | Review findings table |
+| Medium findings | 3 | observed | R1–R3 in loop 1; all fixed before ship |
+| Low findings | 3 | observed | R4–R6; all fixed before ship |
+| Human decisions | 4 | observed | Scope approval; AI-fix R5–R6; QA pass; commit approval |
+| QA outcome | passed | observed | Supervisor QA human decision 2026-07-27 |
+| Outcome | shipped | observed | Commit `0f73cc3` + retrospective complete |
 
 ## Retrospective
 
-**What worked:** pending
+**What worked:**
+- Bounded process slice stayed out of Scribe product paths.
+- Review caught the post-commit `shipped` vs `retrospective` gate conflict before ship.
+- Synthetic validator cases (after R3) made the chosen phase model enforceable.
+- Human Low decision was cheap and cleared the gate without another full review loop.
 
-**What caused rework:** pending
+**What caused rework:**
+- First implementation wired retrospective after commit but still jumped to `shipped` and left `committed=true` as a shipped marker, conflicting with the prior shipped-consistency rules.
+- Ledger/status vocabulary and overview diagrams lagged the new phase (R2, R5, R6).
+- New validator path shipped without synthetic checks until review (R3).
 
-**Repeated failure patterns:** pending
+**Repeated failure patterns:**
 
-**Process change recommended:** pending
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| New phase/gate disagrees with existing shipped/commit consistency | This iteration R1; earlier `2026-07-26-ai-memory-foundation` illegal QA-before-review-clean state; `2026-07-27-validator-shipped-consistency` existed because markers drifted | yes | gate: when adding a phase, update consistency checks + skill handoffs in the same slice |
+| New validator behavior under-verified until review | This iteration R3; `2026-07-27-ai-cycle-validator` needed synthetic matcher cases after loop 1 | yes | test: implementer verification must include synthetic pass/fail cases for new validate branches |
+| Skill/overview copy drifts from pipeline steps | This iteration R5–R6 (Low); not clearly repeated earlier | unknown | none for now (fixed); revisit only if it recurs |
 
-**Next planning input:** pending
+**Process change recommended:**
+1. Treat “new cycle phase” as a checklist item: update `commit-manager` / pipeline / ledger vocab / `check_*` consistency together, and record synthetic validate cases in Verification before review.
+2. No second process change recommended this iteration.
+
+**Next planning input:**
+Planned process work `P-2026-07-26-002` (structured role output schemas) is the next natural AI-system slice; otherwise return to product ROADMAP if the Product Owner wants Scribe-facing work next.

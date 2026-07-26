@@ -4,9 +4,9 @@
     "id": "2026-07-27-retrospective-metrics",
     "name": "Retrospective Metrics",
     "ledger_path": "docs/iterations/2026-07-27-retrospective-metrics.md",
-    "status": "commit-ready",
+    "status": "shipped",
     "date_started": "2026-07-27",
-    "date_completed": null
+    "date_completed": "2026-07-27"
   },
   "approved_scope": {
     "source": "explicit user request in chat",
@@ -27,16 +27,16 @@
       "CI integration."
     ]
   },
-  "phase": "commit-ready",
+  "phase": "shipped",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "pending",
+    "retrospective": "done",
     "commit_allowed": true,
-    "committed": false
+    "committed": true
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -44,19 +44,19 @@
     "latest_review": "loop 2: 0 High, 0 Medium; R5–R6 Low fixed after human AI-fix request",
     "latest_triage": "review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-27 by human Product Owner",
-    "latest_commit_prep": "commit-manager prepared 2026-07-27; awaiting human approval",
-    "latest_retrospective": null,
-    "commit": null,
+    "latest_commit_prep": "commit 0f73cc3 created 2026-07-27",
+    "latest_retrospective": "completed 2026-07-27; next planning → P-002 schemas",
+    "commit": "0f73cc394824e04a04a2e0c64a2330ea34a7e081",
     "previous_iteration": "2026-07-27-validator-shipped-consistency"
   },
   "metrics": {
     "review_loops": 2,
-    "human_decisions": 3,
+    "human_decisions": 4,
     "high_findings": 0,
-    "medium_findings": 0,
-    "low_findings": 0,
+    "medium_findings": 3,
+    "low_findings": 3,
     "qa_outcome": "passed",
-    "outcome": null
+    "outcome": "shipped"
   },
   "last_updated": "2026-07-27"
 }
