@@ -10,9 +10,9 @@ Metrics make process learning durable. They inform Product Owner judgment but do
 | Agent turns | observed from conversation/ledger when available |
 | Approx token use | estimated unless a tool reports it |
 | Review loops | observed from review/triage records |
-| High findings | observed from review records |
-| Medium findings | observed from review records |
-| Low findings | observed from review records |
+| High findings | observed from `.ai/state/review-findings.json` (markdown ledger supporting) |
+| Medium findings | observed from `.ai/state/review-findings.json` (markdown ledger supporting) |
+| Low findings | observed from `.ai/state/review-findings.json` (markdown ledger supporting) |
 | Human decisions | observed from explicit approvals/rejections/skips |
 | QA outcome | observed from human QA result |
 | Outcome | observed from final iteration status |

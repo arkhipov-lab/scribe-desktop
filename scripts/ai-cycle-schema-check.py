@@ -133,7 +133,7 @@ def main() -> int:
         print(f"schema validation failed with {len(errors)} issue(s).", file=sys.stderr)
         return 1
 
-    print("OK: current-cycle.json matches schema subset")
+    print("OK: JSON matches schema subset")
     return 0
 
 

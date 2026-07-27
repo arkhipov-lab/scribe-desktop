@@ -33,6 +33,7 @@ Use codex-review.
 | [`.ai/product/`](../product/) | Product invariants and scenario adapters |
 | [`.ai/repo/`](../repo/) | Stack, validation, and forbidden-path adapters |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, approved scope, and gate state |
+| [`.ai/state/review-findings.json`](../state/review-findings.json) | Structured findings for this iteration (propose updates; do not edit) |
 | [`.ai/state/debt.md`](../state/debt.md) | Previously accepted/deferred debt |
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Role handoffs, implementation summary, verification evidence |
 | Implementation summary + approved slice | Always |
@@ -86,7 +87,17 @@ Cite file and line. Judge against **docs and iteration scope**, not personal sty
 
 ### Propose durable memory updates
 
-After review, output proposed ledger/current-cycle updates for the orchestrator or review-triage role to apply, including the next `handoff` (`next_role` typically `review-triage`, or `human-product-owner` if a product decision is required). Do not edit the working tree or mutate state files as part of the review; the reviewed diff must remain stable.
+After review, output proposed ledger / current-cycle / **review-findings.json** updates for the orchestrator or review-triage role to apply, including the next `handoff` (`next_role` typically `review-triage`, or `human-product-owner` if a product decision is required). Do not edit the working tree or mutate state files as part of the review; the reviewed diff must remain stable.
+
+Every review output must include:
+
+1. **Human-readable findings** for chat and the markdown ledger table.
+2. **Proposed structured `review-findings.json` updates** (full finding objects or a clear patch list).
+3. **Review loop number** (integer ≥ 1).
+4. **Exact severity** (`High` | `Medium` | `Low`) and **exact status** (initially usually `open`).
+5. **Clear owner / next role** per finding and in the handoff proposal.
+
+Keep finding `id` values stable inside the iteration (`R1`, `R2`, …). Set `location` to `path:line` when possible; use `null` only for process-level / repo-wide findings. Do not invent debt or product-followup ids during review — triage owns those links.
 
 ---
 
@@ -103,10 +114,13 @@ After review, output proposed ledger/current-cycle updates for the orchestrator 
 ```markdown
 ## Findings
 
-### Finding N
+### Finding N (ID: Rn)
 
 - **Severity:** High | Medium | Low
-- **File and line:** `path:line`
+- **Status:** open (usual at first report) | fixed | accepted_debt | deferred | not_reproducible
+- **Review loop:** <integer ≥ 1>
+- **File and line:** `path:line` (or `null` if process-level)
+- **Owner / next role:** <role>
 - **What is wrong:**
 - **Why it matters:**
 - **Suggested fix:**
@@ -125,8 +139,19 @@ After review, output proposed ledger/current-cycle updates for the orchestrator 
 
 ## Proposed state updates
 
-- Ledger:
-- Current cycle:
+- Ledger (markdown findings table):
+- Current cycle (`metrics.*_findings`, `artifacts.latest_review`, `handoff`):
+- Structured review-findings.json (propose objects; do not write the file). Example finding object fields:
+  - `id`: `R1`
+  - `review_loop`: `1`
+  - `severity`: `Medium`
+  - `status`: `open`
+  - `summary`: short non-empty text
+  - `location`: `path:line` or `null` if process-level
+  - `owner`: next role (e.g. `implementation-agent`)
+  - `resolution`: `null` until triage/fix
+  - `debt_id`: `null` (triage sets when `accepted_debt`)
+  - `product_followup_id`: `null` (triage sets only for product wishes)
 ```
 
 ### Severity guide

@@ -5,6 +5,8 @@ set -u -o pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STATE_FILE="${AI_CYCLE_STATE:-$ROOT/.ai/state/current-cycle.json}"
 SCHEMA_FILE="${AI_CYCLE_SCHEMA:-$ROOT/.ai/org/schemas/current-cycle.schema.json}"
+FINDINGS_FILE="${AI_CYCLE_FINDINGS:-$ROOT/.ai/state/review-findings.json}"
+FINDINGS_SCHEMA_FILE="${AI_CYCLE_FINDINGS_SCHEMA:-$ROOT/.ai/org/schemas/review-findings.schema.json}"
 SCHEMA_CHECK="$ROOT/scripts/ai-cycle-schema-check.py"
 
 errors=0
@@ -459,7 +461,230 @@ check_unresolved_findings() {
     fail "ledger has unresolved High/Medium findings:"
     printf '%s\n' "$unresolved" >&2
   else
-    ok "no unresolved High/Medium findings in ledger"
+    ok "no unresolved High/Medium findings in ledger (markdown compatibility)"
+  fi
+}
+
+jq_findings_raw() {
+  jq -r "$1" "$FINDINGS_FILE"
+}
+
+debt_id_exists() {
+  local debt_id="$1"
+  local debt_path debt_abs
+  debt_path="$(jq_raw '.artifacts.debt_register // ".ai/state/debt.md"')"
+  if [[ -z "$debt_path" || "$debt_path" == "null" ]]; then
+    debt_path=".ai/state/debt.md"
+  fi
+  debt_abs="$ROOT/$debt_path"
+  if [[ ! -f "$debt_abs" ]]; then
+    return 1
+  fi
+  # Match table rows only under ## Open Debt / ## Closed Debt (not Planned Process Work).
+  awk -F'|' -v id="$debt_id" '
+    /^##[[:space:]]+Open Debt/ { section = "debt"; next }
+    /^##[[:space:]]+Closed Debt/ { section = "debt"; next }
+    /^##/ { section = "other"; next }
+    section == "debt" && /^\|/ {
+      cell = $2
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", cell)
+      if (cell == "" || cell == "ID" || cell ~ /^-+$/) next
+      if (cell == id) { found = 1; exit }
+    }
+    END { exit found ? 0 : 1 }
+  ' "$debt_abs"
+}
+
+product_followup_id_exists() {
+  local followup_id="$1"
+  local followups_path followups_abs
+  followups_path="$(jq_raw '.artifacts.product_followups_register // ".ai/state/product-followups.md"')"
+  if [[ -z "$followups_path" || "$followups_path" == "null" ]]; then
+    followups_path=".ai/state/product-followups.md"
+  fi
+  followups_abs="$ROOT/$followups_path"
+  if [[ ! -f "$followups_abs" ]]; then
+    return 1
+  fi
+  awk -F'|' -v id="$followup_id" '
+    /^\|/ {
+      cell = $2
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", cell)
+      if (cell == id) { found = 1; exit }
+    }
+    END { exit found ? 0 : 1 }
+  ' "$followups_abs"
+}
+
+check_review_findings() {
+  local errors_before=$errors
+  local iteration_id findings_iteration
+  local high_count medium_count low_count
+  local metrics_high metrics_medium metrics_low
+  local unresolved_json debt_issues product_wish_issues duplicate_ids
+
+  if [[ ! -f "$FINDINGS_FILE" ]]; then
+    fail "review-findings file missing: $FINDINGS_FILE"
+    return
+  fi
+
+  if jq empty "$FINDINGS_FILE" >/dev/null 2>&1; then
+    ok "review-findings.json is valid JSON"
+  else
+    fail "review-findings.json is not valid JSON: $FINDINGS_FILE"
+    return
+  fi
+
+  if [[ ! -f "$FINDINGS_SCHEMA_FILE" ]]; then
+    fail "review-findings schema missing: $FINDINGS_SCHEMA_FILE"
+    return
+  fi
+
+  local schema_output
+  if schema_output="$(python3 "$SCHEMA_CHECK" "$FINDINGS_FILE" "$FINDINGS_SCHEMA_FILE" 2>&1)"; then
+    ok "review-findings.json matches schema"
+  else
+    printf '%s\n' "$schema_output" >&2
+    fail "review-findings.json failed schema validation"
+    return
+  fi
+
+  iteration_id="$(jq_raw '.iteration.id // ""')"
+  findings_iteration="$(jq_findings_raw '.iteration_id // ""')"
+  if [[ -z "$findings_iteration" || "$findings_iteration" == "null" ]]; then
+    fail "review-findings.iteration_id is missing"
+  elif [[ "$findings_iteration" != "$iteration_id" ]]; then
+    fail "review-findings.iteration_id ($findings_iteration) does not match current-cycle.iteration.id ($iteration_id)"
+  else
+    ok "review-findings.iteration_id matches current-cycle"
+  fi
+
+  high_count="$(jq -r '[.findings[] | select(.severity == "High")] | length' "$FINDINGS_FILE")"
+  medium_count="$(jq -r '[.findings[] | select(.severity == "Medium")] | length' "$FINDINGS_FILE")"
+  low_count="$(jq -r '[.findings[] | select(.severity == "Low")] | length' "$FINDINGS_FILE")"
+  metrics_high="$(jq_raw '.metrics.high_findings')"
+  metrics_medium="$(jq_raw '.metrics.medium_findings')"
+  metrics_low="$(jq_raw '.metrics.low_findings')"
+
+  if [[ "$metrics_high" == "null" || -z "$metrics_high" ]]; then
+    fail "current-cycle.metrics.high_findings is null/missing; must equal structured High count ($high_count)"
+  elif [[ "$metrics_high" != "$high_count" ]]; then
+    fail "current-cycle.metrics.high_findings ($metrics_high) != structured High findings ($high_count)"
+  else
+    ok "metrics.high_findings matches structured findings ($high_count)"
+  fi
+
+  if [[ "$metrics_medium" == "null" || -z "$metrics_medium" ]]; then
+    fail "current-cycle.metrics.medium_findings is null/missing; must equal structured Medium count ($medium_count)"
+  elif [[ "$metrics_medium" != "$medium_count" ]]; then
+    fail "current-cycle.metrics.medium_findings ($metrics_medium) != structured Medium findings ($medium_count)"
+  else
+    ok "metrics.medium_findings matches structured findings ($medium_count)"
+  fi
+
+  if [[ "$metrics_low" == "null" || -z "$metrics_low" ]]; then
+    fail "current-cycle.metrics.low_findings is null/missing; must equal structured Low count ($low_count)"
+  elif [[ "$metrics_low" != "$low_count" ]]; then
+    fail "current-cycle.metrics.low_findings ($metrics_low) != structured Low findings ($low_count)"
+  else
+    ok "metrics.low_findings matches structured findings ($low_count)"
+  fi
+
+  duplicate_ids="$(
+    jq -r '
+      .findings
+      | map(.id)
+      | group_by(.)
+      | map(select(length > 1) | .[0])
+      | .[]
+    ' "$FINDINGS_FILE"
+  )"
+  if [[ -n "$duplicate_ids" ]]; then
+    fail "review-findings has duplicate finding ids:"
+    printf '%s\n' "$duplicate_ids" >&2
+  fi
+
+  empty_locations="$(
+    jq -r '
+      .findings[]
+      | select(.location != null and (.location | type) == "string" and (.location | length) == 0)
+      | .id
+    ' "$FINDINGS_FILE"
+  )"
+  if [[ -n "$empty_locations" ]]; then
+    fail "review-findings location must be null or a non-empty path (empty string not allowed):"
+    printf '%s\n' "$empty_locations" >&2
+  fi
+
+  unresolved_json="$(
+    jq -r '
+      .findings[]
+      | select(.severity == "High" or .severity == "Medium")
+      | select(.status != "fixed" and .status != "not_reproducible")
+      | "\(.id) \(.severity) \(.status)"
+    ' "$FINDINGS_FILE"
+  )"
+  if [[ -n "$unresolved_json" ]]; then
+    fail "structured High/Medium findings must be fixed or not_reproducible before commit:"
+    printf '%s\n' "$unresolved_json" >&2
+  else
+    ok "no unresolved High/Medium findings in review-findings.json"
+  fi
+
+  debt_issues="$(
+    jq -r '
+      .findings[]
+      | select(.status == "accepted_debt")
+      | if (.debt_id == null or .debt_id == "") then
+          "MISSING\t\(.id)"
+        else
+          "CHECK\t\(.id)\t\(.debt_id)"
+        end
+    ' "$FINDINGS_FILE"
+  )"
+  if [[ -n "$debt_issues" ]]; then
+    while IFS=$'\t' read -r kind fid did; do
+      if [[ "$kind" == "MISSING" ]]; then
+        fail "finding $fid accepted_debt missing debt_id"
+      elif ! debt_id_exists "$did"; then
+        fail "finding $fid accepted_debt references missing debt id: $did"
+      fi
+    done <<< "$debt_issues"
+  else
+    ok "accepted_debt findings reference existing debt ids (or none present)"
+  fi
+
+  # Product wishes must not be filed as technical review debt.
+  product_wish_issues="$(
+    jq -r '
+      .findings[]
+      | select(.product_followup_id != null and .product_followup_id != "")
+      | select(.status == "accepted_debt" or (.debt_id != null and .debt_id != ""))
+      | "\(.id) product_followup_id=\(.product_followup_id) must not also be accepted as review debt"
+    ' "$FINDINGS_FILE"
+  )"
+  if [[ -n "$product_wish_issues" ]]; then
+    fail "product wishes must go to product-followups.md, not review debt:"
+    printf '%s\n' "$product_wish_issues" >&2
+  fi
+
+  followup_rows="$(
+    jq -r '
+      .findings[]
+      | select(.product_followup_id != null and .product_followup_id != "")
+      | "\(.id)\t\(.product_followup_id)"
+    ' "$FINDINGS_FILE"
+  )"
+  if [[ -n "$followup_rows" ]]; then
+    while IFS=$'\t' read -r fid pfid; do
+      if ! product_followup_id_exists "$pfid"; then
+        fail "finding $fid product_followup_id references missing follow-up: $pfid"
+      fi
+    done <<< "$followup_rows"
+  fi
+
+  if (( errors == errors_before )); then
+    ok "review-findings consistency checks passed"
   fi
 }
 
@@ -504,6 +729,7 @@ main() {
     check_commit_gate_order
     check_committed_phase
     check_shipped_consistency
+    check_review_findings
     check_unresolved_findings
     check_forbidden_paths
   fi

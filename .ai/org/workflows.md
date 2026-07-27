@@ -29,6 +29,7 @@ Every approved iteration needs:
 
 - a ledger under `docs/iterations/`;
 - current phase, gates, and structured `handoff` in `.ai/state/current-cycle.json`;
+- structured review findings in `.ai/state/review-findings.json` (markdown ledger remains human-readable);
 - accepted/deferred debt and planned process work in `.ai/state/debt.md`;
 - product follow-ups / wishes in `.ai/state/product-followups.md` (global curated register; ledger holds per-iteration capture notes).
 
@@ -56,4 +57,4 @@ Ledger/current-cycle should be able to record:
 - No forbidden artifacts staged.
 - No commit without explicit human approval.
 
-Run the cycle status and cycle validator commands defined by the repo validation adapter (`.ai/repo/validation.md`): status when resuming work; validator after state edits, before supervisor QA, and before commit preparation. The validator checks the current-cycle schema (including `handoff`) plus ledger/register existence, phase/gate consistency, and unresolved High/Medium findings.
+Run the cycle status and cycle validator commands defined by the repo validation adapter (`.ai/repo/validation.md`): status when resuming work; validator after state edits, before supervisor QA, and before commit preparation. The validator checks the current-cycle schema (including `handoff`), structured `review-findings.json` (schema, metrics reconciliation, High/Medium status, accepted_debt ids under Open/Closed Debt), ledger/register existence, phase/gate consistency, and unresolved High/Medium findings in the markdown ledger (compatibility layer).

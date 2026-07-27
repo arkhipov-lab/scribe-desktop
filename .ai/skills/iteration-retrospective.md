@@ -20,6 +20,7 @@ Use iteration-retrospective.
 | --- | --- |
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Scope, handoffs, findings, QA, verification, metrics |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, phase, gate state, metrics |
+| [`.ai/state/review-findings.json`](../state/review-findings.json) | **Primary** source for High/Medium/Low finding counts and statuses |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt and planned process work |
 | [`.ai/state/product-followups.md`](../state/product-followups.md) | Whether QA/planning wishes were captured (not debt) |
 | [`.ai/org/`](../org/) | Reusable roles, workflow, metrics, and schema targets |
@@ -82,6 +83,13 @@ Use **estimated** for approximate token use, inferred human effort, partial elap
 
 Never mix the source label into the value. Keep value, source type, and evidence separate.
 
+### Finding counts (required primary source)
+
+- Treat `.ai/state/review-findings.json` as the **primary** source for High / Medium / Low counts and final statuses.
+- Use the markdown ledger Review Findings table as **supporting evidence** (human-readable narrative, citations).
+- If ledger and structured findings disagree, prefer structured findings, record the discrepancy in the retrospective, and fix state before shipping metrics.
+- Ensure `current-cycle.metrics.*_findings` equals structured severity counts before finalizing.
+
 ---
 
 ## Output Contract
@@ -103,9 +111,9 @@ Never mix the source label into the value. Keep value, source type, and evidence
 | Agent turns | ... | observed/estimated | ... |
 | Approx token use | ... | estimated | ... |
 | Review loops | ... | observed | ... |
-| High findings | ... | observed | ... |
-| Medium findings | ... | observed | ... |
-| Low findings | ... | observed | ... |
+| High findings | ... | observed | review-findings.json (+ ledger) |
+| Medium findings | ... | observed | review-findings.json (+ ledger) |
+| Low findings | ... | observed | review-findings.json (+ ledger) |
 | Human decisions | ... | observed | ... |
 | QA outcome | ... | observed | ... |
 | Outcome | ... | observed | ... |
@@ -141,6 +149,7 @@ Never mix the source label into the value. Keep value, source type, and evidence
 
 - Ledger:
 - Current cycle:
+- Structured review-findings.json (confirm metrics alignment):
 - Debt register:
 ```
 

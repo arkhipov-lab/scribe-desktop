@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scribe.local/.ai/org/schemas/review-findings.schema.json",
+  "title": "AI Development Review Findings",
+  "description": "Machine-readable review findings for the active or latest AI Native SDLC iteration. Markdown ledgers remain the human-readable record.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "iteration_id",
+    "findings",
+    "last_updated"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "iteration_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "review_loop",
+          "severity",
+          "status",
+          "summary",
+          "location",
+          "owner",
+          "resolution",
+          "debt_id",
+          "product_followup_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "review_loop": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["High", "Medium", "Low"]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "fixed",
+              "accepted_debt",
+              "deferred",
+              "not_reproducible"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "type": ["string", "null"],
+            "minLength": 1
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "resolution": {
+            "type": ["string", "null"]
+          },
+          "debt_id": {
+            "type": ["string", "null"]
+          },
+          "product_followup_id": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "last_updated": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -26,6 +26,7 @@ Use review-triage.
 | [ROADMAP.md](../../ROADMAP.md) | Later-iteration leakage |
 | [PRODUCT.md](../../PRODUCT.md) / [SECURITY-PRIVACY.md](../../SECURITY-PRIVACY.md) | Invariant violations |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, review gate, phase |
+| [`.ai/state/review-findings.json`](../state/review-findings.json) | Structured finding status — update on triage decisions |
 | [`.ai/state/debt.md`](../state/debt.md) | Previously accepted/deferred findings |
 | [`.ai/state/product-followups.md`](../state/product-followups.md) | Product wishes — **not** review debt; do not triage as findings |
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Review findings and implementation summary |
@@ -112,9 +113,16 @@ Update when public Api/UX/architecture behavior changes. Do not churn docs for p
   - Low findings auto-fixed;
   - Low findings accepted/deferred without human involvement when policy allows;
   - human involvement reason when human input was required.
+- Update `.ai/state/review-findings.json` so structured status matches triage:
+  - fixed findings → `status=fixed` with a short `resolution`;
+  - accepted Low debt → `status=accepted_debt` and **required** `debt_id` pointing at a new/existing row in `.ai/state/debt.md`;
+  - deferred product wishes → add/update `.ai/state/product-followups.md`, set `product_followup_id`, use `status=deferred` only for non-blocking Lows (or remove the item from findings if it was never an engineering defect); **never** `accepted_debt` for product wishes;
+  - keep `id` stable; bump `review_loop` only when a new review loop introduced the finding;
+  - keep `current-cycle.metrics.*_findings` equal to structured severity counts.
 - Update `.ai/state/current-cycle.json` with the next phase/gate state **and** `handoff` (`next_role` typically `supervisor-qa` when clean, `implementation-agent` / fix path when dirty, or `human-product-owner` when a product decision is required)
 - Add accepted or deferred **review findings** to `.ai/state/debt.md` with revisit conditions
 - Do **not** put Product Owner wishes, future UX ideas, or deferred roadmap opportunities into `debt.md` — those belong in `.ai/state/product-followups.md` (usually captured at Supervisor QA or planning, not triage)
+- Route to supervisor QA as clean **only when** structured findings are consistent: no High/Medium with status other than `fixed`/`not_reproducible`, metrics match counts, and `accepted_debt` ids exist. Run `scripts/ai-cycle-validate.sh` before declaring clean.
 
 ---
 
@@ -185,6 +193,7 @@ Update when public Api/UX/architecture behavior changes. Do not churn docs for p
 ### State updates
 - Ledger:
 - Current cycle:
+- Structured review-findings.json (status / debt_id / product_followup_id):
 - Debt register:
 - Product follow-ups (if any wishes captured — not as debt):
 ```
@@ -213,7 +222,8 @@ Never suggest the human edit files themselves.
 If no High/Medium remain and Low items are fixed via AI or accepted/deferred under policy:
 
 1. Confirm Cursor verification summary is complete
-2. Invoke `Use supervisor-qa.` to generate the manual QA plan
-3. Wait for the human to execute **product** QA and report pass/fail
-4. After QA passes (or human explicitly skips), invoke `Use commit-manager.`
-5. Ask human for commit approval
+2. Confirm `.ai/state/review-findings.json` and `current-cycle.metrics.*_findings` agree; validator passes
+3. Invoke `Use supervisor-qa.` to generate the manual QA plan
+4. Wait for the human to execute **product** QA and report pass/fail
+5. After QA passes (or human explicitly skips), invoke `Use commit-manager.`
+6. Ask human for commit approval

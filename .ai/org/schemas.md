@@ -4,7 +4,9 @@ Current machine-readable state:
 
 ```text
 .ai/state/current-cycle.json
+.ai/state/review-findings.json
 .ai/org/schemas/current-cycle.schema.json
+.ai/org/schemas/review-findings.schema.json
 ```
 
 Current human-readable state:
@@ -34,7 +36,42 @@ Required top-level fields:
 - `last_updated`
 - `handoff` (`next_role`, `reason`, `required_inputs`, `blocked_by`, `latest_artifacts`)
 
-Use `null` where evidence is not available yet (especially pending review metrics and unset artifact pointers). Do not invent fake zeroes.
+Use `null` where evidence is not available yet (especially pending review metrics and unset artifact pointers). Do not invent fake zeroes — except finding counts once `.ai/state/review-findings.json` exists for the iteration: then `metrics.*_findings` must equal the structured counts (including `0`).
+
+## Review Findings Schema
+
+`scripts/ai-cycle-validate.sh` also validates `.ai/state/review-findings.json` against
+[`.ai/org/schemas/review-findings.schema.json`](./schemas/review-findings.schema.json).
+
+Required top-level fields:
+
+- `schema_version`
+- `iteration_id` (must match `current-cycle.iteration.id`)
+- `findings` (array)
+- `last_updated`
+
+Each finding requires:
+
+- `id` (stable inside the iteration, e.g. `R1`)
+- `review_loop` (integer ≥ 1)
+- `severity` (`High` | `Medium` | `Low`)
+- `status` (`open` | `fixed` | `accepted_debt` | `deferred` | `not_reproducible`)
+- `summary` (non-empty)
+- `location` (string path/line, or `null` only for process-level / repo-wide findings)
+- `owner` (next role / owner)
+- `resolution` (string or `null`)
+- `debt_id` (required when `status=accepted_debt`; must exist in `.ai/state/debt.md`)
+- `product_followup_id` (only for product-facing wishes routed to `.ai/state/product-followups.md`; never with review debt)
+
+Validator rules beyond schema shape:
+
+- `metrics.high_findings` / `medium_findings` / `low_findings` must equal structured counts.
+- High/Medium findings must be `fixed` or `not_reproducible` (commit blocked otherwise).
+- `accepted_debt` must reference an existing debt id.
+- Product wishes must not be accepted as technical review debt.
+- Markdown ledger High/Medium checks remain as a compatibility layer during the transition.
+
+Markdown ledgers stay the human-readable record. Structured findings are the auditable/countable source for metrics and gates.
 
 ## Structured Handoff
 
@@ -63,7 +100,6 @@ Add stricter schemas only when a validator or automation consumer needs them:
 - roadmap recommendation;
 - product analysis;
 - implementation summary;
-- review findings;
 - triage decisions;
 - QA outcome;
 - commit preparation;

@@ -43,19 +43,27 @@ The active iteration must also be reflected in:
 
 ```text
 .ai/state/current-cycle.json
+.ai/state/review-findings.json
 .ai/state/debt.md
 .ai/state/product-followups.md
 ```
 
 `current-cycle.handoff` is the structured source for who acts next. Every phase transition in this ledger must be mirrored in `current-cycle.json` **including** an updated `handoff` (`next_role`, `reason`, `required_inputs`, `blocked_by`, `latest_artifacts`). Terminal states use `next_role=none`. Human checkpoints use `next_role=human-product-owner`.
 
-If richer machine validation becomes important, add parallel structured iteration files later:
+`.ai/state/review-findings.json` is the structured source for review finding ids, severities, and statuses. Keep the markdown **Review Findings** table as the human-readable record; keep the JSON in sync on every review/triage update. `current-cycle.metrics.*_findings` must equal structured severity counts.
+
+If richer per-iteration archival becomes important, add parallel structured iteration files later:
 
 ```text
 .ai/state/iterations/YYYY-MM-DD-<short-slug>.json
 ```
 
-Schema for the active cycle lives at `.ai/org/schemas/current-cycle.schema.json` and is enforced by `scripts/ai-cycle-validate.sh`.
+Schemas:
+
+- `.ai/org/schemas/current-cycle.schema.json` — active cycle + handoff
+- `.ai/org/schemas/review-findings.schema.json` — structured findings
+
+Both are enforced by `scripts/ai-cycle-validate.sh`. Markdown High/Medium unresolved checks remain as a compatibility layer during the transition.
 
 ---
 
@@ -144,9 +152,13 @@ Record explicitly so agents do not start review early:
 
 ## Review Findings
 
+Human-readable table (keep in sync with `.ai/state/review-findings.json`):
+
 | ID | Severity | File | Finding | Status |
 | --- | --- | --- | --- | --- |
-| R1 | High/Medium/Low | `path:line` | ... | open/fixed/accepted/deferred |
+| R1 | High/Medium/Low | `path:line` | ... | open/fixed/accepted_debt/deferred/not_reproducible |
+
+Structured statuses: `open`, `fixed`, `accepted_debt`, `deferred`, `not_reproducible`. High/Medium must be `fixed` or `not_reproducible` before commit. `accepted_debt` requires a `debt_id` in `.ai/state/debt.md`. Product wishes go to `.ai/state/product-followups.md` (`product_followup_id`), not review debt.
 
 ## Triage Decisions
 
@@ -278,6 +290,8 @@ Use:
 
 - **observed** for facts from commands, timestamps, git history, review outputs, or explicit human decisions;
 - **estimated** for token counts, inferred human effort, or partial timing.
+
+Finding counts (High / Medium / Low) should be taken primarily from `.ai/state/review-findings.json`, with the ledger table as supporting evidence. Do not leave `current-cycle.metrics.*_findings` out of sync with structured findings.
 
 Do not hide uncertainty. A rough estimate is useful when labelled as an estimate.
 

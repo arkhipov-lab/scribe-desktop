@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "iteration_id": "2026-07-28-review-findings-reconciliation",
+  "findings": [
+    {
+      "id": "R1",
+      "review_loop": 1,
+      "severity": "Medium",
+      "status": "fixed",
+      "summary": "debt_id_exists accepts Planned Process Work IDs as accepted_debt targets",
+      "location": "scripts/ai-cycle-validate.sh:472-491",
+      "owner": "implementation-agent",
+      "resolution": "Restricted debt_id_exists to Open Debt / Closed Debt sections only",
+      "debt_id": null,
+      "product_followup_id": null
+    },
+    {
+      "id": "R2",
+      "review_loop": 1,
+      "severity": "Medium",
+      "status": "fixed",
+      "summary": ".ai/org/workflows.md Durable State omits required review-findings.json",
+      "location": ".ai/org/workflows.md:28-33",
+      "owner": "implementation-agent",
+      "resolution": "Added review-findings.json to Durable State and validator blurb",
+      "debt_id": null,
+      "product_followup_id": null
+    },
+    {
+      "id": "R3",
+      "review_loop": 1,
+      "severity": "Low",
+      "status": "fixed",
+      "summary": "metrics.md does not name review-findings.json as primary finding source",
+      "location": ".ai/org/metrics.md:13-15",
+      "owner": "implementation-agent",
+      "resolution": "High/Medium/Low metrics cite review-findings.json as primary source",
+      "debt_id": null,
+      "product_followup_id": null
+    },
+    {
+      "id": "R4",
+      "review_loop": 1,
+      "severity": "Low",
+      "status": "fixed",
+      "summary": "location allows empty string instead of null or non-empty path",
+      "location": ".ai/org/schemas/review-findings.schema.json:67-69",
+      "owner": "implementation-agent",
+      "resolution": "Added minLength:1 on location string + shell empty-string reject",
+      "debt_id": null,
+      "product_followup_id": null
+    }
+  ],
+  "last_updated": "2026-07-28"
+}
