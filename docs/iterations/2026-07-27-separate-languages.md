@@ -1,9 +1,9 @@
 # Iteration: Separate Transcript vs Summary Language
 
-**Status:** QA
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `df519229960137c2252968a742d80d22e9cb0339`
 
 ## Approved Scope
 
@@ -44,8 +44,8 @@
 | Review | Codex | loop 1: 0 High, 0 Medium, 2 Low | done |
 | Triage | review-triage | Low-only; human AI-fix R1–R2; gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human passed 2026-07-27 (follow-ups captured, not in this slice) | done |
-| Commit prep | commit-manager | preparation ready; await human commit approval | pending |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `df51922` created 2026-07-27 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-27; next planning → product-analyst (PP-001 vs editable results vs P-002) | done |
 
 ## Implementation Summary
 
@@ -215,28 +215,41 @@ Confirm that Scribe lets you set **Transcript language** and **Summary language*
 
 | Metric | Value | Source type | Evidence |
 | --- | --- | --- | --- |
-| Elapsed time | pending | | |
-| Agent turns | pending | | |
-| Approx token use | pending | | |
-| Review loops | 1 | observed | loop 1 review complete |
-| High findings | 0 | observed | review loop 1 |
-| Medium findings | 0 | observed | review loop 1 |
-| Low findings | 2 | observed | R1–R2 fixed |
-| Human decisions | 5 | observed | + AI-fix R1–R2; QA pass with deferred follow-ups |
-| QA outcome | passed | observed | human 2026-07-27 |
-| Outcome | QA passed → commit-ready | observed | await commit-manager |
+| Elapsed time | same calendar day (2026-07-27) | estimated | `date_started` = `date_completed`; wall-clock span not instrumented |
+| Agent turns | ~14 across analysis/plan/implement/review/triage/fix/QA/capture/commit/retrospective | estimated | Skill invocations in this chat cycle; exact turn counter unavailable |
+| Approx token use | unavailable | estimated | No token meter in this session |
+| Review loops | 1 | observed | Loop 1: 0 High/Medium, 2 Low; Low-only AI fix; no full re-review |
+| High findings | 0 | observed | Review findings table |
+| Medium findings | 0 | observed | Review findings table |
+| Low findings | 2 | observed | R1–R2; fixed before QA |
+| Human decisions | 6 | observed | Analyst→planner; approve Option A; implement; AI-fix Lows; QA pass + defer follow-ups; commit |
+| QA outcome | passed | observed | Supervisor QA human decision 2026-07-27 |
+| Outcome | shipped | observed | Commit `df51922` + retrospective complete |
 
 ## Retrospective
 
 **What worked:**
+- First Scribe product slice after the process-foundation streak: product-analyst → roadmap-planner → implement → review → triage → QA → commit held end-to-end.
+- Engineering review was clean of High/Medium (1 loop only); Low-only polish did not trigger a wasteful full re-review.
+- Scope discipline held: QA follow-ups were captured as planned product work (`PP-001`/`PP-002`) instead of scope creep mid-iteration.
+- New **Planned Product Work** register + ROADMAP + scenario Future note made PO desires durable without treating them as review debt.
+- Human QA covered the mixed-language path the implementer correctly deferred.
 
 **What caused rework:**
+- First implement pass updated scenario / pipeline / README / TESTING C–D but left PRODUCT primary-flow/capabilities and TESTING § A on the old single-language wording (R1–R2 Lows).
+- No Medium/High engineering rework; residual was documentation-consumer lag on a multi-surface UX change.
 
 **Repeated failure patterns:**
 
 | Pattern | Evidence | Repeated? | Recommended response |
 | --- | --- | --- | --- |
+| Behavior change docs incomplete across all product surfaces on first pass | This iteration R1–R2 (PRODUCT + TESTING § A lag); analogous to prior process “incomplete across consumers” on skills/workflows | yes | docs: for user-facing behavior changes, same implement pass must update scenario + PRODUCT primary flow/capabilities + TESTING smoke sections that name the control |
+| Premature re-review before fix | Prior backlog-intelligence; not observed here (Low-only, no re-review) | no (improved) | none; keep Low-only path without mandatory re-review |
+| Process Mediums on first review | Common in recent process iterations; **0 Medium** this product slice | no (improved for this slice) | none formal; product slices with clear bridge/settings patterns may need less ceremony than new process layers |
 
 **Process change recommended:**
+1. Extend the existing “update all consumers in one pass” checklist to **product behavior slices**: scenario acceptance, PRODUCT primary flow/capabilities, and TESTING smoke rows that mention the control — not only AI process/skill indexes.
+2. No second process change recommended. Keep using Planned Product Work for QA desires deferred out of slice (PP-001/PP-002 already recorded).
 
 **Next planning input:**
+Use `product-analyst` (then roadmap-planner) to choose among: `PP-2026-07-27-001` (summary language default + Processing options placement — feasible, high UX value); P2 editable results; planned process `P-2026-07-26-002` (schemas); leave `PP-2026-07-27-002` and `P-2026-07-27-003` parked until evidence/priority is clearer.
