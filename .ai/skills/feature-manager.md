@@ -107,8 +107,10 @@ Do **not** imply review can begin before implementation has actually completed. 
 ### Durable memory
 
 - Read `.ai/state/current-cycle.json`, `.ai/state/debt.md`, `.ai/state/product-followups.md`, and the active ledger before choosing the next action
+- Use `current-cycle.handoff` as the structured source for who acts next; do not infer the next role from chat alone when handoff is present
 - Run `scripts/ai-cycle-status.sh` when resuming or reporting the active cycle
-- Update the ledger and current-cycle state at every phase transition (including implementation pending → summary received, and each auto-fix pass)
+- Update the ledger and current-cycle state at every phase transition (including implementation pending → summary received, and each auto-fix pass), and **always update `handoff`** (`next_role`, `reason`, `required_inputs`, `blocked_by`, `latest_artifacts`)
+- Human checkpoints set `handoff.next_role=human-product-owner`; terminal states (`shipped` / `cancelled` / `rejected`) set `next_role=none`
 - Run `scripts/ai-cycle-validate.sh` after state updates that move the cycle toward QA or commit
 - Treat state files as the durable record of prior decisions; a newer explicit human instruction overrides stale or incorrect state and must be recorded back into the ledger/current-cycle state
 - When human input was required mid-loop, record **human involvement reason** in the ledger

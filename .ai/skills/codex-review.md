@@ -86,7 +86,7 @@ Cite file and line. Judge against **docs and iteration scope**, not personal sty
 
 ### Propose durable memory updates
 
-After review, output proposed ledger/current-cycle updates for the orchestrator or review-triage role to apply. Do not edit the working tree or mutate state files as part of the review; the reviewed diff must remain stable.
+After review, output proposed ledger/current-cycle updates for the orchestrator or review-triage role to apply, including the next `handoff` (`next_role` typically `review-triage`, or `human-product-owner` if a product decision is required). Do not edit the working tree or mutate state files as part of the review; the reviewed diff must remain stable.
 
 ---
 

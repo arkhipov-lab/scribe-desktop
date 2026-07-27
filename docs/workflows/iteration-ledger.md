@@ -47,11 +47,15 @@ The active iteration must also be reflected in:
 .ai/state/product-followups.md
 ```
 
+`current-cycle.handoff` is the structured source for who acts next. Every phase transition in this ledger must be mirrored in `current-cycle.json` **including** an updated `handoff` (`next_role`, `reason`, `required_inputs`, `blocked_by`, `latest_artifacts`). Terminal states use `next_role=none`. Human checkpoints use `next_role=human-product-owner`.
+
 If richer machine validation becomes important, add parallel structured iteration files later:
 
 ```text
 .ai/state/iterations/YYYY-MM-DD-<short-slug>.json
 ```
+
+Schema for the active cycle lives at `.ai/org/schemas/current-cycle.schema.json` and is enforced by `scripts/ai-cycle-validate.sh`.
 
 ---
 

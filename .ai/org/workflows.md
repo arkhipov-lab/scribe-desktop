@@ -28,9 +28,11 @@ product-analyst
 Every approved iteration needs:
 
 - a ledger under `docs/iterations/`;
-- current phase and gates in `.ai/state/current-cycle.json`;
+- current phase, gates, and structured `handoff` in `.ai/state/current-cycle.json`;
 - accepted/deferred debt and planned process work in `.ai/state/debt.md`;
 - product follow-ups / wishes in `.ai/state/product-followups.md` (global curated register; ledger holds per-iteration capture notes).
+
+`current-cycle.handoff` is the structured source for who acts next (`next_role`, `reason`, `required_inputs`, `blocked_by`, `latest_artifacts`). Every phase transition must update `handoff` together with `phase` / `gates`. Terminal states use `next_role=none`. Human checkpoints use `next_role=human-product-owner`.
 
 Ledger/current-cycle should be able to record:
 
@@ -54,4 +56,4 @@ Ledger/current-cycle should be able to record:
 - No forbidden artifacts staged.
 - No commit without explicit human approval.
 
-Run the cycle status and cycle validator commands defined by the repo validation adapter (`.ai/repo/validation.md`): status when resuming work; validator after state edits, before supervisor QA, and before commit preparation.
+Run the cycle status and cycle validator commands defined by the repo validation adapter (`.ai/repo/validation.md`): status when resuming work; validator after state edits, before supervisor QA, and before commit preparation. The validator checks the current-cycle schema (including `handoff`) plus ledger/register existence, phase/gate consistency, and unresolved High/Medium findings.

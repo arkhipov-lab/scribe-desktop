@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scribe.local/.ai/org/schemas/current-cycle.schema.json",
+  "title": "AI Development Current Cycle",
+  "description": "Minimal machine-readable state for the active AI Native SDLC iteration, including structured handoff.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "iteration",
+    "approved_scope",
+    "phase",
+    "gates",
+    "artifacts",
+    "metrics",
+    "last_updated",
+    "handoff"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "iteration": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "name",
+        "ledger_path",
+        "status",
+        "date_started",
+        "date_completed"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "ledger_path": { "type": "string", "minLength": 1 },
+        "status": { "$ref": "#/$defs/phase" },
+        "date_started": { "type": "string", "minLength": 1 },
+        "date_completed": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "approved_scope": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "source",
+        "date",
+        "goal",
+        "in_scope",
+        "out_of_scope"
+      ],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "minLength": 1 },
+        "goal": { "type": "string", "minLength": 1 },
+        "in_scope": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "out_of_scope": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "phase": { "$ref": "#/$defs/phase" },
+    "gates": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "scope_approved",
+        "implementation_finished",
+        "review_gate",
+        "triage_status",
+        "supervisor_qa",
+        "retrospective",
+        "commit_allowed",
+        "committed"
+      ],
+      "properties": {
+        "scope_approved": { "type": "boolean" },
+        "implementation_finished": { "type": "boolean" },
+        "review_gate": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "pending_re_review",
+            "clean",
+            "dirty",
+            "blocked",
+            "skipped"
+          ]
+        },
+        "triage_status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "fix_required",
+            "fix_applied",
+            "clean",
+            "blocked",
+            "skipped"
+          ]
+        },
+        "supervisor_qa": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "planned",
+            "passed",
+            "failed",
+            "skipped",
+            "explicitly_skipped"
+          ]
+        },
+        "retrospective": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "done",
+            "skipped",
+            "not_applicable"
+          ]
+        },
+        "commit_allowed": { "type": "boolean" },
+        "committed": { "type": "boolean" }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "debt_register",
+        "product_followups_register",
+        "iteration_directory",
+        "latest_review",
+        "latest_triage",
+        "latest_qa",
+        "latest_commit_prep",
+        "latest_retrospective",
+        "commit",
+        "previous_iteration",
+        "latest_implementation_prompt",
+        "latest_implementation_summary"
+      ],
+      "properties": {
+        "debt_register": { "type": "string", "minLength": 1 },
+        "product_followups_register": { "type": "string", "minLength": 1 },
+        "iteration_directory": { "type": "string", "minLength": 1 },
+        "latest_review": { "type": ["string", "null"] },
+        "latest_triage": { "type": ["string", "null"] },
+        "latest_qa": { "type": ["string", "null"] },
+        "latest_commit_prep": { "type": ["string", "null"] },
+        "latest_retrospective": { "type": ["string", "null"] },
+        "commit": { "type": ["string", "null"] },
+        "previous_iteration": { "type": ["string", "null"] },
+        "latest_implementation_prompt": { "type": ["string", "null"] },
+        "latest_implementation_summary": { "type": ["string", "null"] }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "review_loops",
+        "human_decisions",
+        "high_findings",
+        "medium_findings",
+        "low_findings",
+        "qa_outcome",
+        "outcome"
+      ],
+      "properties": {
+        "review_loops": { "type": ["integer", "null"], "minimum": 0 },
+        "human_decisions": { "type": ["integer", "null"], "minimum": 0 },
+        "high_findings": { "type": ["integer", "null"], "minimum": 0 },
+        "medium_findings": { "type": ["integer", "null"], "minimum": 0 },
+        "low_findings": { "type": ["integer", "null"], "minimum": 0 },
+        "qa_outcome": { "type": ["string", "null"] },
+        "outcome": { "type": ["string", "null"] }
+      }
+    },
+    "last_updated": { "type": "string", "minLength": 1 },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "next_role",
+        "reason",
+        "required_inputs",
+        "blocked_by",
+        "latest_artifacts"
+      ],
+      "properties": {
+        "next_role": { "$ref": "#/$defs/next_role" },
+        "reason": { "type": "string", "minLength": 1 },
+        "required_inputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "blocked_by": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "latest_artifacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "phase": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "implementation-prompt",
+        "implementing",
+        "review",
+        "fixing",
+        "QA",
+        "commit-ready",
+        "retrospective",
+        "shipped",
+        "cancelled",
+        "rejected"
+      ]
+    },
+    "next_role": {
+      "type": "string",
+      "enum": [
+        "product-analyst",
+        "roadmap-planner",
+        "feature-manager",
+        "implementation-agent",
+        "codex-review",
+        "review-triage",
+        "supervisor-qa",
+        "commit-manager",
+        "iteration-retrospective",
+        "human-product-owner",
+        "none"
+      ]
+    }
+  }
+}

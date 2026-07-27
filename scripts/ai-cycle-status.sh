@@ -26,6 +26,8 @@ jq -r '
   "Triage: " + (.gates.triage_status // "unknown"),
   "Supervisor QA: " + (.gates.supervisor_qa // "unknown"),
   "Commit allowed: " + ((.gates.commit_allowed // false) | tostring),
+  "Next role: " + (.handoff.next_role // "unknown"),
+  "Handoff reason: " + (.handoff.reason // "unknown"),
   "Commit: " + (.artifacts.commit // "pending"),
   "Last updated: " + (.last_updated // "unknown")
 ' "$STATE_FILE"

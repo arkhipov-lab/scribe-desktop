@@ -61,8 +61,8 @@ If gate not clean, stop and route to review-triage / codex-review.
 - Pass / fail criteria
 - Out of scope (do not fail the iteration for postponed work)
 - Environment: prefer `./scripts/run-dev.sh` (and note Vite vs `USE_VITE_DEV=0` if relevant)
-- Record the generated plan in the active ledger and update current-cycle state to `QA`
-- After human QA: allow **pass with follow-ups captured** — record PO/QA product wishes in `.ai/state/product-followups.md` and the ledger Product Follow-ups section; do **not** file them as debt and do **not** fail the iteration for unimplemented wishes
+- Record the generated plan in the active ledger and update current-cycle state to `QA`, including `handoff.next_role=human-product-owner` (human executes QA) with the plan path in `latest_artifacts`
+- After human QA: allow **pass with follow-ups captured** — record PO/QA product wishes in `.ai/state/product-followups.md` and the ledger Product Follow-ups section; do **not** file them as debt and do **not** fail the iteration for unimplemented wishes. On pass/skip, update `handoff` toward `commit-manager` (or keep `human-product-owner` if commit approval is the immediate next ask).
 
 ---
 

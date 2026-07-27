@@ -36,7 +36,9 @@ scripts/ai-cycle-validate.sh
 
 Run `scripts/ai-cycle-status.sh` when resuming work or before choosing the next workflow action. Run `scripts/ai-cycle-validate.sh` after state edits, before supervisor QA, and before commit preparation.
 
-The validator checks JSON validity, ledger existence, phase gates, unresolved High/Medium findings, QA/commit prerequisites, shipped commit hashes, and forbidden paths.
+The validator checks JSON validity, **current-cycle schema + structured `handoff`**, ledger existence, phase gates, unresolved High/Medium findings, QA/commit prerequisites, shipped commit hashes, and forbidden paths.
+
+`current-cycle.handoff` is the structured source for who acts next. Phase transitions must update `handoff`; terminal states use `next_role=none`; human checkpoints use `next_role=human-product-owner`.
 
 ## Operating model
 

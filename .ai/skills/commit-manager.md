@@ -70,7 +70,7 @@ Relevant checks only:
 3. Changed files with one-line purpose
 4. Accepted Lows + QA skip notes
 5. If Supervisor QA / ledger notes mention product wishes, confirm they are in `.ai/state/product-followups.md` and the ledger Product Follow-ups section — **not** in `debt.md`
-6. Update the active ledger and `.ai/state/current-cycle.json` to `commit-ready`
+6. Update the active ledger and `.ai/state/current-cycle.json` to `commit-ready` with `handoff.next_role=human-product-owner` (commit approval) or `commit-manager` while prep is still in progress
 7. **Ask for explicit commit approval** — do not commit until requested
 
 ### Exclude from commit
@@ -94,7 +94,7 @@ Confirm **no** path under `ai-md-condidates/` is staged. If any candidate path i
 
 ### After commit (only when human approved)
 
-Record the commit hash in the active ledger and update `.ai/state/current-cycle.json` to post-commit retrospective state: `phase=retrospective`, `iteration.status=retrospective`, `gates.committed=true`, and `artifacts.commit=<hash>`. Then route to `Use iteration-retrospective.` The retrospective role sets `phase=shipped` / `status=shipped` after it completes.
+Record the commit hash in the active ledger and update `.ai/state/current-cycle.json` to post-commit retrospective state: `phase=retrospective`, `iteration.status=retrospective`, `gates.committed=true`, `artifacts.commit=<hash>`, and `handoff.next_role=iteration-retrospective`. Then route to `Use iteration-retrospective.` The retrospective role sets `phase=shipped` / `status=shipped` and `handoff.next_role=none` after it completes.
 
 ---
 

@@ -112,7 +112,7 @@ Update when public Api/UX/architecture behavior changes. Do not churn docs for p
   - Low findings auto-fixed;
   - Low findings accepted/deferred without human involvement when policy allows;
   - human involvement reason when human input was required.
-- Update `.ai/state/current-cycle.json` with the next phase/gate state
+- Update `.ai/state/current-cycle.json` with the next phase/gate state **and** `handoff` (`next_role` typically `supervisor-qa` when clean, `implementation-agent` / fix path when dirty, or `human-product-owner` when a product decision is required)
 - Add accepted or deferred **review findings** to `.ai/state/debt.md` with revisit conditions
 - Do **not** put Product Owner wishes, future UX ideas, or deferred roadmap opportunities into `debt.md` — those belong in `.ai/state/product-followups.md` (usually captured at Supervisor QA or planning, not triage)
 

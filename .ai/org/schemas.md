@@ -4,6 +4,7 @@ Current machine-readable state:
 
 ```text
 .ai/state/current-cycle.json
+.ai/org/schemas/current-cycle.schema.json
 ```
 
 Current human-readable state:
@@ -14,40 +15,46 @@ docs/iterations/YYYY-MM-DD-<slug>.md
 .ai/state/product-followups.md
 ```
 
-## Current-Cycle Minimum Fields
+## Current-Cycle Schema
+
+`scripts/ai-cycle-validate.sh` validates `.ai/state/current-cycle.json` against
+[`.ai/org/schemas/current-cycle.schema.json`](./schemas/current-cycle.schema.json)
+using a stdlib Python subset checker (`scripts/ai-cycle-schema-check.py`). No
+external JSON Schema package is required.
+
+Required top-level fields:
 
 - `schema_version`
-- `iteration.id`
-- `iteration.name`
-- `iteration.ledger_path`
-- `iteration.status`
+- `iteration` (`id`, `name`, `ledger_path`, `status`, `date_started`, `date_completed`)
+- `approved_scope` (`source`, `date`, `goal`, `in_scope`, `out_of_scope`)
 - `phase`
-- `gates.scope_approved`
-- `gates.implementation_finished`
-- `gates.review_gate`
-- `gates.triage_status`
-- `gates.supervisor_qa`
-- `gates.retrospective`
-- `gates.commit_allowed`
-- `artifacts.debt_register`
-- `artifacts.product_followups_register` (register file is required; JSON key may be omitted and defaults to `.ai/state/product-followups.md`)
-- `artifacts.commit`
-- `metrics.review_loops`
-- `metrics.human_decisions`
+- `gates` (`scope_approved`, `implementation_finished`, `review_gate`, `triage_status`, `supervisor_qa`, `retrospective`, `commit_allowed`, `committed`)
+- `artifacts` (registers, latest role artifacts, `commit`, `previous_iteration`, `latest_implementation_prompt`, `latest_implementation_summary`)
+- `metrics` (`review_loops`, `human_decisions`, finding counts, `qa_outcome`, `outcome`)
 - `last_updated`
+- `handoff` (`next_role`, `reason`, `required_inputs`, `blocked_by`, `latest_artifacts`)
 
-## Optional Current-Cycle Artifacts (recommended)
+Use `null` where evidence is not available yet (especially pending review metrics and unset artifact pointers). Do not invent fake zeroes.
 
-Record when useful; not all required for validator pass:
+## Structured Handoff
 
-- `artifacts.latest_implementation_prompt` — handoff prepared
-- `artifacts.latest_implementation_summary` — summary received / review ready
-- `artifacts.latest_review` / `artifacts.latest_triage`
-- `artifacts.latest_auto_fix` — auto-fix pass generated/applied notes
-- `artifacts.human_involvement_reason` — why human was asked mid-loop (if any)
-- `artifacts.previous_iteration`
+`current-cycle.handoff` is the structured source for **who acts next**.
 
-Phases already used by the validator include `planned`, `implementation-prompt`, `implementing`, `review`, `fixing`, `QA`, `commit-ready`, `retrospective`, `shipped`, `cancelled`. Prefer `implementation-prompt` / `implementing` while the summary is still pending; move to `review` only after the implementation summary is recorded.
+- Every phase transition must update `handoff` (not only `phase` / `gates`).
+- Terminal states (`shipped`, `cancelled`, `rejected`) use `next_role=none`.
+- Human checkpoints use `next_role=human-product-owner` and name the decision in `blocked_by` or `reason`.
+- Feature-manager remains the normal orchestrator after scope approval.
+- `cursor-implementation-prompt` stays internal/specialized — not a Product Owner-facing next role.
+
+Allowed `next_role` values: `product-analyst`, `roadmap-planner`, `feature-manager`, `implementation-agent`, `codex-review`, `review-triage`, `supervisor-qa`, `commit-manager`, `iteration-retrospective`, `human-product-owner`, `none`.
+
+## Phases
+
+Allowed `phase` / `iteration.status` values:
+
+`planned`, `implementation-prompt`, `implementing`, `review`, `fixing`, `QA`, `commit-ready`, `retrospective`, `shipped`, `cancelled`, `rejected`.
+
+Prefer `implementation-prompt` / `implementing` while the summary is still pending; move to `review` only after the implementation summary is recorded in `artifacts.latest_implementation_summary` and the ledger.
 
 ## Future Schema Targets
 

@@ -137,20 +137,20 @@ Every step must read:
 - [`.ai/state/debt.md`](../../.ai/state/debt.md) for accepted/deferred debt;
 - [`.ai/state/product-followups.md`](../../.ai/state/product-followups.md) for Product Owner / QA wishes (not debt).
 
-Every phase transition must update the active ledger and `current-cycle.json`.
+Every phase transition must update the active ledger and `current-cycle.json`, including the structured `handoff` object (`next_role`, `reason`, `required_inputs`, `blocked_by`, `latest_artifacts`). `handoff` is the machine-readable source for who acts next. Terminal states use `next_role=none`. Human checkpoints use `next_role=human-product-owner`. Feature-manager remains the normal orchestrator after scope approval; do not route the Product Owner to `cursor-implementation-prompt` as a normal next step.
 
 | Transition | Required state update |
 | --- | --- |
-| Human approves scope | Create ledger; set phase to `implementation-prompt` (handoff prepared / pending) |
-| Implementation prompt prepared | Record handoff; phase `implementation-prompt` or `implementing`; implementation still pending |
-| Cursor finishes implementation | Record files, behavior, assumptions, verification, remaining work, docs; set `implementation_finished=true`; phase `review` |
-| Codex review completes | Orchestrator/review-triage records findings and counts; set review gate |
-| Auto-fix pass generated / applied | Record in ledger (including Low auto-fix / policy defer); bump review loop as needed |
-| Triage completes | Record blocking and non-blocking decisions; update debt for accepted/deferred items; note human involvement reason if any |
-| Supervisor QA generated / executed | Record plan, pass/fail/skip, and human decision |
-| Commit prepared / created | Record staging hygiene, message, approval, and commit hash; set `phase=retrospective`, `status=retrospective`, `committed=true` |
-| Retrospective completed | Record metrics, repeated failures, process recommendations, and next planning input; set `phase=shipped` / `status=shipped` |
-| Iteration cancelled | Record cancellation reason and stop the cycle |
+| Human approves scope | Create ledger; set phase to `implementation-prompt` (handoff prepared / pending); `handoff.next_role=feature-manager` or `implementation-agent` |
+| Implementation prompt prepared | Record handoff; phase `implementation-prompt` or `implementing`; implementation still pending; update `handoff` |
+| Cursor finishes implementation | Record files, behavior, assumptions, verification, remaining work, docs; set `implementation_finished=true`; phase `review`; `artifacts.latest_implementation_summary`; `handoff.next_role=codex-review` |
+| Codex review completes | Orchestrator/review-triage records findings and counts; set review gate; update `handoff` (usually `review-triage`) |
+| Auto-fix pass generated / applied | Record in ledger (including Low auto-fix / policy defer); bump review loop as needed; update `handoff` |
+| Triage completes | Record blocking and non-blocking decisions; update debt for accepted/deferred items; note human involvement reason if any; `handoff.next_role=supervisor-qa` when clean |
+| Supervisor QA generated / executed | Record plan, pass/fail/skip, and human decision; `handoff` to `human-product-owner` during QA, then `commit-manager` when passed/skipped |
+| Commit prepared / created | Record staging hygiene, message, approval, and commit hash; set `phase=retrospective`, `status=retrospective`, `committed=true`; `handoff.next_role=iteration-retrospective` |
+| Retrospective completed | Record metrics, repeated failures, process recommendations, and next planning input; set `phase=shipped` / `status=shipped`; `handoff.next_role=none` |
+| Iteration cancelled / rejected | Record reason; terminal `handoff.next_role=none` |
 
 State is the durable record of prior decisions. A newer explicit human instruction overrides stale or incorrect state and must be recorded back into the ledger/current-cycle state before the workflow continues.
 

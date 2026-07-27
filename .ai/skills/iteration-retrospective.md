@@ -60,7 +60,7 @@ Do not run a final retrospective before commit unless the iteration is explicitl
 - Record process debt or planned process work in `.ai/state/debt.md` when appropriate
 - Record whether product follow-ups from QA/planning were captured in `.ai/state/product-followups.md` (and the ledger follow-ups section); do not file product wishes as debt
 - Update the active ledger Retrospective section and current-cycle state
-- After a successful post-commit retrospective, set `phase=shipped`, `iteration.status=shipped`, and `gates.retrospective` complete (keep `committed=true` and the commit hash)
+- After a successful post-commit retrospective, set `phase=shipped`, `iteration.status=shipped`, and `gates.retrospective` complete (keep `committed=true` and the commit hash); set `handoff.next_role=none` (terminal). Next-cycle planning starts from a fresh or reset current-cycle record, not by leaving a non-`none` role on a shipped iteration.
 
 ---
 

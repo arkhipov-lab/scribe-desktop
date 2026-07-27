@@ -4,6 +4,8 @@ set -u -o pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STATE_FILE="${AI_CYCLE_STATE:-$ROOT/.ai/state/current-cycle.json}"
+SCHEMA_FILE="${AI_CYCLE_SCHEMA:-$ROOT/.ai/org/schemas/current-cycle.schema.json}"
+SCHEMA_CHECK="$ROOT/scripts/ai-cycle-schema-check.py"
 
 errors=0
 
@@ -53,6 +55,130 @@ check_state_json() {
     ok "current-cycle.json is valid JSON"
   else
     fail "current-cycle.json is not valid JSON: $STATE_FILE"
+  fi
+}
+
+check_schema() {
+  if [[ ! -f "$SCHEMA_FILE" ]]; then
+    fail "schema file missing: $SCHEMA_FILE"
+    return
+  fi
+  if [[ ! -f "$SCHEMA_CHECK" ]]; then
+    fail "schema checker missing: $SCHEMA_CHECK"
+    return
+  fi
+
+  local output
+  if output="$(python3 "$SCHEMA_CHECK" "$STATE_FILE" "$SCHEMA_FILE" 2>&1)"; then
+    ok "current-cycle.json matches schema"
+  else
+    printf '%s\n' "$output" >&2
+    fail "current-cycle.json failed schema validation"
+  fi
+}
+
+artifact_present() {
+  local value="$1"
+  [[ -n "$value" && "$value" != "null" ]]
+}
+
+review_or_triage_progressed() {
+  local review_gate="$1"
+  local triage_status="$2"
+  # pending_re_review is not progressed — re-review still requires codex-review.
+  case "$review_gate" in
+    clean|dirty|blocked|skipped) return 0 ;;
+  esac
+  case "$triage_status" in
+    fix_required|fix_applied|clean|blocked|skipped) return 0 ;;
+  esac
+  return 1
+}
+
+check_handoff_consistency() {
+  local phase next_role review_gate triage_status supervisor_qa committed commit
+  local impl_summary errors_before=$errors
+  phase="$(jq_raw '.phase // ""')"
+  next_role="$(jq_raw '.handoff.next_role // ""')"
+  review_gate="$(jq_raw '.gates.review_gate // ""')"
+  triage_status="$(jq_raw '.gates.triage_status // ""')"
+  supervisor_qa="$(jq_raw '.gates.supervisor_qa // ""')"
+  committed="$(jq_raw '.gates.committed // false')"
+  commit="$(jq_raw '.artifacts.commit // ""')"
+  impl_summary="$(jq_raw '.artifacts.latest_implementation_summary // ""')"
+
+  if [[ -z "$next_role" || "$next_role" == "null" ]]; then
+    fail "handoff.next_role is missing"
+    return
+  fi
+
+  case "$phase" in
+    shipped|cancelled|rejected)
+      if [[ "$next_role" != "none" ]]; then
+        fail "phase=$phase requires handoff.next_role=none (found: $next_role)"
+      fi
+      ;;
+    *)
+      if [[ "$next_role" == "none" ]]; then
+        fail "phase=$phase is non-terminal and cannot use handoff.next_role=none"
+      fi
+      ;;
+  esac
+
+  case "$phase" in
+    review)
+      if [[ "$review_gate" == "pending_re_review" ]]; then
+        if [[ "$next_role" != "codex-review" ]]; then
+          fail "phase=review with review_gate=pending_re_review requires handoff.next_role=codex-review (found: $next_role)"
+        fi
+      elif ! review_or_triage_progressed "$review_gate" "$triage_status"; then
+        if [[ "$next_role" != "codex-review" && "$next_role" != "review-triage" ]]; then
+          fail "phase=review with pending review/triage requires handoff.next_role=codex-review or review-triage (found: $next_role)"
+        fi
+      fi
+      ;;
+    QA)
+      if ! is_clean_review_status "$review_gate"; then
+        fail "phase=QA requires gates.review_gate=clean (found: $review_gate)"
+      fi
+      if ! is_clean_review_status "$triage_status"; then
+        fail "phase=QA requires gates.triage_status=clean (found: $triage_status)"
+      fi
+      if [[ "$next_role" != "supervisor-qa" && "$next_role" != "human-product-owner" ]]; then
+        fail "phase=QA requires handoff.next_role=supervisor-qa or human-product-owner (found: $next_role)"
+      fi
+      ;;
+    commit-ready)
+      if ! is_qa_complete_status "$supervisor_qa"; then
+        fail "phase=commit-ready requires supervisor QA passed/skipped (found: $supervisor_qa)"
+      fi
+      if [[ "$next_role" != "commit-manager" && "$next_role" != "human-product-owner" ]]; then
+        fail "phase=commit-ready requires handoff.next_role=commit-manager or human-product-owner (found: $next_role)"
+      fi
+      ;;
+    retrospective)
+      if ! is_truthy "$committed"; then
+        fail "phase=retrospective requires gates.committed=true"
+      fi
+      if [[ -z "$commit" || "$commit" == "null" || "$commit" == "pending" ]]; then
+        fail "phase=retrospective requires artifacts.commit"
+      elif ! looks_like_commit_hash "$commit"; then
+        fail "phase=retrospective commit does not look like a git hash: $commit"
+      fi
+      if [[ "$next_role" != "iteration-retrospective" ]]; then
+        fail "phase=retrospective requires handoff.next_role=iteration-retrospective (found: $next_role)"
+      fi
+      ;;
+  esac
+
+  if is_clean_review_status "$review_gate"; then
+    if ! artifact_present "$impl_summary"; then
+      fail "gates.review_gate=clean requires artifacts.latest_implementation_summary"
+    fi
+  fi
+
+  if (( errors == errors_before )); then
+    ok "handoff consistency checks passed"
   fi
 }
 
@@ -218,8 +344,8 @@ check_phase_gates() {
         ok "phase=shipped has committed=true"
       fi
       ;;
-    cancelled)
-      ok "phase=cancelled is terminal"
+    cancelled|rejected)
+      ok "phase=$phase is terminal"
       ;;
     *)
       fail "unknown phase: $phase"
@@ -368,9 +494,13 @@ main() {
     check_state_json
   fi
   if (( errors == 0 )); then
+    check_schema
+  fi
+  if (( errors == 0 )); then
     check_ledger_exists
     check_registers_exist
     check_phase_gates
+    check_handoff_consistency
     check_commit_gate_order
     check_committed_phase
     check_shipped_consistency
