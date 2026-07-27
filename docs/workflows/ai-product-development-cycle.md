@@ -131,6 +131,10 @@ Adjust roles, handoffs, or gates based on recurring friction — not every minor
 
 Re-evaluate candidates using validation, retrospectives, analytics, and updated risks. Input to the next planning cycle.
 
+**Role:** [product-analyst](../../.ai/skills/product-analyst.md)
+
+Product analysis compares ROADMAP, scenarios, debt, recent metrics, and retrospective evidence before roadmap planning turns a direction into a bounded slice.
+
 ---
 
 ## Three feedback loops
@@ -215,6 +219,7 @@ A single commit is not necessarily completion of a product goal.
 
 | Need | Skill / doc |
 |------|-------------|
+| Backlog intelligence | [product-analyst](../../.ai/skills/product-analyst.md) |
 | Next slice | [roadmap-planner](../../.ai/skills/roadmap-planner.md) |
 | Orchestration | [feature-manager](../../.ai/skills/feature-manager.md) |
 | Implementation prompt | [cursor-implementation-prompt](../../.ai/skills/cursor-implementation-prompt.md) |

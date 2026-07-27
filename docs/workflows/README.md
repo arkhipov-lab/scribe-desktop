@@ -47,6 +47,7 @@ Self-contained skills in [`.ai/skills/`](../../.ai/skills/). Invoke with a one-l
 
 | Prompt | Skill |
 |--------|-------|
+| `Use product-analyst.` | Evidence-based next-work analysis |
 | `Use roadmap-planner.` | Next slice recommendation |
 | `Use feature-manager.` | Full cycle orchestration |
 | `Use codex-review.` | Working-tree review |

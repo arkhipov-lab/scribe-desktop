@@ -181,7 +181,7 @@ The process auditor should run after several iterations or after a failed / expe
 
 # P2 - Product Analytics And Backlog Intelligence
 
-Add a `product-analyst` or `backlog-groomer` role.
+Status: initial `product-analyst` skill added at [`.ai/skills/product-analyst.md`](.ai/skills/product-analyst.md). Future work should add structured backlog schemas only when real planning cycles show the need.
 
 Responsibilities:
 

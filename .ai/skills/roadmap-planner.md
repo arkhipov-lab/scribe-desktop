@@ -37,6 +37,7 @@ Read these **before doing anything**:
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active/previous iteration state |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred product, engineering, and process debt |
 | [docs/iterations/](../../docs/iterations/) | Latest iteration ledgers and retrospectives |
+| Latest product-analyst output | Evidence-based next-work comparison, if available |
 | Latest implementation summary / review / QA notes | Current cycle context |
 
 When docs conflict on **scope or architecture**, stop and ask the human.
@@ -55,6 +56,7 @@ When ROADMAP and PRODUCT diverge, **PRODUCT wins for value decisions**.
 ## Responsibilities
 
 - Identify current roadmap position vs shipped reality
+- Use product-analyst output when available; if absent, do the minimum evidence check needed before recommending a slice
 - Evaluate 2–3 candidate slices with product-value heuristics and ROI trade-offs
 - Prefer small shippable slices (one review cycle, one coherent behavior)
 - Prefer finishing open user-facing gaps over polish
@@ -205,5 +207,5 @@ After summary controls mostly shipped, prefer **separate transcript vs summary l
 ## Integration
 
 ```
-Roadmap Planner → Human approves → Feature Manager → Cursor → Review → Triage → Supervisor QA → Commit Manager
+Product Analyst → Roadmap Planner → Human approves → Feature Manager → Cursor → Review → Triage → Supervisor QA → Commit Manager → Retrospective
 ```

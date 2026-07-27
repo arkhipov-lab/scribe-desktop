@@ -42,7 +42,7 @@ When docs conflict, stop and ask the human.
 ## Preconditions
 
 - Docs exist
-- **New cycle:** run roadmap-planner first; wait for human approval
+- **New cycle:** run product-analyst first when choosing next work from roadmap/debt/metrics, then roadmap-planner; wait for human approval
 - **After scope approval:** create or update the iteration ledger and `.ai/state/current-cycle.json` before implementation prompt generation
 - **Review/fix:** implementation summary exists
 - **Supervisor QA:** review gate clean
@@ -54,11 +54,12 @@ When docs conflict, stop and ask the human.
 
 ### New implementation cycle (mandatory)
 
-1. Run [roadmap-planner.md](./roadmap-planner.md)
-2. Wait for human approval
-3. Create/update the active ledger under `docs/iterations/` and `.ai/state/current-cycle.json`
-4. Generate Cursor prompt via [cursor-implementation-prompt.md](./cursor-implementation-prompt.md)
-5. After implementation: update state to `review`, then `Use codex-review.`
+1. Run [product-analyst.md](./product-analyst.md) when choosing the next iteration from roadmap/debt/metrics
+2. Run [roadmap-planner.md](./roadmap-planner.md)
+3. Wait for human approval
+4. Create/update the active ledger under `docs/iterations/` and `.ai/state/current-cycle.json`
+5. Generate Cursor prompt via [cursor-implementation-prompt.md](./cursor-implementation-prompt.md)
+6. After implementation: update state to `review`, then `Use codex-review.`
 
 ### Review and fix loop
 
@@ -103,6 +104,7 @@ When docs conflict, stop and ask the human.
 
 Produce the artifact for the **current phase only** (unless human asked for status overview):
 
+- Product analysis → [product-analyst.md](./product-analyst.md) template
 - Planning → roadmap recommendation verbatim + approval question
 - Implementation prompt → [cursor-implementation-prompt.md](./cursor-implementation-prompt.md) template
 - Review → findings per [codex-review.md](./codex-review.md)
@@ -166,7 +168,7 @@ Never ask the human to edit the working tree themselves — offer an AI fix prom
 ## Cycle overview
 
 ```
-roadmap-planner → human approves → Cursor prompt
+product-analyst → roadmap-planner → human approves → Cursor prompt
   → Cursor implements → Codex review → review-triage
   → (AI fix loop) → supervisor-qa → product QA (human)
   → commit-manager → iteration-retrospective → summary → next

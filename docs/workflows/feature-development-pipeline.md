@@ -26,6 +26,7 @@ Each pipeline step is a self-contained skill in [`.ai/skills/`](../../.ai/skills
 
 | Step | Prompt |
 |------|--------|
+| Analyze next work | `Use product-analyst.` |
 | Plan next slice | `Use roadmap-planner.` |
 | Orchestrate cycle | `Use feature-manager.` |
 | Review changes | `Use codex-review.` |
@@ -53,7 +54,7 @@ See [`.ai/skills/README.md`](../../.ai/skills/README.md).
 ### Assistant / Agent Manager
 
 - Invokes pipeline skills with one-line prompts
-- **Must** run `roadmap-planner` before every new implementation cycle
+- **Must** run `product-analyst` when choosing next work from roadmap/debt/metrics, then `roadmap-planner`, before every new implementation cycle
 - Writes bounded prompts for Cursor and Codex after human approval
 - Triages review findings and writes fix prompts
 - Does **not** silently change product scope
@@ -77,10 +78,19 @@ See [`.ai/skills/README.md`](../../.ai/skills/README.md).
 ## Workflow Steps
 
 ```
+product-analyst
+        │
+        ▼
+Human reviews analysis
+        │
+        ▼
+roadmap-planner
+        │
+        ▼
 Human approves scope
         │
         ▼
-roadmap-planner → Cursor implements → Codex reviews → review-triage
+feature pipeline → Cursor implements → Codex reviews → review-triage
         │                                    │
         │                         High/Medium? → AI fix → re-review
         │                                    │
@@ -90,19 +100,20 @@ supervisor-qa → human product QA → commit-manager (human approves) → itera
 
 ### Step detail
 
-1. **Plan next slice** — `Use roadmap-planner.` Human approves before proceeding.
-2. **Generate implementation prompt** — `Use feature-manager.` or `Use cursor-implementation-prompt.`
-3. **Cursor implements** — within scope; run verification.
-4. **Review** — `Use codex-review.` (Codex = engineering review only.)
-5. **Triage** — `Use review-triage.`
-6. **If High/Medium** — AI fix prompt → Cursor; return to step 3.
-7. **If only Low** — human **requests an AI fix** or **explicitly accepts/defers** each as debt (human never edits the tree).
-8. **Supervisor QA** — `Use supervisor-qa.`
-9. **Manual product QA** — human pass/fail (or explicit skip). This is product review, not code review.
-10. **Commit** — `Use commit-manager.` Human approves before commit is created.
-11. **Retrospective** — `Use iteration-retrospective.` Record metrics, rework, repeated failures, and next planning input.
-12. **Implementation summary** — for the next cycle.
-13. **Next iteration** — return to step 1.
+1. **Analyze next work** — `Use product-analyst.` Compare ROADMAP, scenarios, debt, recent metrics, and retrospective evidence.
+2. **Plan next slice** — `Use roadmap-planner.` Human approves before proceeding.
+3. **Generate implementation prompt** — `Use feature-manager.` or `Use cursor-implementation-prompt.`
+4. **Cursor implements** — within scope; run verification.
+5. **Review** — `Use codex-review.` (Codex = engineering review only.)
+6. **Triage** — `Use review-triage.`
+7. **If High/Medium** — AI fix prompt → Cursor; return to step 4.
+8. **If only Low** — human **requests an AI fix** or **explicitly accepts/defers** each as debt (human never edits the tree).
+9. **Supervisor QA** — `Use supervisor-qa.`
+10. **Manual product QA** — human pass/fail (or explicit skip). This is product review, not code review.
+11. **Commit** — `Use commit-manager.` Human approves before commit is created.
+12. **Retrospective** — `Use iteration-retrospective.` Record metrics, rework, repeated failures, and next planning input.
+13. **Implementation summary** — for the next cycle.
+14. **Next iteration** — return to step 1.
 
 ---
 
@@ -233,6 +244,7 @@ Cursor must report which checks ran and their results.
 | File | Invocation |
 |------|------------|
 | [`.ai/skills/README.md`](../../.ai/skills/README.md) | Skill index |
+| [`.ai/skills/product-analyst.md`](../../.ai/skills/product-analyst.md) | `Use product-analyst.` |
 | [`.ai/skills/roadmap-planner.md`](../../.ai/skills/roadmap-planner.md) | `Use roadmap-planner.` |
 | [`.ai/skills/feature-manager.md`](../../.ai/skills/feature-manager.md) | `Use feature-manager.` |
 | [`.ai/skills/cursor-implementation-prompt.md`](../../.ai/skills/cursor-implementation-prompt.md) | `Use cursor-implementation-prompt.` |

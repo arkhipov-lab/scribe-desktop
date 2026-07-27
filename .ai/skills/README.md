@@ -7,6 +7,7 @@ Self-contained skills for the Scribe feature development pipeline. Each skill is
 | Skill | One-line prompt |
 |-------|-----------------|
 | [roadmap-planner.md](./roadmap-planner.md) | `Use roadmap-planner.` |
+| [product-analyst.md](./product-analyst.md) | `Use product-analyst.` |
 | [feature-manager.md](./feature-manager.md) | `Use feature-manager.` |
 | [cursor-implementation-prompt.md](./cursor-implementation-prompt.md) | `Use cursor-implementation-prompt.` |
 | [codex-review.md](./codex-review.md) | `Use codex-review.` |
@@ -20,7 +21,8 @@ Each skill defines its own context loading, preconditions, responsibilities, out
 ## Typical cycle
 
 ```
-Use roadmap-planner.     → human approves
+Use product-analyst.     → evidence-based next-work analysis
+Use roadmap-planner.     → bounded slice recommendation → human approves
 Use feature-manager.     → produces Cursor prompt → Cursor implements
 Use codex-review.        → Use review-triage.
                          → (fix loop if needed)
