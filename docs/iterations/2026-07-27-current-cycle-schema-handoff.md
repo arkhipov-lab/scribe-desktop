@@ -1,9 +1,9 @@
 # Iteration: Current-Cycle Schema And Structured Handoff
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-28
+**Commit:** `27e36d1150d827d54cdecbbe724074fc3e1a64cb`
 
 ## Approved Scope
 
@@ -46,8 +46,8 @@
 | Re-review | Codex | loop 2 clean — R1–R3 verified fixed; 0 new findings | done |
 | Triage / auto-fix (loop 2) | review-triage | review gate clean; route to supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated 2026-07-28; human passed 2026-07-28 | done |
-| Commit prep | commit-manager | prep ready 2026-07-28; awaiting human commit approval | planned |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `27e36d1` created 2026-07-28 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-28; P-009 done; P-002 narrowed | done |
 
 ## Implementation Phase
 
@@ -197,9 +197,10 @@ Confirm that the AI development cycle now has a machine-checked `current-cycle` 
 
 ## Commit Preparation
 
-**Prepared:** 2026-07-28 — awaiting explicit human commit approval.
+**Prepared:** 2026-07-28
+**Commit:** `27e36d1150d827d54cdecbbe724074fc3e1a64cb` created 2026-07-28 after explicit human approval.
 
-Suggested message:
+Suggested message (used):
 
 ```
 feat(ai-process): add current-cycle schema and structured handoff
@@ -225,24 +226,80 @@ Files: schema, stdlib schema checker, validator handoff checks, current-cycle + 
 
 ## Metrics
 
-| Metric | Value | Source |
-| --- | --- | --- |
-| review_loops | 2 | observed — loop 2 re-review clean |
-| human_decisions | 1 | observed — Supervisor QA pass (commit approval pending) |
-| high_findings | 0 | observed — across loops |
-| medium_findings | 1 | observed — R1 (fixed in loop 1) |
-| low_findings | 2 | observed — R2, R3 (fixed in loop 1) |
-| qa_outcome | passed | observed — human Product Owner 2026-07-28 |
-| outcome | pending | — |
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| review_loops | 2 | observed | Loop 1 findings + auto-fix; loop 2 re-review clean |
+| human_decisions | 2 | observed | Supervisor QA pass + commit approval (no review-loop asks) |
+| high_findings | 0 | observed | Review records |
+| medium_findings | 1 | observed | R1 (fixed loop 1) |
+| low_findings | 2 | observed | R2, R3 (fixed loop 1) |
+| qa_outcome | passed | observed | Human Product Owner 2026-07-28 |
+| outcome | shipped | observed | Commit `27e36d1` + retrospective complete |
 
 ## Debt / Follow-ups
 
-- Advances planned process work toward structured schemas (P-2026-07-26-002) and implementation-phase validator hardening (P-2026-07-27-009) without closing full per-role schema work.
-- Deferred: other role output schemas, CI wiring, findings sidecar.
+- Advances planned process work: current-cycle schema is the first schema consumer (P-002 narrowed); P-009 marked done.
+- Deferred: other role output schemas, CI wiring, findings sidecar, P-004 implementation-runner.
 
 ## Retrospective
 
-(pending)
+# Iteration Retrospective — Current-Cycle Schema And Structured Handoff
+
+## Outcome
+
+- **Status:** shipped
+- **Commit:** `27e36d1150d827d54cdecbbe724074fc3e1a64cb`
+- **QA:** passed
+
+## Metrics
+
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ~1 calendar day (same evening stretch) | estimated | `date_started` 2026-07-27 → completed 2026-07-28; commit `27e36d1` at 2026-07-28 00:25 +0200 |
+| Agent turns | ~11 user skill/step turns | estimated | implement → review → triage → fix → re-review → triage → QA → pass → commit-manager → commit → retrospective |
+| Approx token use | not measured | estimated | no tooling report |
+| Review loops | 2 | observed | ledger review/triage |
+| High findings | 0 | observed | ledger |
+| Medium findings | 1 | observed | R1 fixed |
+| Low findings | 2 | observed | R2–R3 fixed |
+| Human decisions | 2 | observed | QA pass + commit approval |
+| QA outcome | passed | observed | ledger |
+| Outcome | shipped | observed | commit + this retrospective |
+
+## Rework Analysis
+
+- **What caused rework:** Loop 1 Medium R1 — `pending_re_review` incorrectly treated as a progressed handoff escape, allowing illegal `next_role` during re-review.
+- **What avoided rework:** Explicit synthetic negatives in the implementation summary; auto-fix of R1–R3 without human interrupts; process-only scope kept product surface untouched.
+- **Human routine effort:** Only mandatory gates (QA + commit). Zero review-loop involvement — continues the auto-fix improvement seen in `editable-transcript` / `pipeline-operator-ux`.
+
+## Repeated Failure Analysis
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Asking human about routine Lows | R2/R3 auto-fixed; no ask | no (improved) | none; keep auto-fix |
+| Incomplete gate escape hatch | R1 `pending_re_review` bypass | unknown (first schema/handoff slice) | gate/test — fixed this cycle; keep synthetic regression |
+| Validator half-state gaps | Prior shipped-consistency + this handoff slice | yes (process hardening theme) | continue targeted validator slices only when a concrete illegal state appears |
+
+## Process Recommendations
+
+1. Treat structured schemas as demand-driven: keep P-002 open for other role outputs, but do not add schemas without a validator/consumer (current-cycle is enough for now).
+2. When choosing process next, prefer P-004 (implementation-runner / handoff skill) — schema/handoff foundation is now in place for that work.
+
+## Debt / Planned Work Updates
+
+- **Debt register:** no new Open Debt
+- **Planned process work:** P-009 → done; P-002 notes updated (current-cycle schema shipped; other role schemas still planned)
+- **Product follow-ups captured:** yes/no — none this iteration
+
+## Next Planning Input
+
+Use `product-analyst` (then roadmap-planner). Compare next Scribe product candidates (e.g. editable summary approach for `PP-2026-07-27-003`, parked language auto-detect `PP-2026-07-27-002`) against process `P-2026-07-27-004` (implementation-runner). Prefer product if a bounded user-facing slice is clear; otherwise P-004 is the strongest process follow-on now that current-cycle schema/handoff exists.
+
+## State Updates
+
+- Ledger: retrospective filled; status shipped; metrics finalized
+- Current cycle: `phase=shipped`, `handoff.next_role=none`
+- Debt register: P-009 done; P-002 narrowed
 
 ## Product Follow-ups
 

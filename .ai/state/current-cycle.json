@@ -4,9 +4,9 @@
     "id": "2026-07-27-current-cycle-schema-handoff",
     "name": "Current-Cycle Schema And Structured Handoff",
     "ledger_path": "docs/iterations/2026-07-27-current-cycle-schema-handoff.md",
-    "status": "commit-ready",
+    "status": "shipped",
     "date_started": "2026-07-27",
-    "date_completed": null
+    "date_completed": "2026-07-28"
   },
   "approved_scope": {
     "source": "chat — Product Owner / implementation task: Current-Cycle Schema And Structured Handoff",
@@ -30,16 +30,16 @@
       "Scribe product behavior changes"
     ]
   },
-  "phase": "commit-ready",
+  "phase": "shipped",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "pending",
+    "retrospective": "done",
     "commit_allowed": true,
-    "committed": false
+    "committed": true
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -48,41 +48,33 @@
     "latest_review": "loop 2 (re-review): 0 High, 0 Medium, 0 Low — R1–R3 verified fixed",
     "latest_triage": "loop 2 clean; review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-28 by human Product Owner; no new follow-ups",
-    "latest_commit_prep": "prepared 2026-07-28; awaiting explicit human commit approval",
-    "latest_retrospective": null,
-    "commit": null,
+    "latest_commit_prep": "commit 27e36d1 created 2026-07-28",
+    "latest_retrospective": "completed 2026-07-28; P-009 done; P-002 narrowed; next planning → product-analyst",
+    "commit": "27e36d1150d827d54cdecbbe724074fc3e1a64cb",
     "previous_iteration": "2026-07-27-editable-transcript",
     "latest_implementation_prompt": "chat — implementation task Current-Cycle Schema And Structured Handoff 2026-07-27",
     "latest_implementation_summary": "docs/iterations/2026-07-27-current-cycle-schema-handoff.md — Implementation Summary",
     "latest_auto_fix": "applied 2026-07-27 — R1 pending_re_review→codex-review; R2 $ref clean FAIL; R3 blank line",
-    "human_involvement_reason": "Supervisor QA pass 2026-07-28; commit approval pending"
+    "human_involvement_reason": "Supervisor QA pass; commit approval 2026-07-28"
   },
   "metrics": {
     "review_loops": 2,
-    "human_decisions": 1,
+    "human_decisions": 2,
     "high_findings": 0,
     "medium_findings": 1,
     "low_findings": 2,
     "qa_outcome": "passed",
-    "outcome": null
+    "outcome": "shipped"
   },
   "handoff": {
-    "next_role": "human-product-owner",
-    "reason": "commit prepared; awaiting explicit human approval to create commit",
-    "required_inputs": [
-      "commit preparation summary",
-      "suggested commit message",
-      "explicit commit approval"
-    ],
-    "blocked_by": [
-      "human commit approval"
-    ],
+    "next_role": "none",
+    "reason": "iteration shipped; start next planning from a fresh cycle via product-analyst / roadmap-planner",
+    "required_inputs": [],
+    "blocked_by": [],
     "latest_artifacts": [
       "docs/iterations/2026-07-27-current-cycle-schema-handoff.md",
       ".ai/state/current-cycle.json",
-      ".ai/org/schemas/current-cycle.schema.json",
-      "scripts/ai-cycle-validate.sh",
-      "scripts/ai-cycle-schema-check.py"
+      "27e36d1150d827d54cdecbbe724074fc3e1a64cb"
     ]
   },
   "last_updated": "2026-07-28"
