@@ -1,9 +1,9 @@
 # Iteration: Backlog Intelligence
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `424f89ebcdceac08d2c3ee9e7d951b7bf84d6c22`
 
 ## Approved Scope
 
@@ -42,8 +42,8 @@
 | Re-review | Codex independent review | loop 2 clean (0 High/Medium/Low) | done |
 | Triage | review-triage | loop 2: review gate clean; route to supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated 2026-07-27; human passed 2026-07-27 | done |
-| Commit prep | commit-manager | commit-ready 2026-07-27; awaiting human approval | pending |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `424f89e` created 2026-07-27 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-27; next planning → product-analyst or P-002 | done |
 
 ## Implementation Summary
 
@@ -213,25 +213,39 @@ Separate observed facts from estimates.
 
 | Metric | Value | Source type | Evidence |
 | --- | --- | --- | --- |
-| Elapsed time | pending | observed | Ledger timestamps pending completion |
-| Agent turns | pending | observed | Conversation turns pending completion |
-| Approx token use | pending | estimated | Estimate unavailable during implementation |
-| Review loops | 2 | observed | Loop 1 Mediums+Lows → fix; loop 2 clean re-review |
+| Elapsed time | same calendar day (2026-07-27) | estimated | `date_started` = `date_completed`; wall-clock span not instrumented |
+| Agent turns | ~18 across implement/review/fix/QA/commit/retrospective | estimated | Skill invocations in this chat cycle; exact turn counter unavailable |
+| Approx token use | unavailable | estimated | No token meter in this session |
+| Review loops | 2 | observed | Loop 1 Mediums+Lows → fix; loop 2 clean |
 | High findings | 0 | observed | Review findings table |
-| Medium findings | 2 fixed (0 open) | observed | R1–R2 fixed and verified |
-| Low findings | 3 fixed (0 open) | observed | R3–R5 fixed and verified |
-| Human decisions | 3 | observed | Scope approval; triage must-fix note; QA pass |
+| Medium findings | 2 | observed | R1–R2 in loop 1; fixed before ship |
+| Low findings | 3 | observed | R3–R5; fixed before ship |
+| Human decisions | 4 | observed | Scope approval; triage must-fix note; QA pass; commit approval |
 | QA outcome | passed | observed | Supervisor QA human decision 2026-07-27 |
-| Outcome | pending | observed | Iteration not complete |
+| Outcome | shipped | observed | Commit `424f89e` + retrospective complete |
 
 ## Retrospective
 
-**What worked:** pending
+**What worked:**
+- Core `product-analyst` skill framing landed correctly on the first pass (supports PO; does not own direction); human product note affirmed design without redesign.
+- Bounded process slice stayed out of Scribe product paths; validators and process-only QA were enough.
+- Cheap Lows were bundled with Mediums in one AI fix pass; loop 2 re-review was clean.
+- Post-commit `phase=retrospective` → shipped handoff validated cleanly (prior phase-model work paid off).
 
-**What caused rework:** pending
+**What caused rework:**
+- First implementation added the role but left pipeline diagram inverted and orchestrator Preconditions/Cycle overview / indexes lagging (R1–R5).
+- One premature re-review ran before the fix pass was applied (`pending_re_review` with open Mediums), adding a no-op review turn.
 
-**Repeated failure patterns:** pending
+**Repeated failure patterns:**
 
-**Process change recommended:** pending
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Skill/overview copy drifts from pipeline steps | This iteration R1–R5; prior `2026-07-27-retrospective-metrics` R5–R6 (Low overview drift) | yes | docs/skill: when adding a pipeline role/step, update skill + indexes + orchestrator preconditions/overview + pipeline diagram + Related Files + Integration strings in the same implementation pass |
+| Premature re-review before fix applied | This iteration: codex-review while R1–R2 still open / fix not applied | unknown | none formal; triage already routes “fix then re-review”; avoid invoking review until `triage_status=fix_applied` or findings marked fixed |
 
-**Next planning input:** pending
+**Process change recommended:**
+1. Treat “new pipeline role/step” as a checklist item: primary skill, skill/workflow indexes, feature-manager preconditions + cycle overview, pipeline diagram + step detail, Related Files, and downstream Integration strings — all in one implement pass before review.
+2. No second process change recommended this iteration.
+
+**Next planning input:**
+Use `product-analyst` (then roadmap-planner) to choose between product ROADMAP work and planned process item `P-2026-07-26-002` (structured role output schemas). Prefer product work if PO wants Scribe-facing value next; prefer P-002 if the next consumer of machine-readable role outputs is clear.
