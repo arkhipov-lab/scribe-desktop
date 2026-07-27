@@ -57,7 +57,7 @@ First-launch defaults come from a local hardware probe: stronger Whisper/summary
 
 ## User controls summary shape
 
-Presets, summary length, summary language (independent of transcript language), and additional instructions shape notes. Model ids and token caps come from the backend catalog — not hard-coded in the UI.
+Presets, summary length, summary language (independent of transcript language; override under **Processing options**), and additional instructions shape notes. Model ids and token caps come from the backend catalog — not hard-coded in the UI.
 
 ## Export and history are local user-owned outputs
 
@@ -76,7 +76,7 @@ Open Scribe
       ↓
 Drop / select media  —or—  Record (mic + system audio)
       ↓
-Choose transcript language + summary language + Processing options (optional)
+Choose transcript language + Processing options (optional; includes summary language override)
       ↓
 Transcribe (MLX Whisper)
       ↓
@@ -93,7 +93,7 @@ Review Transcript + Summary → Copy / Export / History
 | --- | --- |
 | Ingest | File select/drop (`.m4a`, `.mp3`, `.wav`, `.mp4`, `.mov`) or Record |
 | Transcription | Local mlx-whisper; transcript language picker; cancel |
-| Summary | Local mlx-lm; presets, length, summary language, instructions; map-reduce for long text; cancel |
+| Summary | Local mlx-lm; presets, length, summary language (Processing options; defaults from UI locale), instructions; map-reduce for long text; cancel |
 | Models | Whisper small/medium; Qwen2.5 1.5B/3B 4-bit; catalog in `backend/model_catalog.py` |
 | History | On-disk sessions (meta, transcript, summary, optional audio) |
 | Export / playback | Local notes export; in-app playback of selected/recorded audio |

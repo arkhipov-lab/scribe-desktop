@@ -71,7 +71,7 @@
   },
   "processing": {
     "title": "Processing options",
-    "hint": "Models, summary style, and auto-summary",
+    "hint": "Models, summary language, style, and auto-summary",
     "recommended": "Recommended for this Mac ({tier}): {reason}",
     "tierAuto": "auto",
     "transcriptionModel": "Transcription model",

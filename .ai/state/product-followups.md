@@ -22,10 +22,10 @@ These items are **not** review debt and do **not** block the current commit gate
 
 | ID | Title | Source iteration | Source phase | Type | Why captured | Product value | Suggested owner | Revisit condition | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| PP-2026-07-27-001 | Summary language default = system language; move control into Processing options | `2026-07-27-separate-languages` | Supervisor QA | UX follow-up | QA pass feedback: primary flow should not force summary-language choice; default from system/UI language; advanced users change it under Processing options. | High | product-analyst / roadmap-planner | Next product planning after separate-languages ships | open |
-| PP-2026-07-27-002 | Reduce language selectors in direct flow; auto-detect transcript language from audio | `2026-07-27-separate-languages` | Supervisor QA | Product opportunity | Long-term desire to remove language pickers from the main path; needs UX/ML feasibility investigation. | Medium | product-analyst / roadmap-planner | After PP-001 or when PO prioritizes hands-off language UX | open |
+| PP-2026-07-27-002 | Reduce language selectors in direct flow; auto-detect transcript language from audio | `2026-07-27-separate-languages` | Supervisor QA | Product opportunity | Long-term desire to remove language pickers from the main path; needs UX/ML feasibility investigation. | Medium | product-analyst / roadmap-planner | After PP-001 ships or when PO prioritizes hands-off language UX | open |
 
 ## Closed / Converted
 
 | ID | Title | Converted to | Closed by | Notes |
 | --- | --- | --- | --- | --- |
+| PP-2026-07-27-001 | Summary language default = system language; move control into Processing options | `2026-07-27-summary-language-ux` | commit-manager prep 2026-07-27 | Shipped in summary-language UX slice; close on commit/ship |

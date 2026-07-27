@@ -20,7 +20,7 @@ from macos_app import configure_macos_app
 from memory import release_ml_memory
 from profile_config import get_app_name
 from recorder import CaptureRecorder, RecorderError, delete_path_quiet, is_temp_recording
-from settings import ensure_settings_file, merge_settings
+from settings import ensure_settings_file, merge_settings, summary_language_persisted
 from summarizer import (
     SummaryError,
     generate_session_title,
@@ -138,6 +138,7 @@ class Api:
             "file_name": None,
             "language": prefs["language"],
             "summary_language": prefs["summary_language"],
+            "summary_language_persisted": summary_language_persisted(),
             "transcript": "",
             "summary": "",
             "summary_status": "idle",
@@ -175,7 +176,6 @@ class Api:
         return {
             "language": snap.get("language") or DEFAULT_LANGUAGE,
             "summary_language": snap.get("summary_language")
-            or snap.get("language")
             or DEFAULT_LANGUAGE,
             "summary_preset": snap.get("summary_preset"),
             "additional_instructions": snap.get("additional_instructions") or "",
@@ -190,6 +190,7 @@ class Api:
         self._update(
             language=prefs["language"],
             summary_language=prefs["summary_language"],
+            summary_language_persisted=summary_language_persisted(),
             summary_preset=prefs["summary_preset"],
             additional_instructions=prefs["additional_instructions"],
             summary_length=prefs["summary_length"],

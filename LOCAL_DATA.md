@@ -39,6 +39,8 @@ Mutable session state lives in the Python `Api` (`backend/app.py`): status, tran
 Stores preferences only, for example:
 
 - transcript `language` and `summary_language` / processing options
+  - `summary_language` defaults from the resolved UI locale on first launch / when the key is absent; already-persisted values are kept
+  - summary language override lives under Processing options (not the primary flow)
 - Whisper and summary model choices
 - summary preset, length, additional instructions
 - auto-summary on/off

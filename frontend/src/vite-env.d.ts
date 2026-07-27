@@ -27,6 +27,8 @@ export interface AppState {
   file_name: string | null;
   language: LanguageCode | string;
   summary_language: LanguageCode | string;
+  /** False until settings.json has an explicit summary_language (UI may seed from locale). */
+  summary_language_persisted?: boolean;
   transcript: string;
   summary: string;
   summary_status: SummaryStatus;

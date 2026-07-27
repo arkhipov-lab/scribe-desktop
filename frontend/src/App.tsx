@@ -5,7 +5,7 @@ import {
   getDefaultState,
   resetApi,
 } from "./api";
-import { LOCALE_OPTIONS, t, useI18n } from "./i18n";
+import { LOCALE_OPTIONS, getLocale, t, useI18n } from "./i18n";
 import LanguageSelect from "./LanguageSelect";
 import MarkdownBody from "./MarkdownBody";
 import PresetSelect from "./PresetSelect";
@@ -24,7 +24,7 @@ import {
   IconStop,
   IconSun,
 } from "./icons";
-import { DEFAULT_LANGUAGE, languageLabel } from "./languages";
+import { DEFAULT_LANGUAGE, isWhisperLanguage, languageLabel } from "./languages";
 import { useTheme } from "./theme";
 import type {
   AppState,
@@ -67,6 +67,12 @@ function isSummaryBusy(status: SummaryStatus): boolean {
   return status === "loading_model" || status === "summarizing";
 }
 
+/** Map resolved UI locale (en/ru/…) to a Whisper summary language code. */
+function summaryLanguageFromUiLocale(locale: string): string {
+  const short = (locale || "").toLowerCase().split("-")[0] || DEFAULT_LANGUAGE;
+  return isWhisperLanguage(short) ? short : DEFAULT_LANGUAGE;
+}
+
 function mergeState(next: AppState): AppState {
   return {
     status: next.status,
@@ -75,6 +81,7 @@ function mergeState(next: AppState): AppState {
     file_name: next.file_name,
     language: next.language,
     summary_language: next.summary_language ?? next.language ?? DEFAULT_LANGUAGE,
+    summary_language_persisted: Boolean(next.summary_language_persisted),
     transcript: next.transcript,
     summary: next.summary ?? "",
     summary_status: next.summary_status ?? "idle",
@@ -315,6 +322,19 @@ export default function App() {
         const merged = mergeState(initial);
         setState(merged);
         setInstructionsDraft(merged.additional_instructions);
+        if (!merged.summary_language_persisted && api.update_settings) {
+          const seeded = summaryLanguageFromUiLocale(getLocale());
+          try {
+            const seededState = await api.update_settings({
+              summary_language: seeded,
+            });
+            if (!cancelled && seededState) {
+              setState(mergeState(seededState));
+            }
+          } catch {
+            // Seed is best-effort; interim DEFAULT_LANGUAGE remains usable.
+          }
+        }
         if (Array.isArray(presetList) && presetList.length > 0) {
           setPresetsRaw(presetList);
         }
@@ -1066,22 +1086,6 @@ export default function App() {
           />
         </div>
 
-        <div className="field">
-          <h2>{t("language.summaryTitle")}</h2>
-          <label className="sr-only" htmlFor="summary-language-select">
-            {t("language.summaryTitle")}
-          </label>
-          <LanguageSelect
-            value={summaryLanguage}
-            inputId="summary-language-select"
-            listAriaLabel={t("language.summaryListAria")}
-            disabled={locked || summaryBusy}
-            onChange={(next) =>
-              void onSettingsPatch({ summary_language: next })
-            }
-          />
-        </div>
-
         <div className="actions">
           <button
             type="button"
@@ -1132,6 +1136,21 @@ export default function App() {
                 })}
               </p>
             )}
+
+            <div className="field">
+              <label className="field-label" htmlFor="summary-language-select">
+                {t("language.summaryTitle")}
+              </label>
+              <LanguageSelect
+                value={summaryLanguage}
+                inputId="summary-language-select"
+                listAriaLabel={t("language.summaryListAria")}
+                disabled={locked || summaryBusy}
+                onChange={(next) =>
+                  void onSettingsPatch({ summary_language: next })
+                }
+              />
+            </div>
 
             <div className="summary-settings-grid">
               <div className="field">

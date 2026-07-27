@@ -9,6 +9,7 @@ const DEFAULT_STATE: AppState = {
   file_name: null,
   language: DEFAULT_LANGUAGE,
   summary_language: DEFAULT_LANGUAGE,
+  summary_language_persisted: false,
   transcript: "",
   summary: "",
   summary_status: "idle",

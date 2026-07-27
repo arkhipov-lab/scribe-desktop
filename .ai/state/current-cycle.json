@@ -1,69 +1,68 @@
 {
   "schema_version": 1,
   "iteration": {
-    "id": "2026-07-27-product-followups-register",
-    "name": "Product Follow-Ups And Wishes Register",
-    "ledger_path": "docs/iterations/2026-07-27-product-followups-register.md",
-    "status": "shipped",
+    "id": "2026-07-27-summary-language-ux",
+    "name": "Summary Language Default And Processing Options Placement",
+    "ledger_path": "docs/iterations/2026-07-27-summary-language-ux.md",
+    "status": "commit-ready",
     "date_started": "2026-07-27",
-    "date_completed": "2026-07-27"
+    "date_completed": null
   },
   "approved_scope": {
-    "source": "chat — Product Owner approved analysis/plan for process slice",
+    "source": "chat — Product Owner approved roadmap Option A after product-analyst + roadmap-planner",
     "date": "2026-07-27",
-    "goal": "Add a durable, non-blocking register for Product Owner follow-ups, QA wishes, and future product ideas without mixing them with review debt.",
+    "goal": "Default summary language from resolved UI/system locale; keep transcript language in the primary flow; move summary-language override under Processing options.",
     "in_scope": [
-      "Create .ai/state/product-followups.md",
-      "Define belongs / does-not-belong rules",
-      "Move PP-2026-07-27-001 and PP-2026-07-27-002 from debt.md",
-      "Narrow debt.md to debt + planned process work",
-      "Update iteration ledger template with Product Follow-ups / Wishes section",
-      "Update supervisor-qa, review-triage, product-analyst, roadmap-planner, iteration-retrospective skills",
-      "Lightweight validator existence check for follow-ups register",
-      "Update product/org adapters and pointers (ROADMAP, scenarios, workflows)",
-      "Update active ledger and current-cycle.json"
+      "Default summary_language from resolved UI locale (en/ru/system→navigator) mapped to Whisper codes with fallback en",
+      "Migration: preserve already-persisted summary_language; first-launch/missing-key seed from UI/system default (not transcript language)",
+      "Move summary-language control from primary flow into Processing options",
+      "Keep transcript language in the primary flow",
+      "Persist override via existing settings bridge",
+      "Update summary-controls scenario + thin PRODUCT/LOCAL_DATA/TESTING/ROADMAP/locales in same pass",
+      "On ship: mark PP-2026-07-27-001 converted/closed in product-followups.md"
     ],
     "out_of_scope": [
-      "Implementing PP-001 / PP-002",
-      "Automated scoring / prioritization",
-      "Full machine-readable backlog schema",
-      "Moving planned process work out of debt.md",
-      "Product-facing Scribe behavior changes",
-      "CI integration",
-      "New Product Owner console / onboarding flows"
+      "PP-2026-07-27-002 auto-detect transcript language / remove transcript picker",
+      "Editable results, partial copy, action-items view",
+      "Advanced model knobs / markdown post-process checklist",
+      "Process schemas P-2026-07-26-002 / package extraction P-2026-07-27-003",
+      "One-time remigration rewriting existing persisted summary_language",
+      "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64"
     ]
   },
-  "phase": "shipped",
+  "phase": "commit-ready",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "done",
+    "retrospective": "not_started",
     "commit_allowed": true,
-    "committed": true
+    "committed": false
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
     "product_followups_register": ".ai/state/product-followups.md",
     "iteration_directory": "docs/iterations",
-    "latest_review": "loop 1: 0 High, 0 Medium, 5 Low; R1–R5 fixed (Low-only, no re-review)",
+    "latest_review": "loop 1: 0 High, 0 Medium, 1 Low; R1 fixed (Low-only, no re-review)",
     "latest_triage": "review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-27 by human Product Owner; no new follow-ups",
-    "latest_commit_prep": "commit b48047d created 2026-07-27",
-    "latest_retrospective": "completed 2026-07-27; next planning → product-analyst (PP-001 vs editable results vs P-002; park PP-002/P-003)",
-    "commit": "b48047d7ceb228a95756463e634fa9dba3c34608",
-    "previous_iteration": "2026-07-27-separate-languages"
+    "latest_commit_prep": "prepared 2026-07-27; await human commit approval; PP-001 closed in follow-ups",
+    "latest_retrospective": null,
+    "commit": null,
+    "previous_iteration": "2026-07-27-product-followups-register",
+    "latest_implementation_prompt": "chat — feature-manager 2026-07-27",
+    "latest_implementation_summary": "chat — Cursor implement 2026-07-27"
   },
   "metrics": {
     "review_loops": 1,
     "human_decisions": 4,
     "high_findings": 0,
     "medium_findings": 0,
-    "low_findings": 5,
+    "low_findings": 1,
     "qa_outcome": "passed",
-    "outcome": "shipped"
+    "outcome": "commit-ready"
   },
   "last_updated": "2026-07-27"
 }
