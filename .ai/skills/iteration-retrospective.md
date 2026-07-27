@@ -21,6 +21,9 @@ Use iteration-retrospective.
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Scope, handoffs, findings, QA, verification, metrics |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, phase, gate state, metrics |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt and planned process work |
+| [`.ai/org/`](../org/) | Reusable roles, workflow, metrics, and schema targets |
+| [`.ai/product/`](../product/) | Product-specific context to distinguish product vs process lessons |
+| [`.ai/repo/`](../repo/) | Repo-specific validation and forbidden-path context |
 | Recent ledgers in [docs/iterations/](../../docs/iterations/) | Repeated failure pattern comparison |
 | Latest review / triage / QA / commit summary | Evidence for rework and outcomes |
 | [docs/workflows/iteration-ledger.md](../../docs/workflows/iteration-ledger.md) | Metrics and ledger contract |
@@ -143,4 +146,3 @@ Never mix the source label into the value. Keep value, source type, and evidence
 ## Human Checkpoints
 
 Human approval is required before major process changes, roadmap edits, product direction changes, or accepting new non-Low debt. The retrospective may propose changes; it does not authorize them.
-

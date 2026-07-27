@@ -25,6 +25,9 @@ Read these before producing a recommendation:
 | [PRODUCT.md](../../PRODUCT.md) | Product value lens and non-goals |
 | [ROADMAP.md](../../ROADMAP.md) | Hypothesis backlog, not automatic priority |
 | [docs/scenarios/](../../docs/scenarios/) | User-visible behavior gaps and acceptance references |
+| [`.ai/org/`](../org/) | Reusable process roles, workflow, metrics, and schemas |
+| [`.ai/product/`](../product/) | Product-layer adapters for invariants, roadmap, and scenarios |
+| [`.ai/repo/`](../repo/) | Repository stack, validation, and forbidden paths |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Latest shipped/current iteration state and metrics |
 | [`.ai/state/debt.md`](../state/debt.md) | Open debt and planned process work |
 | Recent ledgers in [docs/iterations/](../../docs/iterations/) | Outcomes, review loops, QA results, retrospective notes |
@@ -135,4 +138,3 @@ Yes — Product Owner chooses whether to feed this into roadmap-planner.
 ## Human Checkpoints
 
 Human approval is required before turning the recommendation into an approved slice, changing roadmap direction, accepting product debt, or starting implementation.
-

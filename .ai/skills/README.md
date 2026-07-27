@@ -35,6 +35,16 @@ Full pipeline: [docs/workflows/feature-development-pipeline.md](../../docs/workf
 
 Product cycle (above the pipeline): [docs/workflows/ai-product-development-cycle.md](../../docs/workflows/ai-product-development-cycle.md).
 
+## Portable layers
+
+The AI development system is split into reusable and project-specific adapters:
+
+- [`.ai/org/`](../org/) — reusable roles, workflow, metrics, gates, and schema targets;
+- [`.ai/product/`](../product/) — Scribe product invariants, roadmap, and scenario adapters;
+- [`.ai/repo/`](../repo/) — Scribe stack, validation commands, and forbidden paths.
+
+Use `.ai/org/` for process mechanics, `.ai/product/` for product direction and constraints, and `.ai/repo/` for implementation/validation details.
+
 ## Mandatory state
 
 Every approved iteration must have:

@@ -25,6 +25,10 @@ Use commit-manager.
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, gate state, QA status |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt that must be recorded before commit |
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Full iteration record and handoffs |
+| [`.ai/org/`](../org/) | Reusable gate and workflow rules |
+| [`.ai/product/`](../product/) | Product-layer constraints for scope check |
+| [`.ai/repo/`](../repo/) | Validation commands and forbidden-path adapter |
+| [`.ai/repo/forbidden-paths.md`](../repo/forbidden-paths.md) | Forbidden staging paths source |
 | Git working tree | `git status`, `git diff`, `git diff --cached` |
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | Conventional Commits / what not to commit |
 
@@ -69,7 +73,7 @@ Relevant checks only:
 
 ### Exclude from commit
 
-Never stage:
+Follow the forbidden-path policy in [`.ai/repo/forbidden-paths.md`](../repo/forbidden-paths.md). Never stage:
 
 - `dist/`, `.cache/`, `.venv/`, `node_modules/`, `frontend/dist/`, `native/build/`
 - logs, recordings, HF caches, secrets

@@ -197,6 +197,8 @@ This role supports the human Product Owner. It does not own product direction.
 
 # P3 - Reusable Process Package
 
+Status: initial layer split added under `.ai/org/`, `.ai/product/`, and `.ai/repo/` as flat adapter files (for example `roles.md`, `scenarios.md`). Existing Scribe docs remain canonical. Nested package directories in the target structure below remain deferred to full extraction.
+
 Split the process into layers so it can leave the Scribe repository later.
 
 Target structure:

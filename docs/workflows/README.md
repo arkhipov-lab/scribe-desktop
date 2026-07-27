@@ -4,6 +4,16 @@ Current version: **v1.0** (adapted for Scribe)
 
 Status: Stable starting point — expect evolution through use.
 
+## Portable layers
+
+The process is split into reusable and project-specific layers:
+
+- [`.ai/org/`](../../.ai/org/) — reusable AI organization roles, workflows, metrics, gates, and schema targets;
+- [`.ai/product/`](../../.ai/product/) — Scribe product invariants, roadmap, and scenarios;
+- [`.ai/repo/`](../../.ai/repo/) — Scribe stack, validation commands, and forbidden paths.
+
+Existing root docs remain canonical for Scribe. The `.ai/*` layer files are adapters that make the process easier to port to another repository.
+
 ## Mandatory iteration memory
 
 Every approved product or process iteration must have durable memory before implementation starts:

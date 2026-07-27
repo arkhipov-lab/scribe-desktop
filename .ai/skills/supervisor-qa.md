@@ -25,6 +25,9 @@ Use supervisor-qa.
 | [docs/scenarios/](../../docs/scenarios/) | Expected flows |
 | [TESTING.md](../../TESTING.md) | Smoke vocabulary |
 | [README.md](../../README.md) / [DEVELOPMENT.md](../../DEVELOPMENT.md) | How to run the app |
+| [`.ai/org/`](../org/) | Reusable process roles, gates, and metrics for process iterations |
+| [`.ai/product/`](../product/) | Product invariants and scenario adapters |
+| [`.ai/repo/`](../repo/) | Repo validation commands for QA checks |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration and gate state |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt to mention as watch-outs |
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Approved scope, review/triage status, accepted Lows |

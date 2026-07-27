@@ -34,6 +34,9 @@ Read these **before doing anything**:
 | [TESTING.md](../../TESTING.md) | Smoke expectations |
 | [AGENTS.md](../../AGENTS.md) | Agent constraints |
 | [docs/scenarios/](../../docs/scenarios/) | Relevant behavior specs |
+| [`.ai/org/`](../org/) | Reusable process mechanics and metrics context |
+| [`.ai/product/`](../product/) | Product-layer adapters for invariants, roadmap, and scenarios |
+| [`.ai/repo/`](../repo/) | Repository validation and stack adapters |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active/previous iteration state |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred product, engineering, and process debt |
 | [docs/iterations/](../../docs/iterations/) | Latest iteration ledgers and retrospectives |

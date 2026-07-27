@@ -29,6 +29,9 @@ Use codex-review.
 | [AGENTS.md](../../AGENTS.md) | Always |
 | [docs/scenarios/](../../docs/scenarios/) | If user-facing flow changed |
 | [BUILDING.md](../../BUILDING.md) | If packaging touched |
+| [`.ai/org/`](../org/) | Reusable role/gate/metrics boundaries for process changes |
+| [`.ai/product/`](../product/) | Product invariants and scenario adapters |
+| [`.ai/repo/`](../repo/) | Stack, validation, and forbidden-path adapters |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, approved scope, and gate state |
 | [`.ai/state/debt.md`](../state/debt.md) | Previously accepted/deferred debt |
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Role handoffs, implementation summary, verification evidence |

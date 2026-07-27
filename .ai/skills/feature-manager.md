@@ -30,6 +30,9 @@ For a single step, invoke the specialized skill (e.g. `Use roadmap-planner.`, `U
 | [TESTING.md](../../TESTING.md) | Smoke matrix |
 | [AGENTS.md](../../AGENTS.md) | Agent rules |
 | [docs/scenarios/](../../docs/scenarios/) | Behavior specs |
+| [`.ai/org/`](../org/) | Reusable roles, workflow, metrics, and schema targets |
+| [`.ai/product/`](../product/) | Product invariants, roadmap, and scenario adapters |
+| [`.ai/repo/`](../repo/) | Stack, validation commands, and forbidden paths |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, phase, and gate state |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt |
 | [docs/iterations/](../../docs/iterations/) | Active and previous iteration ledgers |
