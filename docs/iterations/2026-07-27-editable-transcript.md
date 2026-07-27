@@ -1,9 +1,9 @@
 # Iteration: Editable Raw Transcript
 
-**Status:** commit-ready
+**Status:** retrospective
 **Date started:** 2026-07-27
 **Date completed:** pending
-**Commit:** pending
+**Commit:** `ca1098b1ff8766646fac0fe584668eaa0ab221a1`
 
 ## Approved Scope
 
@@ -50,7 +50,7 @@
 | Review ready → Review | Codex | loop 2: 0 High, 0 Medium, 0 Low — R1–R4 verified fixed | done |
 | Triage / auto-fix | review-triage | loop 2 clean; review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human passed 2026-07-27 | done |
-| Commit prep | commit-manager | prepared 2026-07-27; await human commit approval | pending |
+| Commit prep | commit-manager | commit `ca1098b` created 2026-07-27 | done |
 | Retrospective | iteration-retrospective | pending | pending |
 
 ## Implementation Phase
@@ -250,7 +250,7 @@ Local capture for this iteration. Curated source of truth: `.ai/state/product-fo
 | Low findings | 2 | observed | R3–R4 in loop 1; fixed before loop 2 |
 | Human decisions | 4 | observed | planning approvals; R3 Decision B; QA pass |
 | QA outcome | passed | observed | human Supervisor QA 2026-07-27 |
-| Outcome | commit-ready | observed | await commit approval |
+| Outcome | retrospective | observed | commit `ca1098b`; await retrospective |
 
 ## Retrospective
 
