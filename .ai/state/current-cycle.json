@@ -1,48 +1,48 @@
 {
   "schema_version": 1,
   "iteration": {
-    "id": "2026-07-27-pipeline-operator-ux",
-    "name": "Pipeline Operator UX And Auto-Fix Policy",
-    "ledger_path": "docs/iterations/2026-07-27-pipeline-operator-ux.md",
-    "status": "shipped",
+    "id": "2026-07-27-editable-transcript",
+    "name": "Editable Raw Transcript",
+    "ledger_path": "docs/iterations/2026-07-27-editable-transcript.md",
+    "status": "commit-ready",
     "date_started": "2026-07-27",
-    "date_completed": "2026-07-27"
+    "date_completed": null
   },
   "approved_scope": {
-    "source": "chat — Product Owner approved process slice via implementation task",
+    "source": "chat — Product Owner approved roadmap Option A after product-analyst + roadmap-planner; addendum: transcript-only raw text; Transcribe/Regenerate overwrite; first auto-summary when checkbox on; manual summary after user transcript edits",
     "date": "2026-07-27",
-    "goal": "Reduce PO/operator involvement in the engineering loop: feature-manager sole post-approval entrypoint, implementation handoff states, auto-fix policy, PO-readable product-analyst output.",
+    "goal": "Plain-text editable transcript preserved as left until Transcribe overwrites; summary stays Markdown display-only; manual Generate/Regenerate uses current transcript and replaces summary; first auto-summary after Transcribe still runs when auto-summary is on.",
     "in_scope": [
-      "feature-manager as sole normal post-approval entrypoint",
-      "cursor-implementation-prompt as internal/specialized handoff only",
-      "Implementation phase: prompt prepared → pending → summary → review ready",
-      "Auto-fix policy for High/Medium and cheap first-loop Lows; second+ loop Low policy",
-      "Hard rule: product-facing Low cannot be silently deferred as debt",
-      "Product wishes stay in product-followups, not debt",
-      "product-analyst Recommendation → Short Comparison → Evidence Appendix",
-      "Ledger/org convention updates for handoff and auto-fix recording"
+      "Transcript pane: plain-text display and edit (no Markdown for transcript)",
+      "Persist edits as left (Api state, history when session exists, copy/export)",
+      "Transcribe again fully overwrites transcript (and clears/replaces summary per existing pipeline)",
+      "Summary pane: Markdown display-only; not editable",
+      "Auto-summary after fresh Transcribe when checkbox enabled (existing behavior)",
+      "No auto-summary on transcript edit; manual Generate/Regenerate from current transcript overwrites summary",
+      "Bridge/API + vite-env.d.ts for edited transcript → state/history/export/summary",
+      "Scenario + PRODUCT/TESTING/README/ROADMAP/pipeline docs in one pass",
+      "No transcript/summary bodies in logs"
     ],
     "out_of_scope": [
-      "Automating Cursor execution",
-      "CLI orchestrator / PO console / onboarding",
-      "Full JSON schemas for all role outputs",
-      "CI integration",
-      "Scribe product behavior changes",
-      "Removing specialized skills",
-      "Auto-commit without human approval",
-      "Accepting unresolved High/Medium as debt"
+      "Editable summary / Markdown WYSIWYG / raw-MD dual pane",
+      "Changing summary Markdown rendering",
+      "Auto-regenerate summary on transcript edit",
+      "PP-2026-07-27-002 language auto-detect",
+      "Partial copy, action-items, markdown post-process, diarization, timestamps/SRT, PDF, Advanced knobs",
+      "Process P-004/P-007/schemas/package extraction",
+      "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64"
     ]
   },
-  "phase": "shipped",
+  "phase": "commit-ready",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "done",
+    "retrospective": "not_started",
     "commit_allowed": true,
-    "committed": true
+    "committed": false
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -50,24 +50,26 @@
     "iteration_directory": "docs/iterations",
     "latest_review": "loop 2 (re-review): 0 High, 0 Medium, 0 Low — R1–R4 verified fixed",
     "latest_triage": "loop 2 clean; review gate clean",
-    "latest_auto_fix": "applied 2026-07-27 — R1–R4",
-    "human_involvement_reason": "PO clarified: product-facing Low cannot be silently deferred under auto-debt policy",
-    "latest_qa": "passed with follow-ups 2026-07-27; process P-004–P-009",
-    "latest_commit_prep": "commit d339880 created 2026-07-27",
-    "latest_retrospective": "completed 2026-07-27; next planning → product-analyst (P-005 validate + product candidates; consider P-004); policy-consumer checklist recommended",
-    "commit": "d339880aaacf680bfc484d9390ea4c8a4a9678a4",
-    "previous_iteration": "2026-07-27-summary-language-ux",
-    "latest_implementation_prompt": "chat — Pipeline Operator UX And Auto-Fix Policy task 2026-07-27",
-    "latest_implementation_summary": "docs/iterations/2026-07-27-pipeline-operator-ux.md — Implementation Summary"
+    "latest_auto_fix": "applied 2026-07-27 — R1–R4 (R3 Option B)",
+    "human_involvement_reason": "R3 Decision B; Supervisor QA pass",
+    "latest_qa": "passed 2026-07-27 by human Product Owner; no new follow-ups",
+    "latest_commit_prep": "prepared 2026-07-27; await human commit approval",
+    "latest_retrospective": null,
+    "commit": null,
+    "previous_iteration": "2026-07-27-pipeline-operator-ux",
+    "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt 2026-07-27 (editable raw transcript)",
+    "latest_implementation_summary": "docs/iterations/2026-07-27-editable-transcript.md — Implementation Summary",
+    "latest_product_analysis": "chat — product-analyst 2026-07-27 (editable results → PO narrowed to transcript-only)",
+    "latest_roadmap_plan": "chat — roadmap-planner Option A approved 2026-07-27"
   },
   "metrics": {
     "review_loops": 2,
     "human_decisions": 4,
-    "high_findings": 0,
-    "medium_findings": 3,
-    "low_findings": 1,
+    "high_findings": 1,
+    "medium_findings": 1,
+    "low_findings": 2,
     "qa_outcome": "passed",
-    "outcome": "shipped"
+    "outcome": "commit-ready"
   },
   "last_updated": "2026-07-27"
 }

@@ -196,6 +196,39 @@ def update_session_title(session_id: str, title: str) -> dict[str, Any] | None:
         return _index_entry_from_meta(meta)
 
 
+def update_session_transcript(session_id: str, transcript: str) -> dict[str, Any] | None:
+    """Update stored transcript text without clearing an existing summary."""
+    sid = (session_id or "").strip()
+    if not sid:
+        return None
+    text = (transcript or "").replace("\x00", "")
+    with _lock:
+        session_path = _session_dir(sid)
+        meta_path = session_path / "meta.json"
+        meta = _read_json(meta_path)
+        if not isinstance(meta, dict):
+            return None
+        _atomic_write_text(session_path / "transcript.md", text.rstrip() + ("\n" if text else ""))
+        meta["has_transcript"] = bool(text.strip())
+        meta["updated_at"] = _now_iso()
+        _atomic_write_json(meta_path, meta)
+        entries = _load_index()
+        for i, entry in enumerate(entries):
+            if entry.get("id") == sid:
+                entries[i] = _index_entry_from_meta(meta)
+                break
+        else:
+            entries.insert(0, _index_entry_from_meta(meta))
+        _save_index(entries)
+        get_logger().info(
+            "Updated history transcript id=%s chars=%s has_transcript=%s",
+            sid,
+            len(text),
+            meta["has_transcript"],
+        )
+        return _index_entry_from_meta(meta)
+
+
 def update_session_summary(
     session_id: str,
     summary: str,

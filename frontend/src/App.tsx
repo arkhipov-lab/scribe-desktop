@@ -83,6 +83,7 @@ function mergeState(next: AppState): AppState {
     summary_language: next.summary_language ?? next.language ?? DEFAULT_LANGUAGE,
     summary_language_persisted: Boolean(next.summary_language_persisted),
     transcript: next.transcript,
+    transcript_epoch: Number(next.transcript_epoch ?? 0),
     summary: next.summary ?? "",
     summary_status: next.summary_status ?? "idle",
     summary_error: next.summary_error ?? null,
@@ -279,6 +280,8 @@ export default function App() {
     fallbackSummaryModels(),
   );
   const [instructionsDraft, setInstructionsDraft] = useState("");
+  const [transcriptDraft, setTranscriptDraft] = useState("");
+  const [summaryStale, setSummaryStale] = useState(false);
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
   const [sidebarSettingsOpen, setSidebarSettingsOpen] = useState(false);
   const [appVersion, setAppVersion] = useState<string | null>(null);
@@ -287,6 +290,13 @@ export default function App() {
   const copyTimer = useRef<number | null>(null);
   const exportTimer = useRef<number | null>(null);
   const instructionsTimer = useRef<number | null>(null);
+  const transcriptPersistTimer = useRef<number | null>(null);
+  const transcriptDirtyRef = useRef(false);
+  const transcriptDraftRef = useRef("");
+  const transcriptFlushEpochRef = useRef(0);
+  const transcriptEpochRef = useRef(0);
+  const summaryRunActiveRef = useRef(false);
+  const summarizedFromRef = useRef("");
   const lastTranscriptRef = useRef("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
@@ -321,6 +331,13 @@ export default function App() {
         if (cancelled) return;
         const merged = mergeState(initial);
         setState(merged);
+        setTranscriptDraft(merged.transcript || "");
+        transcriptDraftRef.current = merged.transcript || "";
+        transcriptEpochRef.current = Number(merged.transcript_epoch ?? 0);
+        transcriptDirtyRef.current = false;
+        setSummaryStale(false);
+        summaryRunActiveRef.current = false;
+        summarizedFromRef.current = "";
         setInstructionsDraft(merged.additional_instructions);
         if (!merged.summary_language_persisted && api.update_settings) {
           const seeded = summaryLanguageFromUiLocale(getLocale());
@@ -366,7 +383,13 @@ export default function App() {
         intervalId = window.setInterval(async () => {
           try {
             const next = await api.get_state();
-            if (!cancelled) setState(mergeState(next));
+            if (cancelled) return;
+            const merged = mergeState(next);
+            transcriptEpochRef.current = Number(merged.transcript_epoch ?? 0);
+            if (transcriptDirtyRef.current) {
+              merged.transcript = transcriptDraftRef.current;
+            }
+            setState(merged);
           } catch {
             // Keep last known state if a poll fails briefly.
           }
@@ -387,6 +410,9 @@ export default function App() {
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       if (exportTimer.current) window.clearTimeout(exportTimer.current);
       if (instructionsTimer.current) window.clearTimeout(instructionsTimer.current);
+      if (transcriptPersistTimer.current) {
+        window.clearTimeout(transcriptPersistTimer.current);
+      }
       teardownAudio();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -425,12 +451,51 @@ export default function App() {
   }
 
   useEffect(() => {
-    // New transcript → always land on Transcript tab.
+    // Accept bridge transcript when not dirty, or when Transcribe/clear replaces it.
+    const pipelineReplace =
+      state.status === "loading_model" ||
+      state.status === "transcribing" ||
+      (!state.transcript && Boolean(lastTranscriptRef.current));
+    if (pipelineReplace) {
+      transcriptFlushEpochRef.current += 1;
+      transcriptDirtyRef.current = false;
+      setTranscriptDraft(state.transcript || "");
+      transcriptDraftRef.current = state.transcript || "";
+      transcriptEpochRef.current = Number(state.transcript_epoch ?? 0);
+      setSummaryStale(false);
+      summaryRunActiveRef.current = false;
+      summarizedFromRef.current = "";
+    } else if (!transcriptDirtyRef.current && state.transcript !== transcriptDraftRef.current) {
+      setTranscriptDraft(state.transcript || "");
+      transcriptDraftRef.current = state.transcript || "";
+      transcriptEpochRef.current = Number(state.transcript_epoch ?? 0);
+    } else {
+      transcriptEpochRef.current = Number(state.transcript_epoch ?? 0);
+    }
     if (state.transcript && state.transcript !== lastTranscriptRef.current) {
       setResultTab("transcript");
     }
     lastTranscriptRef.current = state.transcript;
-  }, [state.transcript]);
+  }, [state.transcript, state.status, state.transcript_epoch]);
+
+  useEffect(() => {
+    const busySummary =
+      state.summary_status === "loading_model" ||
+      state.summary_status === "summarizing";
+    if (busySummary) {
+      if (!summaryRunActiveRef.current) {
+        summaryRunActiveRef.current = true;
+        summarizedFromRef.current = transcriptDraftRef.current;
+      }
+      return;
+    }
+    if (summaryRunActiveRef.current) {
+      summaryRunActiveRef.current = false;
+      if (state.summary_status === "completed" && state.summary?.trim()) {
+        setSummaryStale(transcriptDraftRef.current !== summarizedFromRef.current);
+      }
+    }
+  }, [state.summary_status, state.summary]);
 
   useEffect(() => {
     // Keep draft aligned when settings load/change from the bridge (not while typing).
@@ -463,6 +528,13 @@ export default function App() {
       const api = await getApi();
       const next = await action(api);
       const merged = mergeState(next);
+      transcriptEpochRef.current = Number(merged.transcript_epoch ?? 0);
+      if (transcriptDirtyRef.current) {
+        merged.transcript = transcriptDraftRef.current;
+      } else {
+        setTranscriptDraft(merged.transcript || "");
+        transcriptDraftRef.current = merged.transcript || "";
+      }
       setState(merged);
       setBridgeError(null);
       return merged;
@@ -486,13 +558,101 @@ export default function App() {
   const language = state.language || DEFAULT_LANGUAGE;
   const summaryLanguage =
     state.summary_language || state.language || DEFAULT_LANGUAGE;
-  const hasTranscript = Boolean(state.transcript?.trim());
-  const audioLocked = hasTranscript;
+  const displayTranscript = transcriptDraft;
+  const hasTranscript = Boolean(displayTranscript?.trim());
+  const audioLocked =
+    Boolean(state.session_id) ||
+    Boolean(state.transcript?.trim()) ||
+    hasTranscript;
   const activeText =
-    resultTab === "summary" ? state.summary : state.transcript;
+    resultTab === "summary" ? state.summary : displayTranscript;
   const canCopy = Boolean(activeText);
-  const canExport = Boolean(state.transcript?.trim() || state.summary?.trim());
+  const canExport = Boolean(displayTranscript?.trim() || state.summary?.trim());
   const summaryLength = (state.summary_length || "normal") as SummaryLength;
+  const showRegenHint = summaryStale && Boolean(state.summary?.trim());
+
+  async function flushTranscript(): Promise<boolean> {
+    if (!transcriptDirtyRef.current) return true;
+    if (transcriptPersistTimer.current) {
+      window.clearTimeout(transcriptPersistTimer.current);
+      transcriptPersistTimer.current = null;
+    }
+    const flushEpoch = transcriptFlushEpochRef.current;
+    const basedOnEpoch = transcriptEpochRef.current;
+    const text = transcriptDraftRef.current;
+    try {
+      const api = await getApi();
+      if (flushEpoch !== transcriptFlushEpochRef.current) {
+        return false;
+      }
+      if (!transcriptDirtyRef.current) {
+        return true;
+      }
+      if (!api.update_transcript) {
+        setBridgeError(t("errors.bridgeUnavailable"));
+        return false;
+      }
+      const next = await api.update_transcript(text, basedOnEpoch);
+      if (flushEpoch !== transcriptFlushEpochRef.current) {
+        return false;
+      }
+      if (next.ok === false) {
+        setBridgeError(next.error || t("errors.bridgeUnavailable"));
+        return false;
+      }
+      const merged = mergeState(next);
+      transcriptDirtyRef.current = false;
+      const saved = merged.transcript || text;
+      setTranscriptDraft(saved);
+      transcriptDraftRef.current = saved;
+      transcriptEpochRef.current = Number(merged.transcript_epoch ?? basedOnEpoch + 1);
+      setState(merged);
+      setBridgeError(null);
+      return true;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : t("errors.bridgeUnavailable");
+      if (message.includes("Desktop bridge is not available")) {
+        resetApi();
+      }
+      setBridgeError(message);
+      return false;
+    }
+  }
+
+  function onTranscriptChange(value: string) {
+    transcriptDirtyRef.current = true;
+    setTranscriptDraft(value);
+    transcriptDraftRef.current = value;
+    setState((prev) => ({ ...prev, transcript: value }));
+    const summaryPresent = Boolean(state.summary?.trim());
+    const summarizingNow =
+      state.summary_status === "loading_model" ||
+      state.summary_status === "summarizing";
+    if (summaryPresent || summarizingNow) {
+      setSummaryStale(value !== summarizedFromRef.current);
+    }
+    if (transcriptPersistTimer.current) {
+      window.clearTimeout(transcriptPersistTimer.current);
+    }
+    transcriptPersistTimer.current = window.setTimeout(() => {
+      void flushTranscript();
+    }, 450);
+  }
+
+  function clearTranscriptDraft() {
+    transcriptFlushEpochRef.current += 1;
+    transcriptDirtyRef.current = false;
+    setTranscriptDraft("");
+    transcriptDraftRef.current = "";
+    setSummaryStale(false);
+    summaryRunActiveRef.current = false;
+    summarizedFromRef.current = "";
+    if (transcriptPersistTimer.current) {
+      window.clearTimeout(transcriptPersistTimer.current);
+      transcriptPersistTimer.current = null;
+    }
+  }
 
   async function onSelectFile() {
     await withApi((api) => api.select_file());
@@ -641,6 +801,8 @@ export default function App() {
   }
 
   async function onExportNotes() {
+    const flushed = await flushTranscript();
+    if (!flushed) return;
     try {
       const api = await getApi();
       if (!api.export_notes) {
@@ -648,7 +810,11 @@ export default function App() {
         return;
       }
       const next = await api.export_notes();
-      setState(mergeState(next));
+      const merged = mergeState(next);
+      if (transcriptDirtyRef.current) {
+        merged.transcript = transcriptDraftRef.current;
+      }
+      setState(merged);
       setBridgeError(null);
       if (next.ok) {
         setExported(true);
@@ -685,7 +851,12 @@ export default function App() {
   }
 
   async function onOpenSession(sessionId: string) {
-    await withApi((api) => api.open_session(sessionId));
+    clearTranscriptDraft();
+    const merged = await withApi((api) => api.open_session(sessionId));
+    if (merged?.summary?.trim()) {
+      summarizedFromRef.current = merged.transcript || "";
+      setSummaryStale(false);
+    }
     setResultTab("transcript");
   }
 
@@ -695,6 +866,7 @@ export default function App() {
       return;
     }
     teardownAudio();
+    clearTranscriptDraft();
     await withApi((api) => api.reset_for_another_file());
     setResultTab("transcript");
   }
@@ -718,6 +890,7 @@ export default function App() {
 
   async function onTranscribe() {
     setResultTab("transcript");
+    clearTranscriptDraft();
     await withApi((api) => api.start_transcription());
   }
 
@@ -735,6 +908,10 @@ export default function App() {
   }
 
   async function onSummarize() {
+    const flushed = await flushTranscript();
+    if (!flushed) return;
+    summarizedFromRef.current = transcriptDraftRef.current;
+    summaryRunActiveRef.current = true;
     await withApi((api) => api.start_summary());
   }
 
@@ -1381,10 +1558,21 @@ export default function App() {
           </div>
 
           {resultTab === "transcript" ? (
-            <MarkdownBody
-              content={state.transcript}
-              emptyLabel={t("result.transcriptEmpty")}
-            />
+            <div className="transcript-edit">
+              <textarea
+                id="transcript-editor"
+                className="transcript-editor"
+                value={transcriptDraft}
+                onChange={(e) => onTranscriptChange(e.target.value)}
+                disabled={locked}
+                spellCheck
+                aria-label={t("result.transcript")}
+                placeholder={t("result.transcriptEmpty")}
+              />
+              {showRegenHint && (
+                <p className="transcript-edit-hint">{t("result.transcriptEditedHint")}</p>
+              )}
+            </div>
           ) : summaryBusy ? (
             <div className="summary-empty" aria-live="polite">
               <div className="summary-busy">

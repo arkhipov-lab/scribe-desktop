@@ -40,6 +40,7 @@ from history import (
     load_session,
     update_session_summary,
     update_session_title,
+    update_session_transcript,
     upsert_after_transcript,
 )
 from transcriber import (
@@ -140,6 +141,7 @@ class Api:
             "summary_language": prefs["summary_language"],
             "summary_language_persisted": summary_language_persisted(),
             "transcript": "",
+            "transcript_epoch": 0,
             "summary": "",
             "summary_status": "idle",
             "summary_error": None,
@@ -216,6 +218,11 @@ class Api:
 
     def _update(self, **kwargs: Any) -> None:
         with self._lock:
+            if "transcript" in kwargs and "transcript_epoch" not in kwargs:
+                kwargs = {
+                    **kwargs,
+                    "transcript_epoch": int(self._state.get("transcript_epoch") or 0) + 1,
+                }
             self._state.update(kwargs)
 
     def _discard_owned_temp(self, *, keep: str | None = None) -> None:
@@ -319,6 +326,47 @@ class Api:
 
     def get_state(self) -> dict[str, Any]:
         return self._snapshot()
+
+    def update_transcript(
+        self, text: Any = None, based_on_epoch: Any = None
+    ) -> dict[str, Any]:
+        """Persist user-edited plain-text transcript (does not clear summary)."""
+        if text is None or not isinstance(text, str):
+            return self._snapshot() | {"ok": False, "error": "Invalid transcript."}
+        state = self._snapshot()
+        if state["status"] in {"loading_model", "transcribing", "recording"}:
+            return state | {
+                "ok": False,
+                "error": "Cannot edit transcript while transcription or recording is running.",
+            }
+        current_epoch = int(state.get("transcript_epoch") or 0)
+        if based_on_epoch is not None:
+            try:
+                expected = int(based_on_epoch)
+            except (TypeError, ValueError):
+                return state | {"ok": False, "error": "Invalid transcript epoch."}
+            if expected != current_epoch:
+                return state | {
+                    "ok": False,
+                    "error": "Transcript changed; edit discarded.",
+                }
+        cleaned = text.replace("\x00", "")
+        self._update(transcript=cleaned)
+        sid = self._snapshot().get("session_id")
+        if sid:
+            try:
+                entry = update_session_transcript(str(sid), cleaned)
+                if entry:
+                    self._update(session_title=entry.get("title") or state.get("session_title"))
+            except Exception:
+                log_exception("Failed to persist edited transcript to history")
+        self.logger.info(
+            "Transcript updated by user: chars=%s session=%s epoch=%s",
+            len(cleaned),
+            sid or "none",
+            int(self._snapshot().get("transcript_epoch") or 0),
+        )
+        return self._snapshot() | {"ok": True}
 
     def get_supported_extensions(self) -> list[str]:
         return sorted(SUPPORTED_EXTENSIONS)

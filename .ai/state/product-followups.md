@@ -23,6 +23,7 @@ These items are **not** review debt and do **not** block the current commit gate
 | ID | Title | Source iteration | Source phase | Type | Why captured | Product value | Suggested owner | Revisit condition | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | PP-2026-07-27-002 | Reduce language selectors in direct flow; auto-detect transcript language from audio | `2026-07-27-separate-languages` | Supervisor QA | Product opportunity | Long-term desire to remove language pickers from the main path; needs UX/ML feasibility investigation. | Medium | product-analyst / roadmap-planner | After PP-001 ships or when PO prioritizes hands-off language UX | open |
+| PP-2026-07-27-003 | Editable summary later without a full Markdown document editor | `2026-07-27-editable-transcript` | Planning | Product opportunity | PO deferred summary editing: Markdown WYSIWYG/raw-MD dual pane is off-goal; need a later approach that is not a document editor. | Medium | product-analyst / roadmap-planner | After editable transcript ships or when PO prioritizes summary correction UX | open |
 
 ## Closed / Converted
 

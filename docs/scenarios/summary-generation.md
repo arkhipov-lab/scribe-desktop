@@ -22,12 +22,14 @@ After a transcript exists, user gets useful local meeting notes via mlx-lm.
 - Long transcripts: map-reduce (chunk → summarize → merge) without uploading text.
 - Status remains visible; ML memory released between stages as designed.
 - Log must **not** contain summary body.
+- Manual Generate / Regenerate always summarizes the **current** transcript text (including user edits). Editing the transcript does not auto-start summary; auto-summary still runs after a fresh Transcribe when enabled. See [editable-transcript.md](./editable-transcript.md).
 
 ## Edge cases
 
 - Auto-summary off → transcription completes without starting summary; Generate still works.
 - OOM-like failure on 8 GB → switch to 1.5B / shorter audio; clear error preferred over hang.
 - Cancel mid-summary → [cancel-summary.md](./cancel-summary.md).
+- After transcript edits, previous summary may be stale until the user regenerates.
 
 ## Related docs / tests
 

@@ -150,6 +150,7 @@
     "regenerateSummary": "Regenerate summary",
     "exportNotes": "Export notes",
     "transcriptEmpty": "Transcript will appear here.",
+    "transcriptEditedHint": "Transcript changed. Regenerate the summary to update notes.",
     "summaryEmpty": "Summary will appear here.",
     "loadingSummaryModel": "Loading summary model…",
     "writingSummary": "Writing summary…",

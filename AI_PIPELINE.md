@@ -103,6 +103,7 @@ Section headings are localized for common languages. Cancel is cooperative betwe
 ### 8. Local outputs
 
 - **App state** via `get_state` (transcript, summary, status, errors).
+- **Transcript edits** via `update_transcript` (plain text into state + history when a session exists; does not clear summary). Manual Generate/Regenerate uses the current transcript; auto-summary still runs after Transcribe when enabled.
 - **History** under Application Support (`meta.json`, `transcript.md`, `summary.md`, optional audio) — [LOCAL_DATA.md](LOCAL_DATA.md).
 - **Export** (`export_notes`), **playback** (`get_playback_src`), **save audio copy** as user actions.
 

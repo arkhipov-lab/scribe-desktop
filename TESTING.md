@@ -44,6 +44,7 @@ Run:
 4. Transcript appears; elapsed timer behaves.
 5. **Cancel** mid-run returns to a sane idle/ready state.
 6. Confirm the log contains path/status lines but **not** the transcript body.
+7. Edit the transcript as plain text; confirm edits survive a short wait and appear in Copy/Export; regenerating summary uses the edited text. Transcribe again fully replaces the transcript. See [docs/scenarios/editable-transcript.md](docs/scenarios/editable-transcript.md).
 
 ### D. Summary
 
@@ -54,6 +55,7 @@ Run:
 5. Preferences survive relaunch (`~/Library/Application Support/Scribe/settings.json`), including transcript language and summary language (when seeded or overridden).
 6. Cancel summary does not corrupt the existing transcript.
 7. Log must not contain summary text or additional-instructions body.
+8. After editing the transcript, summary does not auto-restart; manual Generate/Regenerate overwrites the summary from the current transcript.
 
 ### E. Recording
 

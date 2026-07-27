@@ -11,6 +11,7 @@ const DEFAULT_STATE: AppState = {
   summary_language: DEFAULT_LANGUAGE,
   summary_language_persisted: false,
   transcript: "",
+  transcript_epoch: 0,
   summary: "",
   summary_status: "idle",
   summary_error: null,

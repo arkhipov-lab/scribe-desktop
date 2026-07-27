@@ -1115,6 +1115,7 @@ h1.page-title {
 }
 
 .transcript,
+.transcript-editor,
 .markdown-body {
   width: 100%;
   min-height: 220px;
@@ -1124,6 +1125,34 @@ h1.page-title {
   background: var(--surface);
   color: var(--ink);
   line-height: 1.55;
+}
+
+.transcript-edit {
+  display: grid;
+  gap: 8px;
+}
+
+.transcript-editor {
+  max-height: min(52vh, 480px);
+  overflow: auto;
+  resize: vertical;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+}
+
+.transcript-editor:disabled {
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+.transcript-editor.is-empty {
+  color: var(--muted);
+}
+
+.transcript-edit-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
 .markdown-body {

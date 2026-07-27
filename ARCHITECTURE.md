@@ -28,7 +28,7 @@ Scribe is a single-window macOS desktop app. The UI is a React SPA hosted inside
 
 ### 1. Frontend (`frontend/`)
 
-- **Role:** UX only — file drop/select, record controls, language, progress, transcript/summary display, copy.
+- **Role:** UX only — file drop/select, record controls, language, progress, plain-text editable transcript, Markdown summary display, copy/export.
 - **Bridge:** `frontend/src/api.ts` waits for `pywebviewready`, then calls methods typed in `vite-env.d.ts`.
 - **No direct filesystem or ML access.** Paths and permissions are handled by Python / macOS.
 

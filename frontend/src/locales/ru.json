@@ -150,6 +150,7 @@
     "regenerateSummary": "Пересоздать саммари",
     "exportNotes": "Экспортировать заметки",
     "transcriptEmpty": "Здесь появится транскрипт.",
+    "transcriptEditedHint": "Транскрипт изменён. Пересоздайте саммари, чтобы обновить заметки.",
     "summaryEmpty": "Здесь появится саммари.",
     "loadingSummaryModel": "Загрузка модели саммари…",
     "writingSummary": "Пишем саммари…",

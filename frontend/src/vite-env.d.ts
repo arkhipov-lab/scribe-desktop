@@ -30,6 +30,8 @@ export interface AppState {
   /** False until settings.json has an explicit summary_language (UI may seed from locale). */
   summary_language_persisted?: boolean;
   transcript: string;
+  /** Monotonic counter bumped on every transcript write (Whisper, clear, user edit). */
+  transcript_epoch?: number;
   summary: string;
   summary_status: SummaryStatus;
   summary_error: string | null;
@@ -142,6 +144,10 @@ export interface PywebviewApi {
   list_sessions: () => Promise<HistorySession[]>;
   open_session: (sessionId: string) => Promise<ApiResult>;
   delete_session: (sessionId: string) => Promise<ApiResult>;
+  update_transcript: (
+    text: string,
+    basedOnEpoch?: number,
+  ) => Promise<ApiResult>;
   start_transcription: () => Promise<ApiResult>;
   cancel_transcription: () => Promise<ApiResult>;
   start_summary: () => Promise<ApiResult>;

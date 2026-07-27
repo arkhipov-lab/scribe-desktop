@@ -29,6 +29,7 @@ Mutable session state lives in the Python `Api` (`backend/app.py`): status, tran
 | Shape | Response shapes must match `frontend/src/vite-env.d.ts` |
 | Polling | UI polls; do not push long ML work onto the WebView main thread |
 | Content | Transcript/summary text may sit in memory for the UI — never written to the app log |
+| Edits | `update_transcript` writes the current plain-text transcript into Api state and, when a session exists, `history/sessions/<id>/transcript.md` without clearing the summary. A `transcript_epoch` counter bumps on every transcript write so stale in-flight edits cannot overwrite a newer Whisper result. |
 
 ---
 
@@ -61,7 +62,7 @@ On first launch (no settings file), `backend/hardware.py` picks strong vs weak d
 | `history/index.json` | Light sidebar index |
 | `history/sessions/<id>/` | One session folder |
 | `…/meta.json` | Metadata (title, dates, languages, flags such as has_summary) |
-| `…/transcript.md` | Transcript text |
+| `…/transcript.md` | Transcript text (plain text; filename historical) |
 | `…/summary.md` | Summary text (when present) |
 | `…/audio.*` | Optional copied audio (skipped if source is very large) |
 

@@ -154,6 +154,7 @@ The React UI talks only through `window.pywebview.api` (`Api` in `backend/app.py
 | `get_state` / polling | Current status, transcript, summary, errors |
 | `select_file` / `set_file_path` | Choose or drop media |
 | `save_audio_copy` / `export_notes` / `get_playback_src` | Save audio copy / export notes / in-app playback bytes |
+| `update_transcript` | Persist user-edited plain-text transcript (state + history) |
 | `start_recording` / `stop_recording` | Mic + system audio |
 | `start_transcription` / `cancel_transcription` | Whisper pipeline |
 | `start_summary` / `cancel_summary` | Local LLM notes |
