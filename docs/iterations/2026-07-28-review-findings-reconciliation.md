@@ -1,9 +1,9 @@
 # Iteration: Structured Review Findings And Metrics Reconciliation
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-28
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-28
+**Commit:** `e5cfdc071c1986581bd17588b956cbc880c6fad7`
 
 ## Approved Scope
 
@@ -46,8 +46,8 @@
 | Re-review | Codex | loop 2 clean — R1–R4 verified fixed; 0 new findings | done |
 | Triage / auto-fix (loop 2) | review-triage | review gate clean; route to supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated 2026-07-28; human passed 2026-07-28 | done |
-| Commit prep | commit-manager | prepared 2026-07-28; awaiting human approval | done |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `e5cfdc0` created 2026-07-28 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-28; structured findings primary metrics; next → product-analyst | done |
 
 ## Implementation Phase
 
@@ -214,7 +214,7 @@ Confirm that the AI development cycle now has a machine-readable review findings
 ## Commit Preparation
 
 **Prepared:** 2026-07-28
-**Commit:** pending human approval
+**Commit:** `e5cfdc071c1986581bd17588b956cbc880c6fad7` created 2026-07-28 after explicit human approval.
 
 Suggested message:
 
@@ -276,16 +276,76 @@ unresolved High/Medium, bad debt links, and count drift fail before commit.
 
 ## Metrics
 
-| Metric | Value | Source |
-| --- | --- | --- |
-| Review loops | 2 | observed |
-| High findings | 0 | observed (review-findings.json) |
-| Medium findings | 2 | observed (review-findings.json) |
-| Low findings | 2 | observed (review-findings.json) |
-| Human decisions | 1 | observed |
-| QA outcome | passed | observed |
-| Outcome | null | pending commit |
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ~same evening session | estimated | `date_started`/`date_completed` 2026-07-28; commit `e5cfdc0` |
+| Agent turns | ~11 user skill/step turns | estimated | implement → review → triage → fix → re-review → triage → QA → pass → commit-manager → commit → retrospective |
+| Approx token use | not measured | estimated | no tooling report |
+| Review loops | 2 | observed | ledger + current-cycle |
+| High findings | 0 | observed | review-findings.json (+ ledger) |
+| Medium findings | 2 | observed | review-findings.json R1–R2 fixed |
+| Low findings | 2 | observed | review-findings.json R3–R4 fixed |
+| Human decisions | 2 | observed | QA pass + commit approval |
+| QA outcome | passed | observed | ledger |
+| Outcome | shipped | observed | commit + this retrospective |
 
 ## Retrospective
 
-Pending post-commit.
+# Iteration Retrospective — Structured Review Findings And Metrics Reconciliation
+
+## Outcome
+
+- **Status:** shipped
+- **Commit:** `e5cfdc071c1986581bd17588b956cbc880c6fad7`
+- **QA:** passed
+
+## Metrics
+
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ~same evening session | estimated | dates 2026-07-28; commit `e5cfdc0` |
+| Agent turns | ~11 user skill/step turns | estimated | skill/step sequence in ledger handoffs |
+| Approx token use | not measured | estimated | no tooling report |
+| Review loops | 2 | observed | ledger / current-cycle |
+| High findings | 0 | observed | review-findings.json |
+| Medium findings | 2 | observed | review-findings.json (R1–R2) |
+| Low findings | 2 | observed | review-findings.json (R3–R4) |
+| Human decisions | 2 | observed | QA pass + commit approval |
+| QA outcome | passed | observed | ledger |
+| Outcome | shipped | observed | commit + retrospective |
+
+## Rework Analysis
+
+- **What caused rework:** Loop 1: R1 Medium — `accepted_debt` id matching was too broad (Planned Process Work counted as debt); R2 Medium — org Durable State omitted the new required findings file. R3/R4 Lows were cheap doc/schema follow-through.
+- **What avoided rework:** Synthetic negatives for open Medium, metrics mismatch, planned `P-*` debt, empty location, and product-wish dual-filing; auto-fix of all four findings without human interrupts; process-only scope kept Scribe untouched.
+- **Human routine effort:** Only mandatory gates (QA + commit). Zero review-loop involvement — continues auto-fix success from recent process slices.
+
+## Repeated Failure Analysis
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Asking human about routine Lows | R3/R4 auto-fixed; no ask | no (improved) | none; keep auto-fix |
+| Validator gate half-measure | R1 broad debt-id match; prior cycles had markdown status / handoff escapes | yes (validator hardening theme) | gate/test — prefer section-scoped register matching + synthetics |
+| Org durable-state docs lag new required artifacts | R2 workflows Durable State missed `review-findings.json` | yes (related to incomplete process-doc sync) | docs — update `.ai/org/` Durable State in the same implement pass as new required state files |
+
+## Process Recommendations
+
+1. For process slices that add a validator-required artifact, update `.ai/org/workflows.md` Durable State (and metrics contract if counts change) in the **same** implementation pass — do not wait for review to discover the omission.
+2. Keep P-002 demand-driven: do not add metrics/retrospective/product-analysis schemas until a concrete consumer exists. Prefer returning to product planning (`product-analyst`) or P-004 (implementation-runner) next.
+
+## Debt / Planned Work Updates
+
+- **Debt register:** no new Open Debt
+- **Planned process work:** P-2026-07-26-002 remains `planned` (narrowed: review-findings consumer done; metrics/retrospective/product-analysis still deferred)
+- **Product follow-ups captured:** no — none from QA
+
+## Next Planning Input
+
+Structured findings + current-cycle handoff now form a minimal factual base for future process-auditor work. Next cycle may return to product planning via `product-analyst`, or take P-004 implementation-runner if process orchestration is still the priority — do not invent the next schema without a consumer.
+
+## State Updates
+
+- Ledger: retrospective completed; status shipped
+- Current cycle: `phase=shipped`, `retrospective=done`, `handoff.next_role=none`
+- Structured review-findings.json: metrics aligned (0/2/2); R1–R4 fixed
+- Debt register: P-002 note already reflects this consumer
