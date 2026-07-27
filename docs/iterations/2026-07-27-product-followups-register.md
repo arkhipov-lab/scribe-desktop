@@ -1,9 +1,9 @@
 # Iteration: Product Follow-Ups And Wishes Register
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `b48047d7ceb228a95756463e634fa9dba3c34608`
 
 ## Approved Scope
 
@@ -44,8 +44,8 @@
 | Review | Codex | loop 1: 0 High, 0 Medium, 5 Low | done |
 | Triage | review-triage | Low-only; human AI-fix R1–R5; gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human passed 2026-07-27 | done |
-| Commit prep | commit-manager | commit-ready prep 2026-07-27 | done |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `b48047d` created 2026-07-27 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-27; next planning → product-analyst (PP-001 vs editable results vs P-002) | done |
 
 ## Implementation Summary
 
@@ -240,25 +240,41 @@ Confirm that Product Owner / QA product wishes now have a durable home separate 
 
 | Metric | Value | Source type | Evidence |
 | --- | --- | --- | --- |
-| Review loops | pending | observed | ... |
-| High findings | pending | observed | ... |
-| Medium findings | pending | observed | ... |
-| Low findings | pending | observed | ... |
-| Human decisions | 1 | observed | Approved process slice in chat |
-| QA outcome | pending | observed | ... |
-| Outcome | pending | observed | ... |
+| Elapsed time | same calendar day (2026-07-27) | estimated | `date_started` = `date_completed`; wall-clock span not instrumented |
+| Agent turns | ~10 across plan/implement/review/triage/fix/QA/commit/retrospective | estimated | Skill invocations in this chat cycle; exact turn counter unavailable |
+| Approx token use | unavailable | estimated | No token meter in this session |
+| Review loops | 1 | observed | Loop 1: 0 High/Medium, 5 Low; Low-only AI fix; no full re-review |
+| High findings | 0 | observed | Review findings table |
+| Medium findings | 0 | observed | Review findings table |
+| Low findings | 5 | observed | R1–R5; fixed before QA |
+| Human decisions | 4 | observed | Approve process slice; AI-fix Lows; QA pass; commit |
+| QA outcome | passed | observed | Supervisor QA human decision 2026-07-27 |
+| Outcome | shipped | observed | Commit `b48047d` + retrospective complete |
 
 ## Retrospective
 
 **What worked:**
+- Clear process slice: split wishes from debt without touching Scribe product behavior.
+- PP-001/PP-002 migrated into a durable register before the next product-analyst cycle could re-blur them with debt.
+- Engineering review stayed clean of High/Medium (1 loop); Low-only polish avoided a wasteful full re-review.
+- Scope discipline held: follow-ups remained open wishes; not implemented mid-slice.
+- Process QA was cheap and appropriate (docs/scripts only; no app launch).
 
 **What caused rework:**
+- First implement pass updated the named skills and adapters but left residual consumer/wording gaps (schemas “optional” wording, commit-manager context, roadmap-planner “product debt” label, iterations README contents list, pipeline punctuation) — R1–R5 Lows.
+- No Medium/High engineering rework; residual was incomplete-consumer lag on a new durable state artifact.
 
 **Repeated failure patterns:**
 
 | Pattern | Evidence | Repeated? | Recommended response |
 | --- | --- | --- | --- |
+| New durable process artifact incomplete across all consumers on first pass | This iteration R1–R5 (schemas/commit-manager/planner label/README/pipeline); prior reusable-layer + backlog-intelligence skill/index lag; separate-languages product-surface lag | yes | docs/skill: when adding `.ai/state/*` or process memory, same implement pass must update ledger template + validator + every skill that reads/writes durable memory (including commit-manager) + org/product adapters + indexes |
+| Premature re-review before Low fix | Not observed (Low-only, no re-review) | no (held) | none; keep Low-only path without mandatory re-review |
+| Process Mediums on first review | 0 Medium this slice | no (improved for this slice) | none formal |
 
 **Process change recommended:**
+1. Keep applying the existing “update all consumers in one pass” checklist when adding durable state: include **commit-manager** and schema/validator contract wording explicitly — this slice’s Lows show those were easy to miss when the slice prompt named only a subset of skills.
+2. No second process change recommended. Do not invent scoring/backlog schema until a real consumer needs it (`P-2026-07-26-002` remains planned).
 
 **Next planning input:**
+Use `product-analyst` (then roadmap-planner) to choose among: `PP-2026-07-27-001` (summary language default + Processing options placement — high UX value, already captured); P2 editable results; planned process `P-2026-07-26-002` (schemas); leave `PP-2026-07-27-002` and `P-2026-07-27-003` parked until evidence/priority is clearer.
