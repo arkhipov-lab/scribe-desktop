@@ -1,8 +1,8 @@
 # Iteration: Editable Raw Transcript
 
-**Status:** retrospective
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
+**Date completed:** 2026-07-27
 **Commit:** `ca1098b1ff8766646fac0fe584668eaa0ab221a1`
 
 ## Approved Scope
@@ -51,7 +51,7 @@
 | Triage / auto-fix | review-triage | loop 2 clean; review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human passed 2026-07-27 | done |
 | Commit prep | commit-manager | commit `ca1098b` created 2026-07-27 | done |
-| Retrospective | iteration-retrospective | pending | pending |
+| Retrospective | iteration-retrospective | completed 2026-07-27; next planning → product-analyst (PP-003 vs PP-002 vs P-004) | done |
 
 ## Implementation Phase
 
@@ -241,17 +241,56 @@ Local capture for this iteration. Curated source of truth: `.ai/state/product-fo
 
 | Metric | Value | Source type | Evidence |
 | --- | --- | --- | --- |
-| Elapsed time | pending | estimated | |
-| Agent turns | pending | estimated | |
-| Approx token use | unavailable | estimated | |
-| Review loops | 2 | observed | Loop 1 findings + fix; loop 2 re-review clean |
-| High findings | 1 | observed | R1 in loop 1; fixed before loop 2 |
-| Medium findings | 1 | observed | R2 in loop 1; fixed before loop 2 |
-| Low findings | 2 | observed | R3–R4 in loop 1; fixed before loop 2 |
-| Human decisions | 4 | observed | planning approvals; R3 Decision B; QA pass |
-| QA outcome | passed | observed | human Supervisor QA 2026-07-27 |
-| Outcome | retrospective | observed | commit `ca1098b`; await retrospective |
+| Elapsed time | same calendar day (2026-07-27) | estimated | Planning through commit same evening; wall-clock span not instrumented |
+| Agent turns | ~16 across analysis/plan/implement/review/triage/fix/re-review/triage/QA/commit/retrospective | estimated | Skill invocations in this chat cycle; exact turn counter unavailable |
+| Approx token use | unavailable | estimated | No token meter in this session |
+| Review loops | 2 | observed | Loop 1 findings + auto-fix; loop 2 re-review clean |
+| High findings | 1 | observed | R1; fixed before QA |
+| Medium findings | 1 | observed | R2; fixed before QA |
+| Low findings | 2 | observed | R3–R4; fixed before QA |
+| Human decisions | 5 | observed | Option A approval; auto-summary clarification; R3 Decision B; QA pass; commit |
+| QA outcome | passed | observed | Supervisor QA human decision 2026-07-27 |
+| Outcome | shipped | observed | Commit `ca1098b` (+ hash record `9b5b22b`) + retrospective complete |
 
 ## Retrospective
 
-Pending after ship.
+**What worked:**
+- Full product loop held: product-analyst → roadmap-planner → feature-manager → implement → review → triage → fix → re-review → QA → commit → retrospective.
+- PO narrowed scope early (transcript-only, no Markdown editor, auto-summary clarification) — avoided a large edit-surface detour.
+- Auto-fix policy held: R1 High / R2 Medium / R4 cheap Low fixed without asking whether to fix; only product-facing R3 asked the PO (Decision B).
+- Loop 2 re-review clean (0/0/0); no endless Low polish.
+- Product follow-ups stayed out of debt: PP-003 captured at planning; PP-002 remained parked; QA added no new wishes.
+- P-005 already validated earlier this planning cycle (recommendation-first analyst); this product ship provides P-006 measurement evidence.
+
+**What caused rework:**
+- First implement pass missed an in-flight debounced persist race (R1 High): late `update_transcript` could overwrite a fresh Whisper result — classic editable-state + async flush hazard.
+- Failed flush still cleared dirty (R2 Medium) — incomplete error path on the new persist helper.
+- ARCHITECTURE.md frontend role lagged (R4 Low) despite other product surfaces updating — checklist still incomplete for architecture layer wording.
+- R3 was not implementer error: genuine product/UX tradeoff correctly escalated.
+
+**Human routine effort:**
+- Decisions stayed authority checkpoints: scope (with addendum), product-facing Low (R3), QA, commit — not “should we fix this High/Medium/doc Low?”
+- **P-006 measurement (vs pre-auto-fix slices):** Prior product/process slices often asked the human to approve AI-fix of routine Lows (`summary-language-ux`, `product-followups-register`). This cycle auto-fixed R1/R2/R4 and only interrupted for product-facing R3 — confirms the policy intent on a real product iteration after the operator-UX baseline.
+
+**Repeated failure patterns:**
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| User-facing / architecture docs incomplete on first pass | R4 ARCHITECTURE.md; prior README Usage miss (`summary-language-ux`); earlier PRODUCT/TESTING lag | yes | docs: extend product-surface checklist to include **ARCHITECTURE.md** layer blurbs when capabilities/UX change |
+| Debounced bridge write vs pipeline overwrite race | R1 High this iteration | new (first editable-state slice) | skill/prompt: when implementing editable local state + poll/bridge persist, require in-flight invalidate + server-side generation/epoch guard in the same pass |
+| Asking human about routine Lows | Not observed (R4 auto-fixed; R1/R2 auto-fixed) | no (improved) | none; keep auto-fix; P-006 marked done |
+| Product-facing Low silent-defer risk | R3 asked PO (Decision B) | no (policy held) | keep hard rule |
+
+**Process change recommended:**
+1. Extend the “update all product surfaces in one pass” checklist to explicitly include **ARCHITECTURE.md** (frontend/backend role lines) when user-visible capabilities change — same class of lag as README Usage previously.
+2. Add a short **editable-state / debounced persist** checklist item to feature-manager / cursor-implementation prompts (invalidate in-flight writes; epoch or equivalent server guard; failed persist must not clear dirty) when the slice touches local draft + bridge sync. Mark **P-006 done** with this iteration’s measurement (no new ceremony beyond that).
+
+**Next planning input:**
+Use `product-analyst` (then roadmap-planner). Compare: `PP-2026-07-27-003` (editable summary without Markdown document editor — needs design approach), parked `PP-2026-07-27-002` (language auto-detect), and process `P-2026-07-27-004` / `P-009` (implementation-runner / validator). Prefer product if a bounded non-Markdown summary-edit approach is clear; otherwise a small process handoff slice or pause for PP-003 design validation.
+
+## State updates (retrospective)
+
+- Ledger: retrospective complete; metrics finalized; status shipped
+- Current cycle: `phase=shipped`, `retrospective=done`, commit hash retained
+- Debt register: P-006 → done (measurement recorded)
+- Product follow-ups: PP-002 / PP-003 remain open; no new wishes from QA
