@@ -1,8 +1,8 @@
 # Iteration: Partial Copy Actions
 
-**Status:** retrospective
+**Status:** shipped
 **Date started:** 2026-07-28
-**Date completed:** pending
+**Date completed:** 2026-07-28
 **Commit:** `80f07e70884db02069a37501a9a90cbdfab3c799`
 
 ## Approved Scope
@@ -49,7 +49,7 @@
 | Triage / auto-fix | review-triage | loop 2 clean; review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human **passed** 2026-07-28 | done |
 | Commit prep | commit-manager | commit `80f07e7` created 2026-07-28 | done |
-| Retrospective | iteration-retrospective | — | pending |
+| Retrospective | iteration-retrospective | completed 2026-07-28; next planning → product-analyst | done |
 
 ## Implementation Phase
 
@@ -175,20 +175,78 @@ switching tabs or exporting a file.
 
 | Metric | Value | Source |
 | --- | --- | --- |
-| Elapsed time | pending | |
-| Agent turns | pending | |
-| Approx token use | pending | |
+| Elapsed time | ~same evening session (planning → ship) | estimated |
+| Agent turns | ~14 user skill/step turns | estimated |
+| Approx token use | not measured | estimated |
 | Review loops | 2 | observed |
 | High findings | 0 | observed (structured) |
 | Medium findings | 1 | observed (structured R1; fixed) |
 | Low findings | 2 | observed (structured R2–R3; fixed) |
-| Human decisions | 4 (analyst + Option A + QA pass + commit approval) | observed |
+| Human decisions | 4 (partial-copy direction; Option A; QA pass; commit) | observed |
 | QA outcome | passed | observed |
-| Outcome | shipped (pending retrospective) | observed |
+| Outcome | shipped | observed |
 
 ## Retrospective
 
-pending
+# Iteration Retrospective — Partial Copy Actions
+
+## Outcome
+
+- **Status:** shipped
+- **Commit:** `80f07e70884db02069a37501a9a90cbdfab3c799` (hash record `9f3d953`)
+- **QA:** passed
+
+## Metrics
+
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ~same evening session | estimated | dates 2026-07-28; commits `80f07e7` / `9f3d953` |
+| Agent turns | ~14 user skill/step turns | estimated | analyst → planner → implement → review → triage → fix → re-review → triage → QA → commit → retrospective |
+| Approx token use | not measured | estimated | no tooling report |
+| Review loops | 2 | observed | ledger / current-cycle |
+| High findings | 0 | observed | review-findings.json |
+| Medium findings | 1 | observed | review-findings.json (R1 fixed) |
+| Low findings | 2 | observed | review-findings.json (R2–R3 fixed) |
+| Human decisions | 4 | observed | partial-copy direction; Option A; QA pass; commit |
+| QA outcome | passed | observed | ledger |
+| Outcome | shipped | observed | commit + this retrospective |
+
+## Rework Analysis
+
+- **What caused rework:** Loop 1 Medium R1 — implementer added a heading-less “whole summary as action items” fallback that contradicted the new scenario edge case (no Action items heading → disabled). Cheap Lows: TESTING only under § C (R2); interactive run-dev smoke deferred (R3).
+- **What avoided rework:** Auto-fix of R1–R3 without human interrupts; frontend-only scope (no bridge/Api); re-review clean; product-analyst → roadmap Option A kept scope small; tsx edge-case check for extractActionItems after R1.
+- **Human routine effort:** Authority checkpoints only (direction, Option A, QA, commit). Zero review-loop involvement.
+
+## Repeated Failure Analysis
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Asking human about routine Lows | R2/R3 auto-fixed; no ask | no (improved) | none; keep auto-fix |
+| Helpful fallback contradicts scenario written in same slice | R1 heading-less body → action items vs scenario “no heading → disabled” | new (parser/fallback class) | skill/prompt: when adding extract/parse helpers with fallbacks, check scenario edge cases in the same implement pass |
+| Product-surface TESTING incomplete across sections | R2 § C only; prior cycles had README/ARCHITECTURE lag | yes (surface checklist theme) | docs: when UX spans multiple TESTING sections, update all relevant sections in one pass |
+| Interactive smoke deferred to supervisor QA | R3 this slice; acceptable with alternate verification | unknown (situational) | none as gate; prefer cheap automated/tsx checks when GUI smoke is impractical |
+
+## Process Recommendations
+
+1. For parser/extract helpers: do not ship “convenience” fallbacks that the accompanying scenario explicitly disables — verify edge-case rows before review.
+2. When a UX change spans ingest + summary smoke, update TESTING § C and § D (and related) in the same implement pass — same class of lag as prior product-surface checklist gaps.
+
+## Debt / Planned Work Updates
+
+- **Debt register:** no new Open Debt
+- **Planned process work:** unchanged (P-004 still planned; P-002 schemas remain demand-driven)
+- **Product follow-ups captured:** no — QA added none; PP-002 / PP-003 remain open from prior cycles
+
+## Next Planning Input
+
+Use `product-analyst` (then roadmap-planner). Compare: `PP-2026-07-27-003` (editable summary without Markdown document editor — needs design), parked `PP-2026-07-27-002` (language auto-detect), Action items *view* (ROADMAP P2), and process `P-2026-07-27-004` (implementation-runner). Prefer product if a bounded non-MD summary-edit approach is clear; otherwise a small process handoff slice or pause for PP-003 design validation.
+
+## State Updates
+
+- Ledger: retrospective completed; status shipped; metrics finalized
+- Current cycle: `phase=shipped`, `retrospective=done`, `handoff.next_role=none`, commit hash retained
+- Structured review-findings.json: metrics aligned (0/1/2); R1–R3 fixed
+- Debt register: unchanged
 
 ## Notes
 
