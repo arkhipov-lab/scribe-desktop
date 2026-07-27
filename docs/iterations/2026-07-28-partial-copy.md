@@ -1,9 +1,9 @@
 # Iteration: Partial Copy Actions
 
-**Status:** commit-ready
+**Status:** retrospective
 **Date started:** 2026-07-28
 **Date completed:** pending
-**Commit:** pending
+**Commit:** `80f07e70884db02069a37501a9a90cbdfab3c799`
 
 ## Approved Scope
 
@@ -48,7 +48,7 @@
 | Review ready → Review | Codex | loop 2: 0 High, 0 Medium, 0 Low — R1–R3 verified fixed | done |
 | Triage / auto-fix | review-triage | loop 2 clean; review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human **passed** 2026-07-28 | done |
-| Commit prep | commit-manager | prep recorded 2026-07-28; awaiting human commit approval | done |
+| Commit prep | commit-manager | commit `80f07e7` created 2026-07-28 | done |
 | Retrospective | iteration-retrospective | — | pending |
 
 ## Implementation Phase
@@ -135,7 +135,7 @@
 ## Commit Preparation
 
 **Prepared:** 2026-07-28
-**Commit:** pending — awaiting explicit human approval
+**Commit:** `80f07e70884db02069a37501a9a90cbdfab3c799` created 2026-07-28 after explicit human approval.
 
 Suggested message:
 
@@ -182,9 +182,9 @@ switching tabs or exporting a file.
 | High findings | 0 | observed (structured) |
 | Medium findings | 1 | observed (structured R1; fixed) |
 | Low findings | 2 | observed (structured R2–R3; fixed) |
-| Human decisions | 3 (analyst + Option A + QA pass; +1 pending commit approval) | observed |
+| Human decisions | 4 (analyst + Option A + QA pass + commit approval) | observed |
 | QA outcome | passed | observed |
-| Outcome | pending | |
+| Outcome | shipped (pending retrospective) | observed |
 
 ## Retrospective
 
