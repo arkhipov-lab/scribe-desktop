@@ -59,8 +59,12 @@
   },
   "language": {
     "title": "Язык",
+    "transcriptTitle": "Язык транскрипта",
+    "summaryTitle": "Язык саммари",
     "search": "Поиск языка…",
-    "listAria": "Языки"
+    "listAria": "Языки",
+    "transcriptListAria": "Языки транскрипта",
+    "summaryListAria": "Языки саммари"
   },
   "actions": {
     "transcribe": "Транскрибировать"
@@ -134,7 +138,9 @@
   "meta": {
     "whisper": "Whisper {name}",
     "notes": "Заметки {name}",
-    "customInstructions": "Свои инструкции"
+    "customInstructions": "Свои инструкции",
+    "transcriptLanguage": "Транскрипт {name}",
+    "summaryLanguage": "Саммари {name}"
   },
   "result": {
     "aria": "Результат",

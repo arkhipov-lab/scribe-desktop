@@ -38,7 +38,7 @@ Mutable session state lives in the Python `Api` (`backend/app.py`): status, tran
 
 Stores preferences only, for example:
 
-- language / processing options
+- transcript `language` and `summary_language` / processing options
 - Whisper and summary model choices
 - summary preset, length, additional instructions
 - auto-summary on/off

@@ -15,17 +15,20 @@ This roadmap is a **hypothesis**. Prioritize using [PRODUCT.md](PRODUCT.md) and 
 
 ## P1 — Summary controls
 
-Most of this shipped (presets, length, additional instructions, auto-summary, local `settings.json`). Remaining:
+Most of this shipped (presets, length, additional instructions, auto-summary, local `settings.json`, independent transcript vs summary language). Remaining:
 
-### Separate transcript language vs summary language
+### Language UX follow-ups (from QA 2026-07-27)
 
-Allow e.g. transcribe in Russian, summarize in English (and the reverse). Whisper language and summary output language should be independent controls.
+Captured as planned product work `PP-2026-07-27-001` / `PP-2026-07-27-002` in [`.ai/state/debt.md`](.ai/state/debt.md) — do not lose these in chat.
+
+- [ ] Default **summary language** from system/UI language; hide the summary-language control in the primary flow and expose it under **Processing options** (override for power users)
+- [ ] Longer-term: reduce/remove language selectors from the direct flow; auto-detect **transcript language** from audio when reliable on-device
 
 ### Technical leftovers
 
 - [ ] Optional markdown post-process: drop duplicate headings, ensure expected sections, empty sections → localized “None”, then optional checklist UI  
 - [ ] Keep advanced model knobs (chunk size, raw token caps) behind an **Advanced** panel — easy to tank performance otherwise  
-- [ ] Separate transcript language vs summary language
+- [x] Separate transcript language vs summary language
 
 ---
 

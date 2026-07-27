@@ -74,6 +74,7 @@ function mergeState(next: AppState): AppState {
     file_path: next.file_path,
     file_name: next.file_name,
     language: next.language,
+    summary_language: next.summary_language ?? next.language ?? DEFAULT_LANGUAGE,
     transcript: next.transcript,
     summary: next.summary ?? "",
     summary_status: next.summary_status ?? "idle",
@@ -93,6 +94,7 @@ function mergeState(next: AppState): AppState {
     session_title: next.session_title ?? null,
     history_sidebar_open: next.history_sidebar_open ?? true,
     used_language: next.used_language ?? null,
+    used_summary_language: next.used_summary_language ?? null,
     used_whisper_model: next.used_whisper_model ?? null,
     used_summary_model: next.used_summary_model ?? null,
     used_summary_preset: next.used_summary_preset ?? null,
@@ -169,7 +171,30 @@ function buildUsedMetaTags(
 ): { key: string; label: string }[] {
   const tags: { key: string; label: string }[] = [];
   if (state.used_language) {
-    tags.push({ key: "lang", label: languageLabel(state.used_language) });
+    tags.push({
+      key: "lang",
+      label: t("meta.transcriptLanguage", {
+        name: languageLabel(state.used_language),
+      }),
+    });
+  }
+  if (
+    state.used_summary_language &&
+    state.used_summary_language !== state.used_language
+  ) {
+    tags.push({
+      key: "summary-lang",
+      label: t("meta.summaryLanguage", {
+        name: languageLabel(state.used_summary_language),
+      }),
+    });
+  } else if (state.used_summary_language && !state.used_language) {
+    tags.push({
+      key: "summary-lang",
+      label: t("meta.summaryLanguage", {
+        name: languageLabel(state.used_summary_language),
+      }),
+    });
   }
   const whisper = labelFromOptions(state.used_whisper_model, whisperModels);
   if (whisper) {
@@ -439,6 +464,8 @@ export default function App() {
   const locked = busy || recording;
   const canTranscribe = Boolean(state.file_path) && !locked;
   const language = state.language || DEFAULT_LANGUAGE;
+  const summaryLanguage =
+    state.summary_language || state.language || DEFAULT_LANGUAGE;
   const hasTranscript = Boolean(state.transcript?.trim());
   const audioLocked = hasTranscript;
   const activeText =
@@ -624,6 +651,8 @@ export default function App() {
 
   async function onSettingsPatch(
     patch: Partial<{
+      language: string;
+      summary_language: string;
       summary_preset: string;
       additional_instructions: string;
       summary_length: SummaryLength;
@@ -1022,16 +1051,34 @@ export default function App() {
         )}
       </section>
 
-      <section className="panel row">
+      <section className="panel row language-row">
         <div className="field">
-          <h2>{t("language.title")}</h2>
-          <label className="sr-only" htmlFor="language-select">
-            {t("language.title")}
+          <h2>{t("language.transcriptTitle")}</h2>
+          <label className="sr-only" htmlFor="transcript-language-select">
+            {t("language.transcriptTitle")}
           </label>
           <LanguageSelect
             value={language}
+            inputId="transcript-language-select"
+            listAriaLabel={t("language.transcriptListAria")}
             disabled={locked || summaryBusy}
             onChange={(next) => void onLanguageChange(next)}
+          />
+        </div>
+
+        <div className="field">
+          <h2>{t("language.summaryTitle")}</h2>
+          <label className="sr-only" htmlFor="summary-language-select">
+            {t("language.summaryTitle")}
+          </label>
+          <LanguageSelect
+            value={summaryLanguage}
+            inputId="summary-language-select"
+            listAriaLabel={t("language.summaryListAria")}
+            disabled={locked || summaryBusy}
+            onChange={(next) =>
+              void onSettingsPatch({ summary_language: next })
+            }
           />
         </div>
 

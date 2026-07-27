@@ -57,6 +57,7 @@ def default_settings() -> dict[str, Any]:
     rec = recommended_model_defaults()
     return {
         "language": DEFAULT_LANGUAGE,
+        "summary_language": DEFAULT_LANGUAGE,
         "summary_preset": DEFAULT_PRESET_ID,
         "additional_instructions": "",
         "summary_length": DEFAULT_SUMMARY_LENGTH,
@@ -87,6 +88,16 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
     except ValueError:
         language = base["language"]
 
+    # Missing summary_language → seed from transcript language (migration).
+    if "summary_language" in raw:
+        summary_language = raw.get("summary_language")
+        try:
+            summary_language = normalize_language(str(summary_language))
+        except ValueError:
+            summary_language = language
+    else:
+        summary_language = language
+
     # Missing model keys → hardware recommendation (first launch / migration).
     if "whisper_model" in raw:
         whisper_model = normalize_whisper_id(str(raw.get("whisper_model") or ""))
@@ -112,6 +123,7 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
 
     return {
         "language": language,
+        "summary_language": summary_language,
         "summary_preset": normalize_preset_id(str(raw.get("summary_preset", ""))),
         "additional_instructions": _clamp_instructions(
             str(raw.get("additional_instructions", "") or "")
@@ -154,6 +166,7 @@ def save_settings(settings: dict[str, Any]) -> dict[str, Any]:
     # Do not persist ephemeral hardware probe fields.
     to_store = {
         "language": normalized["language"],
+        "summary_language": normalized["summary_language"],
         "summary_preset": normalized["summary_preset"],
         "additional_instructions": normalized["additional_instructions"],
         "summary_length": normalized["summary_length"],
@@ -199,12 +212,25 @@ def ensure_settings_file() -> dict[str, Any]:
         raw = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return save_settings(current)
-    if "whisper_model" not in raw or "summary_model" not in raw or "auto_summary" not in raw:
-        return save_settings({**raw, **{
-            "whisper_model": current["whisper_model"],
-            "summary_model": current["summary_model"],
-            "auto_summary": current["auto_summary"],
-        }})
+    missing_models = (
+        "whisper_model" not in raw
+        or "summary_model" not in raw
+        or "auto_summary" not in raw
+    )
+    missing_summary_language = "summary_language" not in raw
+    if missing_models or missing_summary_language:
+        patch = {**raw}
+        if missing_models:
+            patch.update(
+                {
+                    "whisper_model": current["whisper_model"],
+                    "summary_model": current["summary_model"],
+                    "auto_summary": current["auto_summary"],
+                }
+            )
+        if missing_summary_language:
+            patch["summary_language"] = current["summary_language"]
+        return save_settings(patch)
     return current
 
 

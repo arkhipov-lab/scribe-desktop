@@ -42,7 +42,7 @@ File select / drop  —or—  Record (mic + system audio)
          │
          ▼
 ┌───────────────────┐
-│ 6. Summary opts   │  ← preset, language, length, additional instructions
+│ 6. Summary opts   │  ← preset, summary language, length, additional instructions
 └────────┬──────────┘
          │ auto-summary on  —or—  user Generate
          ▼
@@ -87,7 +87,7 @@ After transcription (and between stages as designed), `backend/memory.py` unload
 
 ### 6. Summary controls
 
-Preset, length, additional instructions, auto-summary, and summary model come from settings + catalog (`get_summary_presets`, `get_summary_models`, `get_settings` / `update_settings`). Additional-instructions body must not be logged.
+Preset, length, summary language (independent of Whisper transcript language), additional instructions, auto-summary, and summary model come from settings + catalog (`get_summary_presets`, `get_summary_models`, `get_settings` / `update_settings`). Additional-instructions body must not be logged.
 
 ### 7. Summary generation
 

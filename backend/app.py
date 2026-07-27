@@ -137,6 +137,7 @@ class Api:
             "file_path": None,
             "file_name": None,
             "language": prefs["language"],
+            "summary_language": prefs["summary_language"],
             "transcript": "",
             "summary": "",
             "summary_status": "idle",
@@ -156,6 +157,7 @@ class Api:
             "session_title": None,
             "history_sidebar_open": bool(prefs.get("history_sidebar_open", True)),
             "used_language": None,
+            "used_summary_language": None,
             "used_whisper_model": None,
             "used_summary_model": None,
             "used_summary_preset": None,
@@ -172,6 +174,9 @@ class Api:
         snap = self._snapshot()
         return {
             "language": snap.get("language") or DEFAULT_LANGUAGE,
+            "summary_language": snap.get("summary_language")
+            or snap.get("language")
+            or DEFAULT_LANGUAGE,
             "summary_preset": snap.get("summary_preset"),
             "additional_instructions": snap.get("additional_instructions") or "",
             "summary_length": snap.get("summary_length"),
@@ -184,6 +189,7 @@ class Api:
     def _apply_prefs(self, prefs: dict[str, Any]) -> None:
         self._update(
             language=prefs["language"],
+            summary_language=prefs["summary_language"],
             summary_preset=prefs["summary_preset"],
             additional_instructions=prefs["additional_instructions"],
             summary_length=prefs["summary_length"],
@@ -227,6 +233,7 @@ class Api:
         # Reflect what actually ran, even if history write fails.
         self._update(
             used_language=language,
+            used_summary_language=None,
             used_whisper_model=whisper_model,
             used_summary_model=None,
             used_summary_preset=None,
@@ -255,8 +262,12 @@ class Api:
         summary_model = str(snap.get("summary_model") or "")
         summary_preset = str(snap.get("summary_preset") or "")
         summary_length = str(snap.get("summary_length") or "")
+        summary_language = str(
+            snap.get("summary_language") or snap.get("language") or DEFAULT_LANGUAGE
+        )
         has_extra = bool(str(snap.get("additional_instructions") or "").strip())
         self._update(
+            used_summary_language=summary_language,
             used_summary_model=summary_model,
             used_summary_preset=summary_preset,
             used_summary_length=summary_length,
@@ -272,6 +283,7 @@ class Api:
                 summary_model=summary_model,
                 summary_preset=summary_preset,
                 summary_length=summary_length,
+                summary_language=summary_language,
                 has_extra_instructions=has_extra,
             )
             if entry:
@@ -718,6 +730,7 @@ class Api:
             return self._snapshot() | {"ok": False, "error": "Invalid settings."}
         allowed = {
             "language",
+            "summary_language",
             "summary_preset",
             "additional_instructions",
             "summary_length",
@@ -887,7 +900,9 @@ class Api:
             summary_error=None,
         )
         snap = self._snapshot()
-        language = str(snap.get("language") or DEFAULT_LANGUAGE)
+        language = str(
+            snap.get("summary_language") or snap.get("language") or DEFAULT_LANGUAGE
+        )
         language_name = WHISPER_LANGUAGES.get(language, language)
         preset_id = str(snap.get("summary_preset") or "")
         additional = str(snap.get("additional_instructions") or "")
@@ -1034,6 +1049,12 @@ class Api:
             file_path=file_path,
             file_name=file_name,
             language=meta.get("language") or self._snapshot().get("language"),
+            summary_language=(
+                meta.get("summary_language")
+                or meta.get("language")
+                or self._snapshot().get("summary_language")
+                or self._snapshot().get("language")
+            ),
             transcript=transcript,
             summary=summary,
             summary_status="completed" if summary.strip() else "idle",
@@ -1048,6 +1069,7 @@ class Api:
             whisper_model=meta.get("whisper_model") or self._snapshot().get("whisper_model"),
             summary_model=meta.get("summary_model") or self._snapshot().get("summary_model"),
             used_language=meta.get("language"),
+            used_summary_language=meta.get("summary_language") or meta.get("language"),
             used_whisper_model=meta.get("whisper_model"),
             used_summary_model=meta.get("summary_model"),
             used_summary_preset=meta.get("summary_preset"),
@@ -1081,6 +1103,7 @@ class Api:
                 session_id=None,
                 session_title=None,
                 used_language=None,
+                used_summary_language=None,
                 used_whisper_model=None,
                 used_summary_model=None,
                 used_summary_preset=None,
@@ -1127,6 +1150,7 @@ class Api:
             session_id=None,
             session_title=None,
             used_language=None,
+            used_summary_language=None,
             used_whisper_model=None,
             used_summary_model=None,
             used_summary_preset=None,

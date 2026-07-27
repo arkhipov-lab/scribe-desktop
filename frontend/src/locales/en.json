@@ -59,8 +59,12 @@
   },
   "language": {
     "title": "Language",
+    "transcriptTitle": "Transcript language",
+    "summaryTitle": "Summary language",
     "search": "Search language…",
-    "listAria": "Languages"
+    "listAria": "Languages",
+    "transcriptListAria": "Transcript languages",
+    "summaryListAria": "Summary languages"
   },
   "actions": {
     "transcribe": "Transcribe"
@@ -134,7 +138,9 @@
   "meta": {
     "whisper": "Whisper {name}",
     "notes": "Notes {name}",
-    "customInstructions": "Custom instructions"
+    "customInstructions": "Custom instructions",
+    "transcriptLanguage": "Transcript {name}",
+    "summaryLanguage": "Summary {name}"
   },
   "result": {
     "aria": "Result",

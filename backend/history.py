@@ -203,6 +203,7 @@ def update_session_summary(
     summary_model: str | None = None,
     summary_preset: str | None = None,
     summary_length: str | None = None,
+    summary_language: str | None = None,
     has_extra_instructions: bool | None = None,
 ) -> dict[str, Any] | None:
     sid = (session_id or "").strip()
@@ -224,6 +225,8 @@ def update_session_summary(
             meta["summary_preset"] = summary_preset
         if summary_length is not None:
             meta["summary_length"] = summary_length
+        if summary_language is not None:
+            meta["summary_language"] = summary_language
         if has_extra_instructions is not None:
             meta["has_extra_instructions"] = bool(has_extra_instructions)
         _atomic_write_json(meta_path, meta)
@@ -278,6 +281,7 @@ def upsert_after_transcript(
             meta["summary_model"] = None
             meta["summary_preset"] = None
             meta["summary_length"] = None
+            meta["summary_language"] = None
             meta["has_extra_instructions"] = False
 
         has_audio = False

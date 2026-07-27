@@ -26,7 +26,7 @@ Run:
 
 1. Window opens with the Scribe UI.
 2. No persistent “Desktop bridge is not available” error.
-3. Language dropdown populates.
+3. Transcript and summary language controls populate.
 4. Log file appears/updates at `~/Library/Logs/Scribe/app.log`.
 
 ### B. File ingest
@@ -38,7 +38,7 @@ Run:
 
 ### C. Transcription
 
-1. Pick language (try at least `en` and one other you care about).
+1. Pick transcript language (try at least `en` and one other you care about). Optionally set a different **summary language**.
 2. Click **Transcribe**.
 3. First run may download the Whisper model — wait; status should show loading/transcribing.
 4. Transcript appears; elapsed timer behaves.
@@ -49,10 +49,11 @@ Run:
 
 1. After a transcript exists, summary should run when auto-summary is on (or via Generate/Regenerate).
 2. Change preset / length / additional instructions and regenerate — output shape should follow the preset.
-3. With auto-summary off, transcription completes without starting summary; Generate still works.
-4. Preferences survive relaunch (`~/Library/Application Support/Scribe/settings.json`).
-5. Cancel summary does not corrupt the existing transcript.
-6. Log must not contain summary text or additional-instructions body.
+3. With a different summary language than transcript language, regenerate and confirm notes follow the summary-language intent.
+4. With auto-summary off, transcription completes without starting summary; Generate still works.
+5. Preferences survive relaunch (`~/Library/Application Support/Scribe/settings.json`), including both language fields.
+6. Cancel summary does not corrupt the existing transcript.
+7. Log must not contain summary text or additional-instructions body.
 
 ### E. Recording
 

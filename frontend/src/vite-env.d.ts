@@ -26,6 +26,7 @@ export interface AppState {
   file_path: string | null;
   file_name: string | null;
   language: LanguageCode | string;
+  summary_language: LanguageCode | string;
   transcript: string;
   summary: string;
   summary_status: SummaryStatus;
@@ -46,6 +47,7 @@ export interface AppState {
   history_sidebar_open?: boolean;
   /** Settings actually used for the last successful run (not live Processing options). */
   used_language?: string | null;
+  used_summary_language?: string | null;
   used_whisper_model?: string | null;
   used_summary_model?: string | null;
   used_summary_preset?: string | null;
@@ -89,6 +91,7 @@ export interface HistorySession {
 
 export interface AppSettings {
   language: string;
+  summary_language: string;
   summary_preset: string;
   additional_instructions: string;
   summary_length: SummaryLength | string;
