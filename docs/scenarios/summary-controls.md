@@ -34,7 +34,7 @@ User shapes summary output via preset, length, independent summary language, and
 
 ## Future (not current acceptance)
 
-Product Owner follow-ups from iteration `2026-07-27-separate-languages` (see ROADMAP + `.ai/state/debt.md` `PP-2026-07-27-001` / `002`):
+Product Owner follow-ups from iteration `2026-07-27-separate-languages` (see ROADMAP + `.ai/state/product-followups.md` `PP-2026-07-27-001` / `002`):
 
 - Default summary language from system language; move summary-language control into Processing options.
 - Longer-term: fewer language selectors on the main path; auto-detect transcript language from audio.

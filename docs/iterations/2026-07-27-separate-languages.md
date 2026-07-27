@@ -187,13 +187,14 @@ Confirm that Scribe lets you set **Transcript language** and **Summary language*
 
 **Human decision:**
 - Date: 2026-07-27
-- Notes: Passed with product suggestions explicitly deferred out of this iteration. Capture (not implement now): (1) default summary language = system language; hide summary-language select in primary flow / expose under Processing options; (2) longer-term remove language selectors from direct flow; auto-detect transcript language from audio. Recorded as `PP-2026-07-27-001` / `002` in `.ai/state/debt.md` + ROADMAP language UX follow-ups + scenario Future note.
+- Notes: Passed with product suggestions explicitly deferred out of this iteration. Capture (not implement now): (1) default summary language = system language; hide summary-language select in primary flow / expose under Processing options; (2) longer-term remove language selectors from direct flow; auto-detect transcript language from audio. Originally recorded as `PP-2026-07-27-001` / `002` under Planned Product Work in `.ai/state/debt.md` + ROADMAP + scenario Future note; later migrated to `.ai/state/product-followups.md` (`2026-07-27-product-followups-register`).
 
 ## State updates (plan generated)
 
 - Ledger: Supervisor QA plan recorded; outcome **passed** 2026-07-27
 - Current cycle: `supervisor_qa=passed`; `commit_allowed=true`; route to commit-manager
-- Debt register: planned product work `PP-2026-07-27-001`, `PP-2026-07-27-002` added
+- Debt register: (none for these wishes)
+- Product follow-ups: `PP-2026-07-27-001`, `PP-2026-07-27-002` (later moved to `.ai/state/product-followups.md`)
 
 ## Verification
 
@@ -208,8 +209,13 @@ Confirm that Scribe lets you set **Transcript language** and **Summary language*
 
 | Item | Type | Reason accepted/deferred | Revisit condition |
 | --- | --- | --- | --- |
-| `PP-2026-07-27-001` Summary language default + Processing options placement | product_followup | QA suggestion; feasible now; out of this iteration by PO | Next product planning after this ships |
-| `PP-2026-07-27-002` Auto-detect transcript language / fewer primary-flow selectors | product_followup | QA longer-term desire; needs investigation | After PP-001 or when PO prioritizes |
+
+## Product Follow-ups / Wishes
+
+| ID | Title | Source phase | Notes |
+| --- | --- | --- | --- |
+| `PP-2026-07-27-001` | Summary language default + Processing options placement | Supervisor QA | Migrated to `.ai/state/product-followups.md`; next product planning after this ships |
+| `PP-2026-07-27-002` | Auto-detect transcript language / fewer primary-flow selectors | Supervisor QA | Migrated to `.ai/state/product-followups.md`; after PP-001 or when PO prioritizes |
 
 ## Metrics
 
@@ -231,8 +237,8 @@ Confirm that Scribe lets you set **Transcript language** and **Summary language*
 **What worked:**
 - First Scribe product slice after the process-foundation streak: product-analyst → roadmap-planner → implement → review → triage → QA → commit held end-to-end.
 - Engineering review was clean of High/Medium (1 loop only); Low-only polish did not trigger a wasteful full re-review.
-- Scope discipline held: QA follow-ups were captured as planned product work (`PP-001`/`PP-002`) instead of scope creep mid-iteration.
-- New **Planned Product Work** register + ROADMAP + scenario Future note made PO desires durable without treating them as review debt.
+- Scope discipline held: QA follow-ups were captured as planned product work (`PP-001`/`PP-002`) instead of scope creep mid-iteration (later split into `.ai/state/product-followups.md`).
+- New **Planned Product Work** stopgap + ROADMAP + scenario Future note made PO desires durable without treating them as review debt.
 - Human QA covered the mixed-language path the implementer correctly deferred.
 
 **What caused rework:**
@@ -249,7 +255,7 @@ Confirm that Scribe lets you set **Transcript language** and **Summary language*
 
 **Process change recommended:**
 1. Extend the existing “update all consumers in one pass” checklist to **product behavior slices**: scenario acceptance, PRODUCT primary flow/capabilities, and TESTING smoke rows that mention the control — not only AI process/skill indexes.
-2. No second process change recommended. Keep using Planned Product Work for QA desires deferred out of slice (PP-001/PP-002 already recorded).
+2. No second process change recommended at ship time. Later: use `.ai/state/product-followups.md` for QA desires deferred out of slice (PP-001/PP-002).
 
 **Next planning input:**
 Use `product-analyst` (then roadmap-planner) to choose among: `PP-2026-07-27-001` (summary language default + Processing options placement — feasible, high UX value); P2 editable results; planned process `P-2026-07-26-002` (schemas); leave `PP-2026-07-27-002` and `P-2026-07-27-003` parked until evidence/priority is clearer.

@@ -19,7 +19,7 @@ Most of this shipped (presets, length, additional instructions, auto-summary, lo
 
 ### Language UX follow-ups (from QA 2026-07-27)
 
-Captured as planned product work `PP-2026-07-27-001` / `PP-2026-07-27-002` in [`.ai/state/debt.md`](.ai/state/debt.md) — do not lose these in chat.
+Captured as product follow-ups `PP-2026-07-27-001` / `PP-2026-07-27-002` in [`.ai/state/product-followups.md`](.ai/state/product-followups.md) — do not lose these in chat; do not treat as review debt.
 
 - [ ] Default **summary language** from system/UI language; hide the summary-language control in the primary flow and expose it under **Processing options** (override for power users)
 - [ ] Longer-term: reduce/remove language selectors from the direct flow; auto-detect **transcript language** from audio when reliable on-device

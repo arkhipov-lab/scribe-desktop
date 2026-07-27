@@ -73,6 +73,34 @@ check_ledger_exists() {
   fi
 }
 
+check_registers_exist() {
+  local debt_path followups_path debt_abs followups_abs
+  debt_path="$(jq_raw '.artifacts.debt_register // ".ai/state/debt.md"')"
+  followups_path="$(jq_raw '.artifacts.product_followups_register // ".ai/state/product-followups.md"')"
+
+  if [[ -z "$debt_path" || "$debt_path" == "null" ]]; then
+    debt_path=".ai/state/debt.md"
+  fi
+  if [[ -z "$followups_path" || "$followups_path" == "null" ]]; then
+    followups_path=".ai/state/product-followups.md"
+  fi
+
+  debt_abs="$ROOT/$debt_path"
+  followups_abs="$ROOT/$followups_path"
+
+  if [[ -f "$debt_abs" ]]; then
+    ok "debt register exists: $debt_path"
+  else
+    fail "debt register missing: $debt_path"
+  fi
+
+  if [[ -f "$followups_abs" ]]; then
+    ok "product follow-ups register exists: $followups_path"
+  else
+    fail "product follow-ups register missing: $followups_path"
+  fi
+}
+
 check_commit_gate_order() {
   local commit_allowed review_gate triage_status supervisor_qa scope_approved implementation_finished
   local errors_before=$errors
@@ -341,6 +369,7 @@ main() {
   fi
   if (( errors == 0 )); then
     check_ledger_exists
+    check_registers_exist
     check_phase_gates
     check_commit_gate_order
     check_committed_phase

@@ -21,6 +21,7 @@ The iteration ledger records:
 - human approvals;
 - verification evidence;
 - accepted or deferred debt;
+- product follow-ups / wishes captured this iteration;
 - metrics;
 - retrospective notes;
 - commit link.
@@ -42,6 +43,7 @@ The active iteration must also be reflected in:
 ```text
 .ai/state/current-cycle.json
 .ai/state/debt.md
+.ai/state/product-followups.md
 ```
 
 If richer machine validation becomes important, add parallel structured iteration files later:
@@ -153,9 +155,19 @@ Agents must read the active ledger at the start of each workflow step and update
 
 ## Debt
 
+Accepted or deferred review/QA/process debt only. Product wishes go under Product Follow-ups / Wishes and in `.ai/state/product-followups.md`.
+
 | Item | Type | Reason accepted/deferred | Revisit condition |
 | --- | --- | --- | --- |
-| ... | product/engineering/process | ... | ... |
+| ... | engineering/process | ... | ... |
+
+## Product Follow-ups / Wishes
+
+Local capture for this iteration. Curated source of truth: `.ai/state/product-followups.md`.
+
+| ID | Title | Source phase | Notes |
+| --- | --- | --- | --- |
+| ... | ... | Supervisor QA / Planning / Retrospective | Link or short note; do not treat as review debt |
 
 ## Metrics
 
@@ -219,6 +231,7 @@ The ledger should make these violations obvious:
 - supervisor QA skipped without explicit human decision;
 - commit prepared without verification evidence;
 - process debt discovered but not recorded;
+- product follow-ups from QA/planning lost in chat or filed as debt;
 - product scope changed without human approval.
 
 ---

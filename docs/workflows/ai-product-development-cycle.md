@@ -70,7 +70,8 @@ Every approved iteration must also have durable process state:
 
 - an iteration ledger under [`docs/iterations/`](../iterations/);
 - current phase and gate status in [`.ai/state/current-cycle.json`](../../.ai/state/current-cycle.json);
-- accepted or deferred debt in [`.ai/state/debt.md`](../../.ai/state/debt.md).
+- accepted or deferred debt in [`.ai/state/debt.md`](../../.ai/state/debt.md);
+- product follow-ups / wishes in [`.ai/state/product-followups.md`](../../.ai/state/product-followups.md).
 
 Create or update these artifacts at phase transitions. Do not treat chat history as durable cycle memory.
 

@@ -20,7 +20,8 @@ Every approved product or process iteration must have durable memory before impl
 
 - a ledger in [`docs/iterations/`](../iterations/);
 - current phase and gate state in [`.ai/state/current-cycle.json`](../../.ai/state/current-cycle.json);
-- accepted or deferred debt in [`.ai/state/debt.md`](../../.ai/state/debt.md).
+- accepted or deferred debt in [`.ai/state/debt.md`](../../.ai/state/debt.md);
+- product follow-ups / wishes in [`.ai/state/product-followups.md`](../../.ai/state/product-followups.md).
 
 Agents must read these artifacts at the start of each workflow step and update them when the phase changes. Chat history is supporting context, not the source of truth.
 

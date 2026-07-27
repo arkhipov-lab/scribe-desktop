@@ -1,6 +1,6 @@
 # AI Development System Debt And Planned Work Register
 
-Durable register for accepted/deferred debt and planned process/product work.
+Durable register for accepted/deferred debt and planned process work.
 
 Record debt here when a review finding, QA failure, retrospective issue, or process gap is explicitly accepted or deferred instead of fixed in the current iteration. Do not rely on chat history to remember debt.
 
@@ -8,7 +8,7 @@ Keep categories separate:
 
 - **Debt** is an accepted/deferred issue from review, QA, retrospective, or a known process failure.
 - **Planned process work** is future AI-organization improvement that was intentionally out of scope.
-- **Planned product work** is a Product Owner follow-up captured from QA or planning so it is not lost before the next product-analyst / roadmap-planner cycle. It does not block the current commit gate.
+- **Product follow-ups / wishes** do **not** belong here — use [`.ai/state/product-followups.md`](./product-followups.md).
 - High and Medium review findings must not be accepted as debt before commit unless the pipeline is explicitly changed by the human.
 
 ## Open Debt
@@ -20,13 +20,6 @@ Keep categories separate:
 
 | ID | Title | Source iteration | Closed by | Notes |
 | --- | --- | --- | --- | --- |
-
-## Planned Product Work
-
-| ID | Title | Source iteration | Priority | Type | Why planned | Owner role | Start condition | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| PP-2026-07-27-001 | Summary language default = system language; move control into Processing options | `2026-07-27-separate-languages` | P2 | product_followup | QA pass feedback: primary flow should not force summary-language choice; default from system/UI language; advanced users change it under Processing options. Technically feasible now; explicitly out of this iteration. | product-analyst / roadmap-planner | Next product planning after separate-languages ships | planned |
-| PP-2026-07-27-002 | Reduce language selectors in direct flow; auto-detect transcript language from audio | `2026-07-27-separate-languages` | P3 | product_followup | QA pass feedback: long-term desire to remove language pickers from the main path; Whisper-style auto language detect for transcript; summary language handled via PP-001 pattern. Needs product slice + ML/UX investigation. | product-analyst / roadmap-planner | After PP-001 or when PO prioritizes hands-off language UX | planned |
 
 ## Planned Process Work
 

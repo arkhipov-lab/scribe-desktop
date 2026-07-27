@@ -35,6 +35,7 @@ For a single step, invoke the specialized skill (e.g. `Use roadmap-planner.`, `U
 | [`.ai/repo/`](../repo/) | Stack, validation commands, and forbidden paths |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, phase, and gate state |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt |
+| [`.ai/state/product-followups.md`](../state/product-followups.md) | Product wishes — not debt; do not route into debt register |
 | [docs/iterations/](../../docs/iterations/) | Active and previous iteration ledgers |
 | Latest summaries / reviews / git tree | Cycle state |
 
@@ -69,7 +70,7 @@ When docs conflict, stop and ask the human.
 6. `Use review-triage.`
 7. High/Medium → bounded fix prompt → re-implement → re-review
 8. Low only → ask human to **request an AI fix** or **explicitly accept/defer** each as debt (human never edits the tree)
-9. Record accepted/deferred items in `.ai/state/debt.md`
+9. Record accepted/deferred debt in `.ai/state/debt.md`; product wishes go to `.ai/state/product-followups.md`
 
 ### Supervisor QA and commit
 
@@ -87,7 +88,7 @@ When docs conflict, stop and ask the human.
 
 ### Durable memory
 
-- Read `.ai/state/current-cycle.json`, `.ai/state/debt.md`, and the active ledger before choosing the next action
+- Read `.ai/state/current-cycle.json`, `.ai/state/debt.md`, `.ai/state/product-followups.md`, and the active ledger before choosing the next action
 - Run `scripts/ai-cycle-status.sh` when resuming or reporting the active cycle
 - Update the ledger and current-cycle state at every phase transition
 - Run `scripts/ai-cycle-validate.sh` after state updates that move the cycle toward QA or commit

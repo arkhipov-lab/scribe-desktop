@@ -21,6 +21,7 @@ Use iteration-retrospective.
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Scope, handoffs, findings, QA, verification, metrics |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, phase, gate state, metrics |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt and planned process work |
+| [`.ai/state/product-followups.md`](../state/product-followups.md) | Whether QA/planning wishes were captured (not debt) |
 | [`.ai/org/`](../org/) | Reusable roles, workflow, metrics, and schema targets |
 | [`.ai/product/`](../product/) | Product-specific context to distinguish product vs process lessons |
 | [`.ai/repo/`](../repo/) | Repo-specific validation and forbidden-path context |
@@ -57,6 +58,7 @@ Do not run a final retrospective before commit unless the iteration is explicitl
 - Identify weak prompts, missing context, weak gates, or missing docs/tests
 - Recommend at most two process improvements, only when evidence supports them
 - Record process debt or planned process work in `.ai/state/debt.md` when appropriate
+- Record whether product follow-ups from QA/planning were captured in `.ai/state/product-followups.md` (and the ledger follow-ups section); do not file product wishes as debt
 - Update the active ledger Retrospective section and current-cycle state
 - After a successful post-commit retrospective, set `phase=shipped`, `iteration.status=shipped`, and `gates.retrospective` complete (keep `committed=true` and the commit hash)
 
@@ -129,6 +131,7 @@ Never mix the source label into the value. Keep value, source type, and evidence
 
 - **Debt register:**
 - **Planned process work:**
+- **Product follow-ups captured:** yes/no — IDs if any
 
 ## Next Planning Input
 

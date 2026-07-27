@@ -11,6 +11,7 @@ Current human-readable state:
 ```text
 docs/iterations/YYYY-MM-DD-<slug>.md
 .ai/state/debt.md
+.ai/state/product-followups.md
 ```
 
 ## Current-Cycle Minimum Fields
@@ -29,6 +30,7 @@ docs/iterations/YYYY-MM-DD-<slug>.md
 - `gates.retrospective`
 - `gates.commit_allowed`
 - `artifacts.debt_register`
+- `artifacts.product_followups_register` (register file is required; JSON key may be omitted and defaults to `.ai/state/product-followups.md`)
 - `artifacts.commit`
 - `metrics.review_loops`
 - `metrics.human_decisions`
@@ -46,5 +48,5 @@ Add stricter schemas only when a validator or automation consumer needs them:
 - QA outcome;
 - commit preparation;
 - retrospective;
-- metrics.
-
+- metrics;
+- product follow-up rows.

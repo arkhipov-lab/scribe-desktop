@@ -30,6 +30,7 @@ Read these before producing a recommendation:
 | [`.ai/repo/`](../repo/) | Repository stack, validation, and forbidden paths |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Latest shipped/current iteration state and metrics |
 | [`.ai/state/debt.md`](../state/debt.md) | Open debt and planned process work |
+| [`.ai/state/product-followups.md`](../state/product-followups.md) | Open product wishes / QA follow-ups as candidate product work |
 | Recent ledgers in [docs/iterations/](../../docs/iterations/) | Outcomes, review loops, QA results, retrospective notes |
 | [AI_CONVENTION.md](../../AI_CONVENTION.md) | AI development system product goals |
 | [AI_SYSTEM_ROADMAP.md](../../AI_SYSTEM_ROADMAP.md) | Process roadmap candidates |
@@ -52,7 +53,8 @@ Run `scripts/ai-cycle-status.sh` when resuming from existing state.
 
 - Connect roadmap candidates to concrete scenarios and user-visible gaps
 - Use recent metrics and retrospectives to account for rework, review loops, QA outcomes, and human routine effort
-- Include debt and planned process work as first-class options, not afterthoughts
+- Include debt, planned process work, and **product follow-ups** as first-class options, not afterthoughts
+- Treat `.ai/state/product-followups.md` as planning evidence for candidate product work (not as blocking debt)
 - Identify stale or low-evidence roadmap items
 - Compare 2-4 candidates by user value, evidence, effort, risk, enablement, and timing
 - Recommend whether the next iteration should build product value, reduce risk, improve the process, or pause for validation
@@ -98,6 +100,7 @@ Prefer a process iteration when metrics show repeated process failures that incr
 - Roadmap:
 - Scenarios:
 - Debt / planned process work:
+- Product follow-ups / wishes:
 - Recent metrics:
 - Retrospective signals:
 

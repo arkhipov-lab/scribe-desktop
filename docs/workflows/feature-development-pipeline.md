@@ -123,7 +123,8 @@ Every step must read:
 
 - [`.ai/state/current-cycle.json`](../../.ai/state/current-cycle.json) for the active iteration, phase, and gate status;
 - the active ledger under [`docs/iterations/`](../iterations/);
-- [`.ai/state/debt.md`](../../.ai/state/debt.md) for accepted/deferred debt.
+- [`.ai/state/debt.md`](../../.ai/state/debt.md) for accepted/deferred debt;
+- [`.ai/state/product-followups.md`](../../.ai/state/product-followups.md) for Product Owner / QA wishes (not debt).
 
 Every phase transition must update the active ledger and `current-cycle.json`.
 

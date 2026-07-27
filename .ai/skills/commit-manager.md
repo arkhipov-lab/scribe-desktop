@@ -24,6 +24,7 @@ Use commit-manager.
 | Approved slice | Scope match |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, gate state, QA status |
 | [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt that must be recorded before commit |
+| [`.ai/state/product-followups.md`](../state/product-followups.md) | QA/planning wishes — confirm captured here (not in debt) when notes mention them |
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Full iteration record and handoffs |
 | [`.ai/org/`](../org/) | Reusable gate and workflow rules |
 | [`.ai/product/`](../product/) | Product-layer constraints for scope check |
@@ -68,8 +69,9 @@ Relevant checks only:
 2. Suggested Conventional Commits message
 3. Changed files with one-line purpose
 4. Accepted Lows + QA skip notes
-5. Update the active ledger and `.ai/state/current-cycle.json` to `commit-ready`
-6. **Ask for explicit commit approval** — do not commit until requested
+5. If Supervisor QA / ledger notes mention product wishes, confirm they are in `.ai/state/product-followups.md` and the ledger Product Follow-ups section — **not** in `debt.md`
+6. Update the active ledger and `.ai/state/current-cycle.json` to `commit-ready`
+7. **Ask for explicit commit approval** — do not commit until requested
 
 ### Exclude from commit
 

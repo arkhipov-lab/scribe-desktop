@@ -24,7 +24,8 @@ Every approved iteration needs:
 
 - a ledger under `docs/iterations/`;
 - current phase and gates in `.ai/state/current-cycle.json`;
-- accepted/deferred debt and planned process work in `.ai/state/debt.md`.
+- accepted/deferred debt and planned process work in `.ai/state/debt.md`;
+- product follow-ups / wishes in `.ai/state/product-followups.md` (global curated register; ledger holds per-iteration capture notes).
 
 ## Gates
 

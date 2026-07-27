@@ -25,6 +25,7 @@ Use review-triage.
 | [PRODUCT.md](../../PRODUCT.md) / [SECURITY-PRIVACY.md](../../SECURITY-PRIVACY.md) | Invariant violations |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, review gate, phase |
 | [`.ai/state/debt.md`](../state/debt.md) | Previously accepted/deferred findings |
+| [`.ai/state/product-followups.md`](../state/product-followups.md) | Product wishes — **not** review debt; do not triage as findings |
 | Active ledger in [docs/iterations/](../../docs/iterations/) | Review findings and implementation summary |
 | Previously accepted Lows | Avoid re-litigation |
 
@@ -69,7 +70,8 @@ At most one dedicated Low AI-fix pass; then human accepts or defers. Do not full
 
 - Record triage decisions in the active ledger
 - Update `.ai/state/current-cycle.json` with the next phase/gate state
-- Add accepted or deferred findings to `.ai/state/debt.md` with revisit conditions
+- Add accepted or deferred **review findings** to `.ai/state/debt.md` with revisit conditions
+- Do **not** put Product Owner wishes, future UX ideas, or deferred roadmap opportunities into `debt.md` — those belong in `.ai/state/product-followups.md` (usually captured at Supervisor QA or planning, not triage)
 
 ---
 

@@ -38,7 +38,8 @@ Read these **before doing anything**:
 | [`.ai/product/`](../product/) | Product-layer adapters for invariants, roadmap, and scenarios |
 | [`.ai/repo/`](../repo/) | Repository validation and stack adapters |
 | [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active/previous iteration state |
-| [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred product, engineering, and process debt |
+| [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred engineering and process debt; planned process work |
+| [`.ai/state/product-followups.md`](../state/product-followups.md) | Product wishes / QA follow-ups — candidates only until human approval |
 | [docs/iterations/](../../docs/iterations/) | Latest iteration ledgers and retrospectives |
 | Latest product-analyst output | Evidence-based next-work comparison, if available |
 | Latest implementation summary / review / QA notes | Current cycle context |
@@ -63,7 +64,8 @@ When ROADMAP and PRODUCT diverge, **PRODUCT wins for value decisions**.
 - Evaluate 2–3 candidate slices with product-value heuristics and ROI trade-offs
 - Prefer small shippable slices (one review cycle, one coherent behavior)
 - Prefer finishing open user-facing gaps over polish
-- Use the latest ledger, current-cycle state, and debt register as the durable source for previous iteration outcomes
+- Use the latest ledger, current-cycle state, debt register, and product-followups register as durable sources for previous iteration outcomes
+- May turn an open follow-up (`PP-*`) into a **bounded slice recommendation** only after Product Owner approval — do not auto-scope follow-ups into the active iteration
 - Prefer foundational UX/reliability before speculative ML (diarization, etc.) unless value is clear
 - Never recommend cloud sync, remote AI APIs, telemetry of meeting content, or non-arm64 platforms
 - Ask for explicit human approval before any implementation prompt
@@ -156,7 +158,8 @@ Recommend **pause implementation** when remaining candidates are polish-only, pr
 - **Why acceptable:**
 - **Implement later when:**
 
-**Product debt from deferral:**
+**Deferred product follow-ups / opportunity cost:**
+<capture new wishes in `.ai/state/product-followups.md` when deferring; do not file as review debt>
 ...
 
 **In scope:**

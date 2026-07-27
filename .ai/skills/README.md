@@ -51,7 +51,8 @@ Every approved iteration must have:
 
 - an active ledger under [`docs/iterations/`](../../docs/iterations/);
 - current phase and gate status in [`.ai/state/current-cycle.json`](../state/current-cycle.json);
-- accepted or deferred debt in [`.ai/state/debt.md`](../state/debt.md).
+- accepted or deferred debt in [`.ai/state/debt.md`](../state/debt.md);
+- product follow-ups / wishes in [`.ai/state/product-followups.md`](../state/product-followups.md).
 
 Each skill must read these artifacts before acting and update them when it completes a phase transition. Chat history is not durable process memory.
 

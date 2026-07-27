@@ -103,12 +103,14 @@ Purpose:
 - stop accepted Low findings from disappearing;
 - prevent repeated debate about already accepted debt;
 - make revisit conditions explicit;
-- separate product debt from engineering debt and process debt.
+- separate accepted/deferred debt from product follow-ups / wishes (see `.ai/state/product-followups.md`).
 
 Possible artifact:
 
 - `.ai/state/debt.md`, or
 - `.ai/state/debt.json`
+
+Product Owner wishes and QA follow-ups that are not review debt live in `.ai/state/product-followups.md`, not the debt register.
 
 Minimum fields:
 
