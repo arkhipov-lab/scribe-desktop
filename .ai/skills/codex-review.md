@@ -141,6 +141,6 @@ After review, output proposed ledger/current-cycle updates for the orchestrator 
 
 ## Human Checkpoints
 
-Skill may run without approval. After triage, human must approve Low accept/defer, commits, and scope realignment.
+Skill may run without approval. After triage, human is asked only for product/scope/privacy/architecture conflicts, product-facing Lows, commits, and scope realignment — not for routine auto-fixable findings.
 
 Do not treat the human as a second implementer: request an AI fix for code/doc changes. Codex owns engineering review; the human owns product review via supervisor QA.

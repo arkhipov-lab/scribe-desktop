@@ -185,12 +185,12 @@ Recommend **pause implementation** when remaining candidates are polish-only, pr
 Small / Medium / Large
 
 **Human approval needed:**
-Yes — confirm before implementation prompt.
+Yes — confirm before implementation. After approval, the normal next step is `Use feature-manager.` (not a choice of specialized handoff skills).
 ```
 
 End with an approval question.
 
-If the human approves the recommendation in the same turn, create or update the iteration ledger and `.ai/state/current-cycle.json` before any implementation prompt is generated.
+If the human approves the recommendation in the same turn, create or update the iteration ledger and `.ai/state/current-cycle.json` before any implementation prompt is generated. Route through feature-manager for the implementation handoff.
 
 ---
 
@@ -213,5 +213,5 @@ After summary controls mostly shipped, prefer **separate transcript vs summary l
 ## Integration
 
 ```
-Product Analyst → Roadmap Planner → Human approves → Feature Manager → Cursor → Review → Triage → Supervisor QA → Commit Manager → Retrospective
+Product Analyst → Roadmap Planner → Human approves → Feature Manager → (implementation pending → summary) → Review → Triage → Supervisor QA → Commit Manager → Retrospective
 ```

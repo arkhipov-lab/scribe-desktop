@@ -18,7 +18,7 @@ The assistant (agent manager) orchestrates the loop.
 | **Codex** | Independent engineering reviewer — critiques the working tree; not the product owner |
 | **Human** | Customer, Product Owner, supervisor QA, product reviewer, commit approver — **never** hand-edits the repo |
 
-**No auto-commit** without explicit human approval. **No hand-written code/doc fixes** by the human — request an AI fix or explicitly accept/defer debt.
+**No auto-commit** without explicit human approval. **No hand-written code/doc fixes** by the human — AI auto-fixes routine findings per policy; human decides product-facing tradeoffs and may request an AI fix or explicitly accept/defer debt when policy requires.
 
 ### Skill invocation
 
@@ -28,12 +28,14 @@ Each pipeline step is a self-contained skill in [`.ai/skills/`](../../.ai/skills
 |------|--------|
 | Analyze next work | `Use product-analyst.` |
 | Plan next slice | `Use roadmap-planner.` |
-| Orchestrate cycle | `Use feature-manager.` |
-| Review changes | `Use codex-review.` |
+| Orchestrate after approval | `Use feature-manager.` (**sole normal post-approval entrypoint**) |
+| Review changes | `Use codex-review.` (only after implementation summary) |
 | Triage findings | `Use review-triage.` |
 | Generate manual QA plan | `Use supervisor-qa.` |
 | Prepare commit | `Use commit-manager.` |
 | Run retrospective | `Use iteration-retrospective.` |
+
+`cursor-implementation-prompt` remains available as an **internal / specialized** handoff artifact generator. Do **not** present it as an alternative normal Product Owner next step after approval.
 
 See [`.ai/skills/README.md`](../../.ai/skills/README.md).
 
@@ -45,20 +47,22 @@ See [`.ai/skills/README.md`](../../.ai/skills/README.md).
 
 - Decides roadmap direction and approves iteration scope
 - Runs supervisor QA (observable product behavior) or explicitly skips it
-- Accepts, rejects, or **defers** Low findings as debt — does **not** edit code to clear them
+- Is asked about review findings only when product direction, scope, risky debt, or meaningful product/UX tradeoff is involved
 - May **request an AI fix** (Cursor via a bounded fix prompt) for any severity
 - Approves commits
 - Owns all product decisions (including privacy / platform scope)
 - Does **not** write or patch code/docs by hand in this experiment
+- Does **not** operate the internal implementation-prompt vs orchestrator choice — after approval, the normal next step is always feature-manager
 
-### Assistant / Agent Manager
+### Assistant / Agent Manager (feature-manager)
 
 - Invokes pipeline skills with one-line prompts
 - **Must** run `product-analyst` when choosing next work from roadmap/debt/metrics, then `roadmap-planner`, before every new implementation cycle
-- Writes bounded prompts for Cursor and Codex after human approval
-- Triages review findings and writes fix prompts
+- After approval: **sole** orchestrator — creates implementation handoff, records pending/summary state, then routes to review
+- Triages review findings and **auto-generates** fix prompts per policy
 - Does **not** silently change product scope
 - Does **not** commit without human approval
+- Does **not** ask the human to approve routine auto-fixable findings
 
 ### Cursor — implementation agent
 
@@ -90,30 +94,37 @@ roadmap-planner
 Human approves scope
         │
         ▼
-feature pipeline → Cursor implements → Codex reviews → review-triage
-        │                                    │
-        │                         High/Medium? → AI fix → re-review
-        │                                    │
-        ▼                                    ▼
+feature-manager → implementation prompt prepared → implementation pending
+        │
+        ▼
+Cursor implements → implementation summary received → review ready
+        │
+        ▼
+Codex reviews → review-triage
+        │
+        ├─ High/Medium / cheap Lows → auto AI fix → re-review (ask human only for product/scope/privacy/architecture)
+        │
+        ▼
 supervisor-qa → human product QA → commit-manager (human approves) → iteration-retrospective → next
 ```
 
 ### Step detail
 
-1. **Analyze next work** — `Use product-analyst.` Compare ROADMAP, scenarios, debt, recent metrics, and retrospective evidence.
+1. **Analyze next work** — `Use product-analyst.` Compare ROADMAP, scenarios, debt, recent metrics, and retrospective evidence. Recommendation first; evidence appendix second.
 2. **Plan next slice** — `Use roadmap-planner.` Human approves before proceeding.
-3. **Generate implementation prompt** — `Use feature-manager.` or `Use cursor-implementation-prompt.`
-4. **Cursor implements** — within scope; run verification.
-5. **Review** — `Use codex-review.` (Codex = engineering review only.)
-6. **Triage** — `Use review-triage.`
-7. **If High/Medium** — AI fix prompt → Cursor; return to step 4.
-8. **If only Low** — human **requests an AI fix** or **explicitly accepts/defers** each as debt (human never edits the tree).
-9. **Supervisor QA** — `Use supervisor-qa.`
-10. **Manual product QA** — human pass/fail (or explicit skip). This is product review, not code review.
-11. **Commit** — `Use commit-manager.` Human approves before commit is created.
-12. **Retrospective** — `Use iteration-retrospective.` Record metrics, rework, repeated failures, and next planning input.
-13. **Implementation summary** — for the next cycle.
-14. **Next iteration** — return to step 1.
+3. **Orchestrate after approval** — `Use feature-manager.` Creates/updates ledger + current-cycle; prepares the internal implementation handoff; records **implementation pending**.
+4. **Cursor implements** — within scope; run verification; return implementation summary.
+5. **Record summary** — feature-manager records files, behavior, assumptions, verification, remaining work, docs; only then is review ready.
+6. **Review** — `Use codex-review.` (Codex = engineering review only.) Do not start review while implementation is still pending.
+7. **Triage** — `Use review-triage.` Apply auto-fix policy.
+8. **If High/Medium** — auto AI fix prompt → Cursor; return toward review. Ask human only for product/scope/privacy/architecture conflicts.
+9. **If Low** — first loop: auto-fix cheap/local/non-product Lows; ask human only for product-facing / UX-tradeoff Lows. Second+ loop: auto-fix cheap new **non-product** Lows once more, or accept/defer minor **clearly non-product** Lows as debt without blocking QA. **Hard rule: product-facing Lows must never be silently deferred** (when in doubt, ask the Product Owner).
+10. **Product wishes** — capture in `.ai/state/product-followups.md`; never as review debt or commit blockers unless PO re-scopes.
+11. **Supervisor QA** — `Use supervisor-qa.`
+12. **Manual product QA** — human pass/fail (or explicit skip). This is product review, not code review.
+13. **Commit** — `Use commit-manager.` Human approves before commit is created.
+14. **Retrospective** — `Use iteration-retrospective.` Record metrics, rework, repeated failures, and next planning input.
+15. **Next iteration** — return to step 1.
 
 ---
 
@@ -130,10 +141,12 @@ Every phase transition must update the active ledger and `current-cycle.json`.
 
 | Transition | Required state update |
 | --- | --- |
-| Human approves scope | Create ledger; set phase to `implementation-prompt` or `implementing` |
-| Cursor finishes implementation | Record files, behavior, assumptions, verification; set phase to `review` |
+| Human approves scope | Create ledger; set phase to `implementation-prompt` (handoff prepared / pending) |
+| Implementation prompt prepared | Record handoff; phase `implementation-prompt` or `implementing`; implementation still pending |
+| Cursor finishes implementation | Record files, behavior, assumptions, verification, remaining work, docs; set `implementation_finished=true`; phase `review` |
 | Codex review completes | Orchestrator/review-triage records findings and counts; set review gate |
-| Triage completes | Record blocking and non-blocking decisions; update debt for accepted/deferred items |
+| Auto-fix pass generated / applied | Record in ledger (including Low auto-fix / policy defer); bump review loop as needed |
+| Triage completes | Record blocking and non-blocking decisions; update debt for accepted/deferred items; note human involvement reason if any |
 | Supervisor QA generated / executed | Record plan, pass/fail/skip, and human decision |
 | Commit prepared / created | Record staging hygiene, message, approval, and commit hash; set `phase=retrospective`, `status=retrospective`, `committed=true` |
 | Retrospective completed | Record metrics, repeated failures, process recommendations, and next planning input; set `phase=shipped` / `status=shipped` |
@@ -149,11 +162,14 @@ Run `scripts/ai-cycle-status.sh` when resuming an iteration. Run `scripts/ai-cyc
 
 | Severity | Rule |
 |----------|------|
-| **High** | Must fix via AI before commit |
-| **Medium** | Must fix via AI before commit |
-| **Low** | Cheap → AI fix prompt; otherwise human may explicitly accept/defer as debt |
+| **High** | Must fix via AI before commit — auto-generate fix prompt; ask human only for product/scope/privacy/architecture conflicts |
+| **Medium** | Must fix via AI before commit — auto-generate fix prompt; Medium debt disallowed unless human changes the gate |
+| **Low (first loop)** | Auto-fix cheap / local / non-product items; ask human only for product-facing / UX-tradeoff Lows |
+| **Low (second+ loop)** | Auto-fix cheap new **non-product** items once more; otherwise accept/defer minor **clearly non-product** Lows as debt with reason — do not block QA. **Product-facing Lows must never be silently deferred**; when in doubt, ask the Product Owner |
 
 **Gate rule:** No High or Medium findings may remain at commit time.
+
+Product wishes / follow-ups are **not** review findings and do not block commit unless the Product Owner re-scopes.
 
 Scribe-specific High examples: cloud upload of audio/text; transcript/summary logging; bridge type drift that breaks core flows; blocking ML on the UI thread.
 
@@ -167,10 +183,14 @@ Human approval is required before:
 - Changing [PRODUCT.md](../../PRODUCT.md)
 - Changing roadmap scope in [ROADMAP.md](../../ROADMAP.md)
 - Adding major architecture decisions to [DECISIONS.md](../../DECISIONS.md)
-- Accepting or deferring unresolved Low findings (AI performs any code/doc fix)
+- Product-facing Low findings or meaningful product/UX tradeoffs
+- Accepting Medium/High as debt (normally disallowed)
+- Fixes that require product direction, scope expansion, privacy-promise change, or risky architecture
 - Skipping supervisor QA (must be explicit)
 - Committing
 - Moving to the next major roadmap bet
+
+Do **not** require human approval before routine auto-fixable High/Medium or cheap first-loop Low findings.
 
 Human never clears findings by editing the working tree.
 
@@ -247,8 +267,8 @@ Cursor must report which checks ran and their results.
 | [`.ai/skills/README.md`](../../.ai/skills/README.md) | Skill index |
 | [`.ai/skills/product-analyst.md`](../../.ai/skills/product-analyst.md) | `Use product-analyst.` |
 | [`.ai/skills/roadmap-planner.md`](../../.ai/skills/roadmap-planner.md) | `Use roadmap-planner.` |
-| [`.ai/skills/feature-manager.md`](../../.ai/skills/feature-manager.md) | `Use feature-manager.` |
-| [`.ai/skills/cursor-implementation-prompt.md`](../../.ai/skills/cursor-implementation-prompt.md) | `Use cursor-implementation-prompt.` |
+| [`.ai/skills/feature-manager.md`](../../.ai/skills/feature-manager.md) | `Use feature-manager.` (normal post-approval entrypoint) |
+| [`.ai/skills/cursor-implementation-prompt.md`](../../.ai/skills/cursor-implementation-prompt.md) | Internal/specialized handoff — not a normal PO next step |
 | [`.ai/skills/codex-review.md`](../../.ai/skills/codex-review.md) | `Use codex-review.` |
 | [`.ai/skills/review-triage.md`](../../.ai/skills/review-triage.md) | `Use review-triage.` |
 | [`.ai/skills/supervisor-qa.md`](../../.ai/skills/supervisor-qa.md) | `Use supervisor-qa.` |

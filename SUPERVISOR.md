@@ -43,7 +43,7 @@ You may:
 - approve or reject scope;
 - run the app and test observable behavior;
 - report QA pass/fail;
-- accept or defer Low findings as debt;
+- accept or defer product-facing Low findings as debt (routine cheap Lows are auto-fixed by AI);
 - request an AI fix;
 - explicitly approve commits.
 
@@ -98,11 +98,7 @@ Ask:
 Use feature-manager.
 ```
 
-or:
-
-```text
-Use cursor-implementation-prompt.
-```
+Feature-manager is the sole normal post-approval entrypoint. It prepares the internal Cursor implementation handoff, records that implementation is pending, and continues the cycle after the implementer returns a summary. Do not choose between feature-manager and `cursor-implementation-prompt` — the latter is an internal artifact only.
 
 The prompt must be bounded. It should tell Cursor exactly what to read, what to change, what not to change, and what to verify.
 
@@ -162,20 +158,21 @@ Rules:
 
 | Severity | Supervisor action |
 | --- | --- |
-| High | Must request AI fix |
-| Medium | Must request AI fix before commit |
-| Low | Request AI fix, or explicitly accept/defer as debt |
+| High | AI must fix (auto fix prompt) — ask human only for product/scope/privacy/architecture conflicts |
+| Medium | AI must fix before commit (auto) — same human exceptions as High |
+| Low (cheap / local / non-product) | AI auto-fixes; on second+ loop may policy-defer as Low debt with reason — do not decide every Low yourself |
+| Low (product-facing / UX tradeoff) | Human judgment required — **never silently deferred** |
 
 Do not fix findings yourself.
 
 Examples:
 
 ```text
-Исправить все Medium через AI fix prompt.
+Use review-triage.
 ```
 
 ```text
-Low 1 принимаю как debt до следующей итерации. Low 2 исправить через AI.
+Low про product copy / UX tradeoff — нужна моя оценка. Остальные cheap Lows пусть AI fixed по policy.
 ```
 
 ---
@@ -307,16 +304,10 @@ Planning:
 Use roadmap-planner.
 ```
 
-Full orchestration:
+Full orchestration (normal after scope approval):
 
 ```text
 Use feature-manager.
-```
-
-Implementation prompt only:
-
-```text
-Use cursor-implementation-prompt.
 ```
 
 Review:
@@ -355,10 +346,10 @@ Reject implementation:
 Отклоняю текущую реализацию: <reason>. Предложи bounded fix или rollback через AI.
 ```
 
-Accept Low as debt:
+Accept product-facing Low as debt (never for silent style-only defer by AI alone):
 
 ```text
-Low finding принимаю как debt. Запиши причину в triage/commit summary.
+Product-facing Low принимаю как debt. Запиши причину и revisit condition в triage/debt.
 ```
 
 ---

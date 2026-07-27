@@ -36,6 +36,19 @@ docs/iterations/YYYY-MM-DD-<slug>.md
 - `metrics.human_decisions`
 - `last_updated`
 
+## Optional Current-Cycle Artifacts (recommended)
+
+Record when useful; not all required for validator pass:
+
+- `artifacts.latest_implementation_prompt` — handoff prepared
+- `artifacts.latest_implementation_summary` — summary received / review ready
+- `artifacts.latest_review` / `artifacts.latest_triage`
+- `artifacts.latest_auto_fix` — auto-fix pass generated/applied notes
+- `artifacts.human_involvement_reason` — why human was asked mid-loop (if any)
+- `artifacts.previous_iteration`
+
+Phases already used by the validator include `planned`, `implementation-prompt`, `implementing`, `review`, `fixing`, `QA`, `commit-ready`, `retrospective`, `shipped`, `cancelled`. Prefer `implementation-prompt` / `implementing` while the summary is still pending; move to `review` only after the implementation summary is recorded.
+
 ## Future Schema Targets
 
 Add stricter schemas only when a validator or automation consumer needs them:

@@ -58,14 +58,16 @@ Self-contained skills in [`.ai/skills/`](../../.ai/skills/). Invoke with a one-l
 
 | Prompt | Skill |
 |--------|-------|
-| `Use product-analyst.` | Evidence-based next-work analysis |
+| `Use product-analyst.` | Evidence-based next-work analysis (recommendation first) |
 | `Use roadmap-planner.` | Next slice recommendation |
-| `Use feature-manager.` | Full cycle orchestration |
-| `Use codex-review.` | Working-tree review |
-| `Use review-triage.` | Finding interpretation |
+| `Use feature-manager.` | Full cycle orchestration — **normal next step after scope approval** |
+| `Use codex-review.` | Working-tree review (after implementation summary) |
+| `Use review-triage.` | Finding interpretation + auto-fix policy |
 | `Use supervisor-qa.` | Manual QA plan for Product Owner |
 | `Use commit-manager.` | Pre-commit preparation |
 | `Use iteration-retrospective.` | Metrics, retrospective, repeated-failure analysis |
+
+`cursor-implementation-prompt` is an internal/specialized handoff skill used by feature-manager — not listed here as a Product Owner-facing next step.
 
 See [`.ai/skills/README.md`](../../.ai/skills/README.md) for the full index.
 

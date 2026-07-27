@@ -10,6 +10,7 @@ Keep categories separate:
 - **Planned process work** is future AI-organization improvement that was intentionally out of scope.
 - **Product follow-ups / wishes** do **not** belong here — use [`.ai/state/product-followups.md`](./product-followups.md).
 - High and Medium review findings must not be accepted as debt before commit unless the pipeline is explicitly changed by the human.
+- Low findings may be auto-fixed, or on a second+ review loop accepted/deferred as Low debt under the review-triage auto-fix policy (with reason and revisit condition), without requiring human involvement when the Low is not product-facing.
 
 ## Open Debt
 
@@ -31,3 +32,9 @@ Keep categories separate:
 | P-2026-07-27-001 | Product analyst role | `2026-07-27-backlog-intelligence` | P2 | process_roadmap | Roadmap planning should use scenarios, debt, metrics, and retrospectives, not roadmap order alone. | feature-manager | Backlog intelligence stage | done |
 | P-2026-07-27-002 | Reusable process layer split | `2026-07-27-reusable-layer` | P3 | process_roadmap | Process mechanics should be portable without carrying Scribe-specific product/repo assumptions. | feature-manager | Reusable layer stage | done |
 | P-2026-07-27-003 | Full reusable package extraction | `2026-07-27-reusable-layer` | P3 | process_roadmap | Initial adapters exist; full extraction should wait until another repository actually consumes the process. | feature-manager | First cross-repo adoption attempt | planned |
+| P-2026-07-27-004 | Implementation-runner / handoff skill | `2026-07-27-pipeline-operator-ux` | P2 | process_roadmap | Separate implementation execution from feature-manager: accept handoff, wait for summary, record into ledger/current-cycle, mark review-ready. | feature-manager | After pipeline-operator-ux ships | planned |
+| P-2026-07-27-005 | Validate product-analyst PO-readable output on next real cycle | `2026-07-27-pipeline-operator-ux` | P2 | process_validation | Contract is recommendation-first; confirm one real `Use product-analyst.` run leads with recommendation, keeps evidence in appendix, avoids excessive internal process detail. | product-analyst | Next planning cycle after this ships | planned |
+| P-2026-07-27-006 | Measure human review-fix involvement after auto-fix policy | `2026-07-27-pipeline-operator-ux` | P2 | process_metrics | Compare human decisions / review-loop interruptions before vs after auto-fix in the next retrospective. | iteration-retrospective | Next shipped iteration retrospective after this | planned |
+| P-2026-07-27-007 | Automate implementation → review → triage loop | `2026-07-27-pipeline-operator-ux` | P3 | process_roadmap | Docs now describe deterministic orchestration; actual Cursor execution and multi-agent looping remain a later autonomy milestone. | feature-manager | After handoff skill (P-004) and stable auto-fix evidence | planned |
+| P-2026-07-27-008 | Hide cursor-implementation-prompt in PO-facing indexes / future console | `2026-07-27-pipeline-operator-ux` | P3 | process_ux | Skill is marked internal/specialized; future PO console/UI should not show it as a normal command. | feature-manager | When PO console / operator UI work starts | planned |
+| P-2026-07-27-009 | Validator checks for implementation phase consistency | `2026-07-27-pipeline-operator-ux` | P2 | process_roadmap | Detect impossible states (e.g. review-ready without implementation summary; implementation pending with review gate already clean). | feature-manager | After P-004 or next validator hardening slice | planned |

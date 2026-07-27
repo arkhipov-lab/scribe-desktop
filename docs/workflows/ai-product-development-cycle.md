@@ -91,7 +91,7 @@ Identify the highest-value next product slice; compare alternatives; preserve hu
 
 ### 2. Engineering delivery
 
-Translate the approved slice into engineering work; implement; independent review; fix blocking findings; run verification and technical smoke checks.
+Translate the approved slice into engineering work via **feature-manager** (sole post-approval orchestrator): implementation handoff → pending → summary → independent review → auto-fix blocking and cheap Low findings → verification and technical smoke checks.
 
 **Implementation:** [Feature Development Pipeline](./feature-development-pipeline.md)
 
@@ -220,12 +220,12 @@ A single commit is not necessarily completion of a product goal.
 
 | Need | Skill / doc |
 |------|-------------|
-| Backlog intelligence | [product-analyst](../../.ai/skills/product-analyst.md) |
+| Backlog intelligence | [product-analyst](../../.ai/skills/product-analyst.md) (recommendation before evidence appendix) |
 | Next slice | [roadmap-planner](../../.ai/skills/roadmap-planner.md) |
-| Orchestration | [feature-manager](../../.ai/skills/feature-manager.md) |
-| Implementation prompt | [cursor-implementation-prompt](../../.ai/skills/cursor-implementation-prompt.md) |
-| Independent review | [codex-review](../../.ai/skills/codex-review.md) |
-| Triage | [review-triage](../../.ai/skills/review-triage.md) |
+| Orchestration after approval | [feature-manager](../../.ai/skills/feature-manager.md) — sole normal PO-facing entrypoint |
+| Implementation handoff (internal) | [cursor-implementation-prompt](../../.ai/skills/cursor-implementation-prompt.md) — specialized; not an alternative PO next step |
+| Independent review | [codex-review](../../.ai/skills/codex-review.md) — only after implementation summary |
+| Triage | [review-triage](../../.ai/skills/review-triage.md) — auto-fix policy |
 | Manual QA plan | [supervisor-qa](../../.ai/skills/supervisor-qa.md) |
 | Commit preparation | [commit-manager](../../.ai/skills/commit-manager.md) |
 | Retrospective + metrics | [iteration-retrospective](../../.ai/skills/iteration-retrospective.md) |

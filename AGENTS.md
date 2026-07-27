@@ -36,7 +36,7 @@ In this repo’s AI-organization experiment:
 - Human roles: customer, Product Owner, supervisor QA, product reviewer, commit approver.
 - **All** durable code and documentation changes are made by an AI agent.
 - The human may describe requirements, accept/reject product behavior, defer debt, and **request an AI fix** — not patch the working tree themselves.
-- Low review findings: AI fix via a bounded fix prompt, or explicit human accept/defer as debt — never “human will fix it in the editor.”
+- Low review findings: AI auto-fixes cheap/local items per review-triage policy; product-facing Lows need human judgment; never “human will fix it in the editor.”
 
 See [docs/MANIFEST.md](docs/MANIFEST.md) and [docs/workflows/feature-development-pipeline.md](docs/workflows/feature-development-pipeline.md).
 

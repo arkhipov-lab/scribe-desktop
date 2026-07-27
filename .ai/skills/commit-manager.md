@@ -38,7 +38,7 @@ Use commit-manager.
 ## Preconditions
 
 - No unresolved High/Medium
-- Lows fixed or **explicitly accepted**
+- Lows fixed or accepted/deferred **under review-triage auto-fix policy** (reason documented in ledger/debt); product-facing Lows require Product Owner judgment — never silently deferred
 - Supervisor QA **passed** or **explicitly skipped** (record skip)
 - Verification reported
 - Active ledger and current-cycle state are up to date through QA
@@ -102,7 +102,8 @@ Record the commit hash in the active ledger and update `.ai/state/current-cycle.
 
 - Does **not** commit without explicit human approval in the current message
 - Does **not** bypass review or QA (unless QA explicitly skipped)
-- Does **not** silently accept Lows
+- Does **not** silently accept High/Medium, or silently defer product-facing Lows
+- Does **not** re-ask the human about routine policy-deferred non-product Lows already recorded by triage
 
 ---
 
@@ -187,7 +188,7 @@ Required:
 
 - Before skipping supervisor QA
 - Before every commit
-- Before accepting unresolved Lows
+- Before accepting or deferring **product-facing** Lows / meaningful UX tradeoffs (routine non-product Lows are handled by triage auto-fix / policy defer)
 
 ---
 
@@ -197,7 +198,7 @@ Required:
 |------|--------|
 | Human approval | Required for every commit |
 | High/Medium block | Never commit with open blockers |
-| Low / QA skip | Must be explicit and documented |
+| Low / QA skip | Lows: fixed or accepted/deferred under policy with documented reason; product-facing Lows need human judgment. QA skip must be explicit |
 | Message format | Conventional Commits |
 | Scope | Only current iteration files |
 | Candidate folder | Never stage `ai-md-condidates/` unless human explicitly requests |

@@ -14,11 +14,12 @@ The iteration ledger records:
 
 - approved product scope;
 - handoffs between AI roles;
+- implementation phase states (prompt prepared, pending, summary received);
 - implementation summary;
 - review findings;
-- triage decisions;
+- triage decisions including auto-fix passes;
 - QA plan and outcome;
-- human approvals;
+- human approvals and **human involvement reason** when human input was required mid-loop;
 - verification evidence;
 - accepted or deferred debt;
 - product follow-ups / wishes captured this iteration;
@@ -61,14 +62,16 @@ Create the ledger entry immediately after the human approves an iteration scope 
 Update it at each phase transition:
 
 1. scope approved;
-2. implementation finished;
-3. review completed;
-4. triage completed;
-5. QA plan generated;
-6. human QA passed, failed, or was explicitly skipped;
-7. commit prepared;
-8. commit approved and created;
-9. retrospective completed.
+2. implementation handoff prepared (prompt recorded; implementation pending);
+3. implementation summary received (review ready);
+4. review completed;
+5. auto-fix pass generated / applied (when applicable);
+6. triage completed;
+7. QA plan generated;
+8. human QA passed, failed, or was explicitly skipped;
+9. commit prepared;
+10. commit approved and created;
+11. retrospective completed.
 
 If an iteration is cancelled, record why and stop updating it.
 
@@ -107,13 +110,24 @@ Agents must read the active ledger at the start of each workflow step and update
 | Phase | Role | Artifact | Status |
 | --- | --- | --- | --- |
 | Planning | roadmap-planner | <summary/link> | pending/done |
-| Implementation prompt | feature-manager / cursor-implementation-prompt | <summary/link> | pending/done |
-| Implementation | Cursor | <summary/link> | pending/done |
-| Review | Codex | <summary/link> | pending/done |
-| Triage | review-triage | <summary/link> | pending/done |
+| Implementation prompt prepared | feature-manager (internal: cursor-implementation-prompt) | <summary/link> | pending/done |
+| Implementation pending | Cursor | awaiting summary | pending/done |
+| Implementation summary received | feature-manager records Cursor summary | <summary/link> | pending/done |
+| Review ready → Review | Codex | <summary/link> | pending/done |
+| Triage / auto-fix | review-triage | <summary/link> | pending/done |
 | Supervisor QA | supervisor-qa | <summary/link> | pending/done |
 | Commit prep | commit-manager | <summary/link> | pending/done |
 | Retrospective | iteration-retrospective | <summary/link> | pending/done |
+
+## Implementation Phase
+
+Record explicitly so agents do not start review early:
+
+| State | Status | Notes |
+| --- | --- | --- |
+| Implementation handoff prepared | pending/done | Prompt artifact created/recorded |
+| Implementation pending | pending/done | Waiting for implementer summary |
+| Implementation summary received | pending/done | Review may begin only after this |
 
 ## Implementation Summary
 
@@ -121,6 +135,8 @@ Agents must read the active ledger at the start of each workflow step and update
 - Behavior changed:
 - Assumptions:
 - Verification reported by implementer:
+- Remaining work:
+- Documentation updates:
 
 ## Review Findings
 
@@ -130,10 +146,16 @@ Agents must read the active ledger at the start of each workflow step and update
 
 ## Triage Decisions
 
+- Review loop number:
 - Blocking findings:
-- Low findings fixed:
-- Low findings accepted or deferred:
+- Auto-fix pass generated:
+- Auto-fix applied:
+- Low findings auto-fixed:
+- Low findings accepted or deferred (with/without human; reason):
+- Human involvement required: yes/no
+- Human involvement reason (if any):
 - Scope concerns:
+- Product wishes routed to follow-ups (not debt):
 
 ## Supervisor QA
 
@@ -225,14 +247,22 @@ Preferred expanded form when evidence matters:
 The ledger should make these violations obvious:
 
 - implementation started without approved scope;
+- review started while implementation was still pending (no summary received);
 - review skipped;
 - High or Medium findings left unresolved before commit;
-- Low finding accepted without explicit human decision;
+- Low finding left open without AI fix or policy accept/defer;
 - supervisor QA skipped without explicit human decision;
 - commit prepared without verification evidence;
 - process debt discovered but not recorded;
 - product follow-ups from QA/planning lost in chat or filed as debt;
-- product scope changed without human approval.
+- product scope changed without human approval;
+- human asked to approve routine auto-fixable findings without a product/scope reason.
+
+Notes on Low findings:
+
+- First-loop cheap Lows should be auto-fixed; no human ask required.
+- Second+ loop minor Lows may be accepted/deferred as debt **without** human involvement when policy allows; record reason and revisit condition.
+- Product-facing Lows still need Product Owner judgment.
 
 ---
 

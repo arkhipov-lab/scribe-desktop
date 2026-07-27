@@ -6,6 +6,8 @@ Compare next-work candidates using product value, roadmap hypotheses, scenarios,
 
 This role supports the human Product Owner. It does not own product direction, approve scope, write implementation prompts, review code, or commit.
 
+Product Owner-facing output leads with the **recommendation**; detailed evidence stays in an appendix so planning consumers still get depth without burying the decision.
+
 ---
 
 ## Invocation
@@ -59,6 +61,8 @@ Run `scripts/ai-cycle-status.sh` when resuming from existing state.
 - Compare 2-4 candidates by user value, evidence, effort, risk, enablement, and timing
 - Recommend whether the next iteration should build product value, reduce risk, improve the process, or pause for validation
 - Name evidence that would change the recommendation
+- Lead with a Product Owner-readable recommendation; keep technical/process evidence below
+- Avoid dumping raw internal pipeline mechanics before the recommendation
 - Feed a bounded recommendation into `roadmap-planner`, but do not replace human approval
 
 ---
@@ -90,8 +94,36 @@ Prefer a process iteration when metrics show repeated process failures that incr
 
 ## Output Contract
 
+Lead with the recommendation. Keep the short comparison next. Put detailed evidence last so Product Owners can decide quickly while roadmap-planner can still consume the appendix.
+
 ```markdown
-## Product analysis
+## Recommendation
+
+**Recommended next move:**
+<candidate / pause — one clear sentence>
+
+**Why this matters:**
+<product/process value in plain language>
+
+**Decision needed:**
+Approve / adjust / choose another candidate.
+
+**Deferred:**
+<what is postponed and why that is acceptable now>
+
+**Suggested bounded slice for roadmap-planner:**
+- **Goal:**
+- **In scope:**
+- **Out of scope:**
+- **Validation likely required:**
+
+## Short Candidate Comparison
+
+| Candidate | Why now | Effort | Risk |
+| --- | --- | --- | --- |
+| ... | ... | Small/Medium/Large | High/Medium/Low |
+
+## Evidence Appendix
 
 **Current state:**
 <brief factual summary from roadmap + current-cycle + recent ledgers>
@@ -104,15 +136,11 @@ Prefer a process iteration when metrics show repeated process failures that incr
 - Recent metrics:
 - Retrospective signals:
 
-## Candidate comparison
+**Detailed candidate notes:**
 
 | Candidate | Type | Evidence | User/process value | Effort | Risk | Enablement | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | ... | product/process/risk/validation | ... | High/Medium/Low | Small/Medium/Large | High/Medium/Low | High/Medium/Low | ... |
-
-## Recommendation
-
-**Recommended next move:** <candidate / pause>
 
 **Why this over alternatives:**
 ...
@@ -125,15 +153,6 @@ Prefer a process iteration when metrics show repeated process failures that incr
 
 **Evidence that would change the recommendation:**
 ...
-
-**Suggested bounded slice for roadmap-planner:**
-- **Goal:**
-- **In scope:**
-- **Out of scope:**
-- **Validation likely required:**
-
-**Human decision needed:**
-Yes — Product Owner chooses whether to feed this into roadmap-planner.
 ```
 
 ---

@@ -1,68 +1,73 @@
 {
   "schema_version": 1,
   "iteration": {
-    "id": "2026-07-27-summary-language-ux",
-    "name": "Summary Language Default And Processing Options Placement",
-    "ledger_path": "docs/iterations/2026-07-27-summary-language-ux.md",
-    "status": "shipped",
+    "id": "2026-07-27-pipeline-operator-ux",
+    "name": "Pipeline Operator UX And Auto-Fix Policy",
+    "ledger_path": "docs/iterations/2026-07-27-pipeline-operator-ux.md",
+    "status": "commit-ready",
     "date_started": "2026-07-27",
-    "date_completed": "2026-07-27"
+    "date_completed": null
   },
   "approved_scope": {
-    "source": "chat — Product Owner approved roadmap Option A after product-analyst + roadmap-planner",
+    "source": "chat — Product Owner approved process slice via implementation task",
     "date": "2026-07-27",
-    "goal": "Default summary language from resolved UI/system locale; keep transcript language in the primary flow; move summary-language override under Processing options.",
+    "goal": "Reduce PO/operator involvement in the engineering loop: feature-manager sole post-approval entrypoint, implementation handoff states, auto-fix policy, PO-readable product-analyst output.",
     "in_scope": [
-      "Default summary_language from resolved UI locale (en/ru/system→navigator) mapped to Whisper codes with fallback en",
-      "Migration: preserve already-persisted summary_language; first-launch/missing-key seed from UI/system default (not transcript language)",
-      "Move summary-language control from primary flow into Processing options",
-      "Keep transcript language in the primary flow",
-      "Persist override via existing settings bridge",
-      "Update summary-controls scenario + thin PRODUCT/LOCAL_DATA/TESTING/ROADMAP/locales in same pass",
-      "On ship: mark PP-2026-07-27-001 converted/closed in product-followups.md"
+      "feature-manager as sole normal post-approval entrypoint",
+      "cursor-implementation-prompt as internal/specialized handoff only",
+      "Implementation phase: prompt prepared → pending → summary → review ready",
+      "Auto-fix policy for High/Medium and cheap first-loop Lows; second+ loop Low policy",
+      "Hard rule: product-facing Low cannot be silently deferred as debt",
+      "Product wishes stay in product-followups, not debt",
+      "product-analyst Recommendation → Short Comparison → Evidence Appendix",
+      "Ledger/org convention updates for handoff and auto-fix recording"
     ],
     "out_of_scope": [
-      "PP-2026-07-27-002 auto-detect transcript language / remove transcript picker",
-      "Editable results, partial copy, action-items view",
-      "Advanced model knobs / markdown post-process checklist",
-      "Process schemas P-2026-07-26-002 / package extraction P-2026-07-27-003",
-      "One-time remigration rewriting existing persisted summary_language",
-      "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64"
+      "Automating Cursor execution",
+      "CLI orchestrator / PO console / onboarding",
+      "Full JSON schemas for all role outputs",
+      "CI integration",
+      "Scribe product behavior changes",
+      "Removing specialized skills",
+      "Auto-commit without human approval",
+      "Accepting unresolved High/Medium as debt"
     ]
   },
-  "phase": "shipped",
+  "phase": "commit-ready",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "done",
+    "retrospective": "pending",
     "commit_allowed": true,
-    "committed": true
+    "committed": false
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
     "product_followups_register": ".ai/state/product-followups.md",
     "iteration_directory": "docs/iterations",
-    "latest_review": "loop 1: 0 High, 0 Medium, 1 Low; R1 fixed (Low-only, no re-review)",
-    "latest_triage": "review gate clean; route to supervisor-qa",
-    "latest_qa": "passed 2026-07-27 by human Product Owner; no new follow-ups",
-    "latest_commit_prep": "commit cdf98ed created 2026-07-27",
-    "latest_retrospective": "completed 2026-07-27; next planning → product-analyst (editable results vs P-002 vs PP-002; park PP-002)",
-    "commit": "cdf98edd2b586f4d099e3125dfb19f4949deea50",
-    "previous_iteration": "2026-07-27-product-followups-register",
-    "latest_implementation_prompt": "chat — feature-manager 2026-07-27",
-    "latest_implementation_summary": "chat — Cursor implement 2026-07-27"
+    "latest_review": "loop 2 (re-review): 0 High, 0 Medium, 0 Low — R1–R4 verified fixed",
+    "latest_triage": "loop 2 clean; review gate clean; route to supervisor-qa",
+    "latest_auto_fix": "applied 2026-07-27 — R1 commit-manager, R2 SUPERVISOR, R3 supervisor-qa, R4 product-facing no silent defer",
+    "human_involvement_reason": "PO clarified: product-facing Low cannot be silently deferred under auto-debt policy",
+    "latest_qa": "passed with follow-ups 2026-07-27; process P-004–P-009 in debt.md; R4 already covered harden-boundaries item",
+    "latest_commit_prep": "prepared 2026-07-27; awaiting explicit human commit approval",
+    "latest_retrospective": null,
+    "commit": null,
+    "previous_iteration": "2026-07-27-summary-language-ux",
+    "latest_implementation_prompt": "chat — Pipeline Operator UX And Auto-Fix Policy task 2026-07-27",
+    "latest_implementation_summary": "docs/iterations/2026-07-27-pipeline-operator-ux.md — Implementation Summary"
   },
   "metrics": {
-    "review_loops": 1,
-    "human_decisions": 5,
+    "review_loops": 2,
+    "human_decisions": 3,
     "high_findings": 0,
-    "medium_findings": 0,
+    "medium_findings": 3,
     "low_findings": 1,
     "qa_outcome": "passed",
-    "outcome": "shipped"
+    "outcome": null
   },
   "last_updated": "2026-07-27"
 }

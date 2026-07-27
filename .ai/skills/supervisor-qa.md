@@ -45,7 +45,7 @@ When docs conflict on expected behavior, stop and ask the human.
 
 - Implementation summary exists
 - Review gate clean (no unresolved High/Medium)
-- Lows fixed or explicitly accepted
+- Lows fixed or accepted/deferred under review-triage auto-fix policy (reasons recorded in ledger/debt); product-facing Lows must not have been silently deferred
 - Approved slice exists
 - Active ledger and current-cycle state exist
 - `scripts/ai-cycle-validate.sh` passes for the current state
