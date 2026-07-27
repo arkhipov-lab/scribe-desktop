@@ -26,6 +26,7 @@ Authoritative smoke matrix: [TESTING.md](../../TESTING.md). Privacy rules: [SECU
 | Local history | [local-history.md](./local-history.md) |
 | Export notes | [export-notes.md](./export-notes.md) |
 | Editable transcript | [editable-transcript.md](./editable-transcript.md) |
+| Partial copy | [partial-copy.md](./partial-copy.md) |
 | Unsupported file | [unsupported-file.md](./unsupported-file.md) |
 | First-run model download | [first-run-model-download.md](./first-run-model-download.md) |
 | Offline after cache | [offline-after-cache.md](./offline-after-cache.md) |

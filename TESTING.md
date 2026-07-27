@@ -45,6 +45,7 @@ Run:
 5. **Cancel** mid-run returns to a sane idle/ready state.
 6. Confirm the log contains path/status lines but **not** the transcript body.
 7. Edit the transcript as plain text; confirm edits survive a short wait and appear in Copy/Export; regenerating summary uses the edited text. Transcribe again fully replaces the transcript. See [docs/scenarios/editable-transcript.md](docs/scenarios/editable-transcript.md).
+8. Open the **Copy** menu: Copy transcript / Copy summary / Copy action items work for available content and are disabled when missing; copy works from either results tab. See [docs/scenarios/partial-copy.md](docs/scenarios/partial-copy.md).
 
 ### D. Summary
 
@@ -56,6 +57,7 @@ Run:
 6. Cancel summary does not corrupt the existing transcript.
 7. Log must not contain summary text or additional-instructions body.
 8. After editing the transcript, summary does not auto-restart; manual Generate/Regenerate overwrites the summary from the current transcript.
+9. Open the **Copy** menu: **Copy summary** copies the full notes; **Copy action items** is enabled only when a non-empty Action items section exists (disabled when the heading is missing or empty). See [docs/scenarios/partial-copy.md](docs/scenarios/partial-copy.md).
 
 ### E. Recording
 

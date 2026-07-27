@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type DragEvent } from "react";
+import { useEffect, useId, useRef, useState, type DragEvent } from "react";
 import {
   formatElapsed,
   getApi,
   getDefaultState,
   resetApi,
 } from "./api";
+import { extractActionItems } from "./actionItems";
 import { LOCALE_OPTIONS, getLocale, t, useI18n } from "./i18n";
 import LanguageSelect from "./LanguageSelect";
 import MarkdownBody from "./MarkdownBody";
@@ -268,8 +269,10 @@ export default function App() {
   const [bridgeError, setBridgeError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copyMenuOpen, setCopyMenuOpen] = useState(false);
   const [exported, setExported] = useState(false);
   const [resultTab, setResultTab] = useState<ResultTab>("transcript");
+  const copyMenuId = useId();
   const [presetsRaw, setPresetsRaw] = useState<SummaryPresetOption[]>(() =>
     fallbackPresets(),
   );
@@ -288,6 +291,7 @@ export default function App() {
   const [sessions, setSessions] = useState<HistorySession[]>([]);
   const [playback, setPlayback] = useState<PlaybackState>("idle");
   const copyTimer = useRef<number | null>(null);
+  const copyMenuRef = useRef<HTMLDivElement | null>(null);
   const exportTimer = useRef<number | null>(null);
   const instructionsTimer = useRef<number | null>(null);
   const transcriptPersistTimer = useRef<number | null>(null);
@@ -521,6 +525,27 @@ export default function App() {
     };
   }, [state.session_id, state.session_title, state.summary_status, state.status]);
 
+  useEffect(() => {
+    if (!copyMenuOpen) return;
+
+    function onPointerDown(event: MouseEvent) {
+      if (!copyMenuRef.current?.contains(event.target as Node)) {
+        setCopyMenuOpen(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setCopyMenuOpen(false);
+    }
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [copyMenuOpen]);
+
   async function withApi(
     action: (api: Awaited<ReturnType<typeof getApi>>) => Promise<AppState>,
   ) {
@@ -564,10 +589,14 @@ export default function App() {
     Boolean(state.session_id) ||
     Boolean(state.transcript?.trim()) ||
     hasTranscript;
-  const activeText =
-    resultTab === "summary" ? state.summary : displayTranscript;
-  const canCopy = Boolean(activeText);
-  const canExport = Boolean(displayTranscript?.trim() || state.summary?.trim());
+  const summaryText = state.summary || "";
+  const actionItemsText = extractActionItems(summaryText);
+  const canCopyTranscript = Boolean(displayTranscript?.trim());
+  const canCopySummary = Boolean(summaryText.trim());
+  const canCopyActionItems = Boolean(actionItemsText);
+  const canOpenCopyMenu =
+    canCopyTranscript || canCopySummary || canCopyActionItems;
+  const canExport = Boolean(displayTranscript?.trim() || summaryText.trim());
   const summaryLength = (state.summary_length || "normal") as SummaryLength;
   const showRegenHint = summaryStale && Boolean(state.summary?.trim());
 
@@ -927,14 +956,10 @@ export default function App() {
     }, 450);
   }
 
-  async function onCopy() {
-    const text = activeText;
+  async function copyText(text: string) {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      if (copyTimer.current) window.clearTimeout(copyTimer.current);
-      copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
     } catch {
       // Fallback for environments without clipboard permissions
       const area = document.createElement("textarea");
@@ -945,10 +970,30 @@ export default function App() {
       area.select();
       document.execCommand("copy");
       document.body.removeChild(area);
-      setCopied(true);
-      if (copyTimer.current) window.clearTimeout(copyTimer.current);
-      copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
     }
+    setCopied(true);
+    setCopyMenuOpen(false);
+    if (copyTimer.current) window.clearTimeout(copyTimer.current);
+    copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function onCopyTarget(
+    target: "transcript" | "summary" | "action_items",
+  ) {
+    if (target === "transcript") {
+      const text = displayTranscript?.trim();
+      if (!text) return;
+      await copyText(text);
+      return;
+    }
+    if (target === "summary") {
+      const text = summaryText.trim();
+      if (!text) return;
+      await copyText(text);
+      return;
+    }
+    if (!actionItemsText) return;
+    await copyText(actionItemsText);
   }
 
   function onDragOver(e: DragEvent) {
@@ -1544,16 +1589,68 @@ export default function App() {
               >
                 {exported ? <IconCheck /> : <IconExport />}
               </button>
-              <button
-                type="button"
-                className="btn secondary icon-btn"
-                onClick={() => void onCopy()}
-                disabled={!canCopy}
-                title={copied ? t("common.copied") : t("common.copy")}
-                aria-label={copied ? t("common.copied") : t("common.copy")}
-              >
-                {copied ? <IconCheck /> : <IconCopy />}
-              </button>
+              <div className="copy-menu" ref={copyMenuRef}>
+                <button
+                  type="button"
+                  className="btn secondary icon-btn"
+                  onClick={() => setCopyMenuOpen((open) => !open)}
+                  disabled={!canOpenCopyMenu}
+                  aria-haspopup="menu"
+                  aria-expanded={copyMenuOpen}
+                  aria-controls={copyMenuOpen ? copyMenuId : undefined}
+                  title={copied ? t("common.copied") : t("common.copy")}
+                  aria-label={copied ? t("common.copied") : t("result.copyMenu")}
+                >
+                  {copied ? <IconCheck /> : <IconCopy />}
+                </button>
+                {copyMenuOpen && (
+                  <ul
+                    id={copyMenuId}
+                    className="copy-menu-list"
+                    role="menu"
+                    aria-label={t("result.copyMenu")}
+                  >
+                    <li role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="copy-menu-option"
+                        disabled={!canCopyTranscript}
+                        onClick={() => void onCopyTarget("transcript")}
+                      >
+                        {t("result.copyTranscript")}
+                      </button>
+                    </li>
+                    <li role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="copy-menu-option"
+                        disabled={!canCopySummary}
+                        onClick={() => void onCopyTarget("summary")}
+                      >
+                        {t("result.copySummary")}
+                      </button>
+                    </li>
+                    <li role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="copy-menu-option"
+                        disabled={!canCopyActionItems}
+                        title={
+                          canCopyActionItems
+                            ? undefined
+                            : t("result.copyActionItemsUnavailable")
+                        }
+                        onClick={() => void onCopyTarget("action_items")}
+                      >
+                        {t("result.copyActionItems")}
+                      </button>
+                    </li>
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
 

@@ -37,7 +37,7 @@ Captured as product follow-ups `PP-2026-07-27-001` / `PP-2026-07-27-002` in [`.a
 - [x] Edit transcript in-app as plain text before copy/export (summary editing deferred — see `PP-2026-07-27-003`)
 - [x] Export `.md` and `.txt` (PDF optional later)  
 - [ ] `.srt` / `.vtt` once timestamps exist  
-- [ ] Partial copy actions: Copy transcript / Copy summary / Copy action items  
+- [x] Partial copy actions: Copy transcript / Copy summary / Copy action items  
 - [ ] Dedicated Action items view — parse the markdown section into a task list  
 - [ ] Edit summary in-app without a full Markdown document editor (`PP-2026-07-27-003`)
 

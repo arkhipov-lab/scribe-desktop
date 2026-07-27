@@ -1,28 +1,28 @@
 {
   "schema_version": 1,
-  "iteration_id": "2026-07-28-review-findings-reconciliation",
+  "iteration_id": "2026-07-28-partial-copy",
   "findings": [
     {
       "id": "R1",
       "review_loop": 1,
       "severity": "Medium",
       "status": "fixed",
-      "summary": "debt_id_exists accepts Planned Process Work IDs as accepted_debt targets",
-      "location": "scripts/ai-cycle-validate.sh:472-491",
+      "summary": "Heading-less summary fallback treats entire body as action items, violating scenario",
+      "location": "frontend/src/actionItems.ts:61-69",
       "owner": "implementation-agent",
-      "resolution": "Restricted debt_id_exists to Open Debt / Closed Debt sections only",
+      "resolution": "Removed heading-less full-body fallback; Action items require a known heading",
       "debt_id": null,
       "product_followup_id": null
     },
     {
       "id": "R2",
       "review_loop": 1,
-      "severity": "Medium",
+      "severity": "Low",
       "status": "fixed",
-      "summary": ".ai/org/workflows.md Durable State omits required review-findings.json",
-      "location": ".ai/org/workflows.md:28-33",
+      "summary": "Partial-copy smoke only under TESTING § C; missing § D summary coverage",
+      "location": "TESTING.md:48",
       "owner": "implementation-agent",
-      "resolution": "Added review-findings.json to Durable State and validator blurb",
+      "resolution": "Added TESTING § D step 9 for Copy summary / Copy action items",
       "debt_id": null,
       "product_followup_id": null
     },
@@ -31,22 +31,10 @@
       "review_loop": 1,
       "severity": "Low",
       "status": "fixed",
-      "summary": "metrics.md does not name review-findings.json as primary finding source",
-      "location": ".ai/org/metrics.md:13-15",
+      "summary": "Interactive run-dev copy smoke not executed by implementer",
+      "location": "docs/iterations/2026-07-28-partial-copy.md:79",
       "owner": "implementation-agent",
-      "resolution": "High/Medium/Low metrics cite review-findings.json as primary source",
-      "debt_id": null,
-      "product_followup_id": null
-    },
-    {
-      "id": "R4",
-      "review_loop": 1,
-      "severity": "Low",
-      "status": "fixed",
-      "summary": "location allows empty string instead of null or non-empty path",
-      "location": ".ai/org/schemas/review-findings.schema.json:67-69",
-      "owner": "implementation-agent",
-      "resolution": "Added minLength:1 on location string + shell empty-string reject",
+      "resolution": "extractActionItems edge cases verified via tsx; interactive clipboard/menu smoke deferred to supervisor QA",
       "debt_id": null,
       "product_followup_id": null
     }

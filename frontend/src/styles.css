@@ -1112,6 +1112,51 @@ h1.page-title {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
+}
+
+.copy-menu {
+  position: relative;
+}
+
+.copy-menu-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 188px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  box-shadow: var(--menu-shadow);
+}
+
+.copy-menu-option {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.copy-menu-option:hover:not(:disabled),
+.copy-menu-option:focus-visible {
+  background: var(--accent-soft-mid);
+  outline: none;
+}
+
+.copy-menu-option:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .transcript,
