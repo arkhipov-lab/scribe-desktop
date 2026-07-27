@@ -1,8 +1,8 @@
 # Iteration: Pipeline Operator UX And Auto-Fix Policy
 
-**Status:** retrospective
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
+**Date completed:** 2026-07-27
 **Commit:** `d339880aaacf680bfc484d9390ea4c8a4a9678a4`
 
 ## Approved Scope
@@ -46,7 +46,7 @@
 | Triage / auto-fix | review-triage | loop 1 auto-fix R1–R4; loop 2 clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human **passed with follow-ups** 2026-07-27 (P-004–P-009) | done |
 | Commit prep | commit-manager | commit `d339880` created 2026-07-27 | done |
-| Retrospective | iteration-retrospective | pending — `Use iteration-retrospective.` | pending |
+| Retrospective | iteration-retrospective | completed 2026-07-27; next planning → product-analyst (P-005 validate + product candidates; consider P-004) | done |
 
 ## Implementation Phase
 
@@ -277,16 +277,48 @@ Planned process work from Supervisor QA (see `.ai/state/debt.md`):
 
 ## Metrics
 
-| Metric | Value | Source |
-| --- | --- | --- |
-| Review loops | 2 | observed |
-| High findings | 0 | observed |
-| Medium findings | 3 | observed (R1, R2, R4; all fixed) |
-| Low findings | 1 | observed (R3; fixed) |
-| Human decisions | 4 | observed (scope + auto-defer delineation + QA pass + commit approval) |
-| QA outcome | passed | observed (with process follow-ups P-004–P-009) |
-| Outcome | committed; retrospective pending | observed |
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | same calendar day (2026-07-27) | estimated | `date_started` = `date_completed`; wall-clock span not instrumented |
+| Agent turns | ~14 across implement/review/triage/fix/re-review/triage/QA/commit/retrospective | estimated | Skill invocations in this chat cycle; exact turn counter unavailable |
+| Approx token use | unavailable | estimated | No token meter in this session |
+| Review loops | 2 | observed | Loop 1 findings + auto-fix; loop 2 re-review clean |
+| High findings | 0 | observed | Review findings table |
+| Medium findings | 3 | observed | R1, R2, R4; all fixed before QA |
+| Low findings | 1 | observed | R3; fixed in same auto-fix pass |
+| Human decisions | 4 | observed | Scope/task approval; product-facing no-silent-defer delineation; QA pass with follow-ups; commit |
+| QA outcome | passed | observed | Supervisor QA human decision 2026-07-27 (with process follow-ups) |
+| Outcome | shipped | observed | Commit `d339880` (+ hash record `15cfee3`) + retrospective complete |
 
 ## Retrospective
 
-Pending after ship.
+**What worked:**
+- Process slice delivered the operator-UX goal: sole post-approval entrypoint, implementation-before-review states, auto-fix policy, recommendation-first product-analyst contract.
+- Auto-fix worked as intended on loop 1: R1–R3 did not require asking whether to fix; human involvement was limited to a real policy delineation (R4 / product-facing never silent-defer).
+- Loop 2 re-review was clean (0/0/0); no endless Low polish.
+- Pass-with-follow-ups correctly routed process items to Planned Process Work (P-004–P-009), not product-followups / not review debt.
+- Scribe product behavior stayed untouched; validators stayed green through QA and retrospective gates.
+
+**What caused rework:**
+- First implement pass updated core policy skills/pipeline but left **incomplete policy consumers**: commit-manager and SUPERVISOR still implied human decides every Low (R1–R2 Medium), supervisor-qa wording lagged (R3 Low).
+- That gap is especially costly here because it would have reintroduced the exact PO friction the slice aimed to remove.
+- R4 (hard rule clarity) came from PO judgment during triage — valuable, but shows “minor/style-only auto-defer” needed an explicit product-facing backstop.
+
+**Human routine effort:**
+- Decisions stayed product/process authority checkpoints (scope, policy boundary, QA, commit) — not “should we fix this doc Low?”
+- Compared with recent slices that still asked the human to approve AI-fix of routine Lows (`2026-07-27-product-followups-register`, `2026-07-27-summary-language-ux`), this cycle is early evidence that auto-fix reduces review-loop interruptions (baseline for P-006; need more cycles to confirm).
+
+**Repeated failure patterns:**
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Incomplete consumers of a new process gate on first pass | This iteration R1–R3 (commit-manager / SUPERVISOR / supervisor-qa); prior product-followups R1–R5 incomplete consumers | yes | docs/skill: when changing review/Low/commit gates, use a **policy-consumer checklist** (feature-manager, review-triage, commit-manager, SUPERVISOR, supervisor-qa, skills README) in the same implement pass |
+| Asking human about routine Lows | Not observed this cycle for R1–R3 (auto-fix) | no (improved vs recent slices) | none; keep auto-fix; continue measuring via P-006 |
+| Product-facing ambiguity deferred as style debt | Risk named by PO; hard rule added as R4 before silent defer could happen | prevented this cycle | keep hard rule; when in doubt ask PO |
+
+**Process change recommended:**
+1. Add a **policy-consumer checklist** to feature-manager / implement prompts whenever review-triage, Low, or commit gates change — update all consumers in one pass to avoid Medium rework like R1–R2.
+2. No second new ceremony. Prefer already-planned work: validate product-analyst output on next real cycle (P-005); consider implementation-runner skill (P-004) / implementation-phase validator checks (P-009) when choosing the next process slice. Do not start full automation (P-007) yet.
+
+**Next planning input:**
+Use `product-analyst` (then roadmap-planner). Compare: next Scribe product candidate (e.g. editable results vs parked `PP-2026-07-27-002`) against process follow-ups P-004 / P-005 / P-009. Prefer a product slice if user-facing value is clearer; otherwise a small process slice that either validates recommendation-first analyst output (P-005) or adds the implementation-runner handoff (P-004). Keep measuring human review-fix involvement (P-006) in the next retrospective.
