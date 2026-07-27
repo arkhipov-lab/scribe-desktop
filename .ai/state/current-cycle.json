@@ -4,9 +4,9 @@
     "id": "2026-07-27-reusable-layer",
     "name": "Reusable Layer",
     "ledger_path": "docs/iterations/2026-07-27-reusable-layer.md",
-    "status": "commit-ready",
+    "status": "shipped",
     "date_started": "2026-07-27",
-    "date_completed": null
+    "date_completed": "2026-07-27"
   },
   "approved_scope": {
     "source": "explicit user request in chat",
@@ -26,16 +26,16 @@
       "Product-facing Scribe behavior changes."
     ]
   },
-  "phase": "commit-ready",
+  "phase": "shipped",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "pending",
+    "retrospective": "done",
     "commit_allowed": true,
-    "committed": false
+    "committed": true
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -43,19 +43,19 @@
     "latest_review": "loop 2: 0 High, 0 Medium, 0 Low; R1–R4 verified fixed",
     "latest_triage": "review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-27 by human Product Owner",
-    "latest_commit_prep": "prepared 2026-07-27; awaiting explicit commit approval",
-    "latest_retrospective": null,
-    "commit": null,
+    "latest_commit_prep": "commit 5275295 created 2026-07-27",
+    "latest_retrospective": "completed 2026-07-27; next planning → product-analyst (ROADMAP vs P-002; keep P-003 parked)",
+    "commit": "5275295979c37bd23893f911cb9590c0d8945a86",
     "previous_iteration": "2026-07-27-backlog-intelligence"
   },
   "metrics": {
     "review_loops": 2,
-    "human_decisions": 3,
+    "human_decisions": 4,
     "high_findings": 0,
-    "medium_findings": 0,
-    "low_findings": 0,
+    "medium_findings": 1,
+    "low_findings": 3,
     "qa_outcome": "passed",
-    "outcome": null
+    "outcome": "shipped"
   },
   "last_updated": "2026-07-27"
 }

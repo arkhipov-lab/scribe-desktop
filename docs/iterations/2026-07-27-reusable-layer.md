@@ -1,9 +1,9 @@
 # Iteration: Reusable Layer
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `5275295979c37bd23893f911cb9590c0d8945a86`
 
 ## Approved Scope
 
@@ -38,8 +38,8 @@
 | Review | Codex independent review | loop 1 findings; loop 2 clean | done |
 | Triage | review-triage | loop 2: review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | passed 2026-07-27 by human Product Owner | done |
-| Commit prep | commit-manager | commit prep ready; awaiting human approval | pending |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `5275295` created 2026-07-27 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-27 | done |
 
 ## Implementation Summary
 
@@ -225,25 +225,40 @@ Separate observed facts from estimates.
 
 | Metric | Value | Source type | Evidence |
 | --- | --- | --- | --- |
-| Elapsed time | pending | observed | Ledger timestamps pending completion |
-| Agent turns | pending | observed | Conversation turns pending completion |
-| Approx token use | pending | estimated | Estimate unavailable during implementation |
-| Review loops | 2 | observed | Loop 1 fix + loop 2 clean re-review |
-| High findings | 0 | observed | Loop 2 open count (loop 1 had R1 Medium, fixed) |
-| Medium findings | 0 | observed | Loop 2 open count |
-| Low findings | 0 | observed | Loop 2 open count (R2–R4 fixed) |
-| Human decisions | 3 | observed | Implementation request + triage calibration note + QA pass |
+| Elapsed time | same calendar day (2026-07-27) | estimated | `date_started` = `date_completed`; wall-clock span not instrumented |
+| Agent turns | ~12 across implement/review/fix/QA/commit/retrospective | estimated | Skill invocations in this chat cycle; exact turn counter unavailable |
+| Approx token use | unavailable | estimated | No token meter in this session |
+| Review loops | 2 | observed | Loop 1 Medium+Lows → fix; loop 2 clean |
+| High findings | 0 | observed | Review findings table |
+| Medium findings | 1 | observed | R1 in loop 1; fixed before ship |
+| Low findings | 3 | observed | R2–R4; fixed before ship |
+| Human decisions | 4 | observed | Implementation request; triage calibration; QA pass; commit approval |
 | QA outcome | passed | observed | Supervisor QA human decision 2026-07-27 |
-| Outcome | pending | observed | Iteration not complete (awaiting commit) |
+| Outcome | shipped | observed | Commit `5275295` + retrospective complete |
 
 ## Retrospective
 
-**What worked:** pending
+**What worked:**
+- Explicit `.ai/org` / `.ai/product` / `.ai/repo` split landed without moving canonical Scribe docs (correct scope choice; low link churn).
+- Human triage calibration correctly named the real drawback (org workflows hardcoding scripts) and treated key-skill layer coverage as already sufficient, so R2 stayed Low polish.
+- Fix-then-re-review discipline held: no premature re-review while Mediums were open (unlike the prior backlog-intelligence cycle).
+- Cheap Lows bundled with the Medium in one AI fix pass; loop 2 was clean; process-only QA + validators were enough.
 
-**What caused rework:** pending
+**What caused rework:**
+- First implementation leaked repo command paths into the reusable org workflow (`scripts/ai-cycle-*.sh` in `.ai/org/workflows.md`) — the core portability boundary of the slice (R1).
+- Residual orchestration skills and honesty gaps (flat vs nested P3 note, `gates.retrospective` in schemas) lagged the initial adapter pass (R2–R4).
 
-**Repeated failure patterns:** pending
+**Repeated failure patterns:**
 
-**Process change recommended:** pending
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| New process structure incomplete across all consumers on first pass | This iteration R2–R4 (skills/roadmap/schema lag); prior `2026-07-27-backlog-intelligence` R1–R5 (pipeline/orchestrator lag); `2026-07-27-retrospective-metrics` overview drift | yes | docs/skill: when adding a process layer or pipeline step, update adapters + all skill context tables + indexes + roadmap status honesty in the same implement pass before review |
+| Reusable layer embeds repo-specific commands | This iteration R1 (org workflows named `scripts/ai-cycle-*.sh`) | unknown (first clear case) | docs: org content must point at `.ai/repo/` adapters for commands/paths; implementer verification greps org for `scripts/` before review |
+| Premature re-review before fix applied | Prior backlog-intelligence cycle; not observed here (`triage_status=fix_applied` before loop 2) | no (improved) | none; keep fix-applied gate before re-review |
 
-**Next planning input:** pending
+**Process change recommended:**
+1. Treat “new `.ai` layer / adapter” as a checklist: org files contain no hardcoded repo commands; product/repo adapters link to canonical docs; skills README + workflows README + Automatic Context Loading in all relevant skills updated together; roadmap/debt status states intentional shape vs deferred extraction.
+2. No second process change recommended this iteration (P-003 already records full package extraction as planned work).
+
+**Next planning input:**
+Use `product-analyst` (then roadmap-planner) to choose among: product ROADMAP work for Scribe-facing value; planned process item `P-2026-07-26-002` (structured role output schemas); or leave `P-2026-07-27-003` (full package extraction) parked until a real second-repo consumer appears.
