@@ -1,9 +1,9 @@
 # Iteration: Pipeline Operator UX And Auto-Fix Policy
 
-**Status:** commit-ready
+**Status:** retrospective
 **Date started:** 2026-07-27
 **Date completed:** pending
-**Commit:** pending
+**Commit:** `d339880aaacf680bfc484d9390ea4c8a4a9678a4`
 
 ## Approved Scope
 
@@ -45,8 +45,8 @@
 | Review ready → Review | Codex | loop 1: 0H/3M/1L; loop 2 re-review: 0H/0M/0L (R1–R4 verified) | done |
 | Triage / auto-fix | review-triage | loop 1 auto-fix R1–R4; loop 2 clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human **passed with follow-ups** 2026-07-27 (P-004–P-009) | done |
-| Commit prep | commit-manager | commit prep 2026-07-27; awaiting human approval | in progress |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `d339880` created 2026-07-27 | done |
+| Retrospective | iteration-retrospective | pending — `Use iteration-retrospective.` | pending |
 
 ## Implementation Phase
 
@@ -283,9 +283,9 @@ Planned process work from Supervisor QA (see `.ai/state/debt.md`):
 | High findings | 0 | observed |
 | Medium findings | 3 | observed (R1, R2, R4; all fixed) |
 | Low findings | 1 | observed (R3; fixed) |
-| Human decisions | 3 | observed (scope approval + auto-defer delineation + QA pass with follow-ups) |
+| Human decisions | 4 | observed (scope + auto-defer delineation + QA pass + commit approval) |
 | QA outcome | passed | observed (with process follow-ups P-004–P-009) |
-| Outcome | in progress | observed |
+| Outcome | committed; retrospective pending | observed |
 
 ## Retrospective
 

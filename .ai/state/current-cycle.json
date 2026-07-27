@@ -4,7 +4,7 @@
     "id": "2026-07-27-pipeline-operator-ux",
     "name": "Pipeline Operator UX And Auto-Fix Policy",
     "ledger_path": "docs/iterations/2026-07-27-pipeline-operator-ux.md",
-    "status": "commit-ready",
+    "status": "retrospective",
     "date_started": "2026-07-27",
     "date_completed": null
   },
@@ -33,7 +33,7 @@
       "Accepting unresolved High/Medium as debt"
     ]
   },
-  "phase": "commit-ready",
+  "phase": "retrospective",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
@@ -42,7 +42,7 @@
     "supervisor_qa": "passed",
     "retrospective": "pending",
     "commit_allowed": true,
-    "committed": false
+    "committed": true
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -53,16 +53,16 @@
     "latest_auto_fix": "applied 2026-07-27 — R1 commit-manager, R2 SUPERVISOR, R3 supervisor-qa, R4 product-facing no silent defer",
     "human_involvement_reason": "PO clarified: product-facing Low cannot be silently deferred under auto-debt policy",
     "latest_qa": "passed with follow-ups 2026-07-27; process P-004–P-009 in debt.md; R4 already covered harden-boundaries item",
-    "latest_commit_prep": "prepared 2026-07-27; awaiting explicit human commit approval",
+    "latest_commit_prep": "commit d339880 created 2026-07-27",
     "latest_retrospective": null,
-    "commit": null,
+    "commit": "d339880aaacf680bfc484d9390ea4c8a4a9678a4",
     "previous_iteration": "2026-07-27-summary-language-ux",
     "latest_implementation_prompt": "chat — Pipeline Operator UX And Auto-Fix Policy task 2026-07-27",
     "latest_implementation_summary": "docs/iterations/2026-07-27-pipeline-operator-ux.md — Implementation Summary"
   },
   "metrics": {
     "review_loops": 2,
-    "human_decisions": 3,
+    "human_decisions": 4,
     "high_findings": 0,
     "medium_findings": 3,
     "low_findings": 1,
