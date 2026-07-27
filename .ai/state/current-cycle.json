@@ -4,9 +4,9 @@
     "id": "2026-07-27-summary-language-ux",
     "name": "Summary Language Default And Processing Options Placement",
     "ledger_path": "docs/iterations/2026-07-27-summary-language-ux.md",
-    "status": "commit-ready",
+    "status": "shipped",
     "date_started": "2026-07-27",
-    "date_completed": null
+    "date_completed": "2026-07-27"
   },
   "approved_scope": {
     "source": "chat — Product Owner approved roadmap Option A after product-analyst + roadmap-planner",
@@ -30,16 +30,16 @@
       "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64"
     ]
   },
-  "phase": "commit-ready",
+  "phase": "shipped",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "not_started",
+    "retrospective": "done",
     "commit_allowed": true,
-    "committed": false
+    "committed": true
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -48,21 +48,21 @@
     "latest_review": "loop 1: 0 High, 0 Medium, 1 Low; R1 fixed (Low-only, no re-review)",
     "latest_triage": "review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-27 by human Product Owner; no new follow-ups",
-    "latest_commit_prep": "prepared 2026-07-27; await human commit approval; PP-001 closed in follow-ups",
-    "latest_retrospective": null,
-    "commit": null,
+    "latest_commit_prep": "commit cdf98ed created 2026-07-27",
+    "latest_retrospective": "completed 2026-07-27; next planning → product-analyst (editable results vs P-002 vs PP-002; park PP-002)",
+    "commit": "cdf98edd2b586f4d099e3125dfb19f4949deea50",
     "previous_iteration": "2026-07-27-product-followups-register",
     "latest_implementation_prompt": "chat — feature-manager 2026-07-27",
     "latest_implementation_summary": "chat — Cursor implement 2026-07-27"
   },
   "metrics": {
     "review_loops": 1,
-    "human_decisions": 4,
+    "human_decisions": 5,
     "high_findings": 0,
     "medium_findings": 0,
     "low_findings": 1,
     "qa_outcome": "passed",
-    "outcome": "commit-ready"
+    "outcome": "shipped"
   },
   "last_updated": "2026-07-27"
 }

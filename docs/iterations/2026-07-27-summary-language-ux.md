@@ -1,9 +1,9 @@
 # Iteration: Summary Language Default And Processing Options Placement
 
-**Status:** commit-ready
+**Status:** shipped
 **Date started:** 2026-07-27
-**Date completed:** pending
-**Commit:** pending
+**Date completed:** 2026-07-27
+**Commit:** `cdf98edd2b586f4d099e3125dfb19f4949deea50`
 
 ## Approved Scope
 
@@ -43,8 +43,8 @@
 | Review | Codex | loop 1: 0 High, 0 Medium, 1 Low (R1) | done |
 | Triage | review-triage | Low-only; human AI-fix R1; gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human passed 2026-07-27 | done |
-| Commit prep | commit-manager | commit prep 2026-07-27; await human approval | pending |
-| Retrospective | iteration-retrospective | pending | pending |
+| Commit prep | commit-manager | commit `cdf98ed` created 2026-07-27 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-27; next planning → product-analyst (editable results vs P-002 vs PP-002) | done |
 
 ## Implementation Summary
 
@@ -233,28 +233,42 @@ Local capture for this iteration. Curated source of truth: `.ai/state/product-fo
 
 | Metric | Value | Source type | Evidence |
 | --- | --- | --- | --- |
-| Elapsed time | in progress | estimated | `date_started` 2026-07-27; not completed |
-| Agent turns | pending | estimated | |
+| Elapsed time | same calendar day (2026-07-27) | estimated | `date_started` = `date_completed`; wall-clock span not instrumented |
+| Agent turns | ~12 across analysis/plan/implement/review/triage/fix/QA/commit/retrospective | estimated | Skill invocations in this chat cycle; exact turn counter unavailable |
 | Approx token use | unavailable | estimated | No token meter in this session |
-| Review loops | 1 | observed | Loop 1: 0 High/Medium, 1 Low |
+| Review loops | 1 | observed | Loop 1: 0 High/Medium, 1 Low; Low-only AI fix; no full re-review |
 | High findings | 0 | observed | Review findings table |
 | Medium findings | 0 | observed | Review findings table |
 | Low findings | 1 | observed | R1 README; fixed before QA |
-| Human decisions | 4 | observed | Feed analyst→planner; approve Option A; AI-fix R1; QA pass |
+| Human decisions | 5 | observed | Feed analyst→planner; approve Option A; AI-fix R1; QA pass; commit |
 | QA outcome | passed | observed | Supervisor QA human decision 2026-07-27 |
-| Outcome | commit-ready | observed | QA passed; awaiting commit |
+| Outcome | shipped | observed | Commit `cdf98ed` + retrospective complete |
 
 ## Retrospective
 
 **What worked:**
+- Full product loop held: product-analyst → roadmap-planner → implement → review → triage → QA → commit → retrospective.
+- Engineering review stayed clean of High/Medium (1 loop); Low-only polish avoided a wasteful full re-review.
+- Scope discipline held: PP-002 parked; no editable-results / process-schema creep.
+- Prior product-surface checklist mostly held this pass (scenario + PRODUCT + TESTING + LOCAL_DATA + ROADMAP + AI_PIPELINE updated together).
+- `PP-001` converted/closed in product-followups on commit prep; wishes stayed out of debt.
+- Human Supervisor QA covered interactive placement + mixed-language path the implementer correctly deferred.
 
 **What caused rework:**
+- First implement pass left `README.md` Usage still describing two primary language controls (R1 Low), even though PRODUCT/TESTING/scenario were updated.
+- No Medium/High engineering rework; residual was incomplete user-facing doc surface lag (README), not code.
 
 **Repeated failure patterns:**
 
 | Pattern | Evidence | Repeated? | Recommended response |
 | --- | --- | --- | --- |
+| User-facing behavior docs incomplete across all surfaces on first pass | This iteration R1 (`README.md` Usage); prior separate-languages R1–R2 (PRODUCT + TESTING § A); analogous process consumer-lag pattern | yes | docs: extend the product-surface checklist to include **README Usage** (and any other user-facing how-to) whenever primary-flow controls move |
+| Premature re-review before Low fix | Not observed (Low-only, no re-review) | no (held) | none; keep Low-only path without mandatory re-review |
+| Process Mediums on first review | 0 Medium this product slice | no (improved) | none formal |
 
 **Process change recommended:**
+1. Extend the existing “update all product surfaces in one pass” checklist to explicitly include **README Usage** (and similar user-facing how-to docs) when primary-flow controls move — prior checklist named scenario/PRODUCT/TESTING but README was still missed.
+2. No second process change recommended. Do not start `P-2026-07-26-002` schemas or `P-2026-07-27-003` package extraction without a real consumer / adoption need.
 
 **Next planning input:**
+Use `product-analyst` (then roadmap-planner) to choose among: P2 editable results (high core-goal value; needs scenario); planned process `P-2026-07-26-002` (schemas — weak consumer evidence); leave `PP-2026-07-27-002` parked until language-detect feasibility is clearer.
