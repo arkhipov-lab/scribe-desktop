@@ -1,8 +1,8 @@
 # Iteration: Recording Mix Dual Path (Phase 3′)
 
-**Status:** retrospective
+**Status:** shipped
 **Date started:** 2026-07-29
-**Date completed:**
+**Date completed:** 2026-07-29
 **Commit:** `c13dd58bb1a26a457471d0b57714ab1e2d0f4c97`
 
 ## Approved Scope
@@ -49,7 +49,7 @@
 | Triage | review-triage | loop 2 clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan + human **passed with follow-ups** 2026-07-29 | done |
 | Commit prep | commit-manager | commit `c13dd58` created 2026-07-29 | done |
-| Retrospective | iteration-retrospective | — | pending |
+| Retrospective | iteration-retrospective | completed 2026-07-29; next planning → product-analyst | done |
 
 ## Commit preparation
 
@@ -174,14 +174,73 @@ Logs: `~/Library/Logs/Scribe/app.log`
 
 ## Metrics
 
-| Metric | Value |
-| --- | --- |
-| Review loops | 2 |
-| Human decisions | 3 (analyst + Option A + QA pass w/ follow-ups) |
-| High / Medium / Low findings | 0 / 1 / 2 (all fixed) |
-| QA outcome | passed_with_followups |
-| Outcome | committed (`c13dd58`) — retrospective pending |
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Review loops | 2 | observed | review-findings / ledger |
+| Human decisions | 4 | observed | analyst; Option A; QA pass w/ follow-ups; commit |
+| High / Medium / Low findings | 0 / 1 / 2 (all fixed) | observed | review-findings.json |
+| QA outcome | passed_with_followups | observed | ledger |
+| Outcome | shipped | observed | commit `c13dd58` + this retrospective |
 
 ## Retrospective
 
-_Pending._
+# Iteration Retrospective — Recording Mix Dual Path (Phase 3′)
+
+## Outcome
+
+- **Status:** shipped
+- **Commit:** `c13dd58bb1a26a457471d0b57714ab1e2d0f4c97` (process note `bb383ac`)
+- **QA:** passed with follow-ups
+
+## Metrics
+
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ~same calendar day (~00:35–01:11 after prior ship; dual-path slice same night) | estimated | commit timestamps + ledger date |
+| Agent turns | ~14 skill/step turns | estimated | implement → review → triage → fix → re-review → QA → build unblock → QA result → commit → retrospective |
+| Approx token use | not measured | estimated | no tooling report |
+| Review loops | 2 | observed | ledger / current-cycle |
+| High findings | 0 | observed | review-findings.json |
+| Medium findings | 1 | observed | R1 (volumedetect CPU) fixed |
+| Low findings | 2 | observed | R2, R3 fixed |
+| Human decisions | 4 | observed | analyst; Option A; QA; commit |
+| QA outcome | passed_with_followups | observed | ledger |
+| Outcome | shipped | observed | `c13dd58` |
+
+## Rework Analysis
+
+- **What caused rework:** Review loop 1 Medium R1 (full-file volumedetect on Stop) + two doc Lows. Mid-QA: new `output_route.py` missing from `build.sh` / `build-dist.sh` explicit copy lists → `.app` would not stay open (`ModuleNotFoundError` / `kLSNoExecutableErr`).
+- **What avoided rework:** Clear Ideal from Speex-fail QA; conservative unknown→mix; auto-fix without asking on R1–R3; pass-with-follow-ups for UI I/O wishes; mid-record speakers→BT confirmed route-at-stop behavior.
+- **Human routine effort:** Authority checkpoints + real Record matrix (4 modes) + build unblock. Similar to prior recording slices (TCC / local `.app` preferred).
+
+## Repeated Failure Analysis
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Explicit packaging file lists omit new modules | QA blocker this cycle | yes (first hard hit; same class as “forgot to wire X into dist”) | planned process work `P-2026-07-29-001`; checklist in implementation prompt |
+| Long sync Stop work on bridge thread | R1 Medium volumedetect | related to prior “don’t block bridge” | cap analysis (done); note full amix still O(duration) |
+| Auto-fix High/Medium without asking | R1–R3 | yes (desired) | none; keep policy |
+| Pass-with-follow-ups for Ideal remainder | PP-003/004 new; Ideal PPs closed | yes (desired) | none |
+
+## Process Recommendations
+
+1. When adding a new `backend/*.py` imported by the app, **always** update `scripts/build.sh` and `scripts/build-dist.sh` (or replace explicit `cp` lists with a safe copy-all). Tracked as `P-2026-07-29-001`.
+2. No second process change recommended this cycle.
+
+## Debt / Planned Work Updates
+
+- **Debt register:** no new Open Debt
+- **Planned process work:** added `P-2026-07-29-001` (backend module packaging checklist)
+- **Product follow-ups captured:** yes — closed `PP-004`/`001`/`005`/`007`; open `PP-2026-07-29-003`, `PP-2026-07-29-004`; kept `PP-006` (low), `PP-002` (AEC), UX `PP-001`–`003` (control-height)
+
+## Next Planning Input
+
+Use `product-analyst` (then roadmap-planner). Primary candidates: **show audio I/O in UI** (`PP-2026-07-29-003` + headset-mic `PP-004`); UX polish `PP-2026-07-28-001`–`003`; editable summary `PP-2026-07-27-003`. Do **not** reopen Speex AEC unless Ideal regresses. Initiative Phase 4 mix polish only if PO still hears quality gaps after dual-path.
+
+## State Updates
+
+- Ledger: retrospective completed; status shipped; metrics finalized
+- Current cycle: `phase=shipped`, `retrospective=done`, `handoff.next_role=none`, commit hash retained
+- Structured review-findings.json: metrics aligned (0/1/2 all fixed)
+- Debt register: `P-2026-07-29-001` planned
+- Product follow-ups: Ideal items closed; UI I/O open

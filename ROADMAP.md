@@ -77,7 +77,7 @@ On-disk only (no cloud):
 
 ## Audio & transcription quality
 
-- [ ] **Clean meeting mix (active initiative)** — stop doubled remote on Record (speakers bleed + amix). Phase 0+1 sync done; Speex AEC spike done (no cancel). **Ideal now:** dual-path finalize (mic-only without headphones; mic+system+level with headphones) — [docs/initiatives/recording-clean-mix.md](docs/initiatives/recording-clean-mix.md) (`PP-2026-07-28-004`, `PP-2026-07-29-001`). Do not expand here.
+- [x] **Clean meeting mix (initiative closed)** — dual-path finalize shipped (`c13dd58`, 2026-07-29): speakers → mic-only; headphones → leveled mic+system. Archive: [docs/initiatives/recording-clean-mix.md](docs/initiatives/recording-clean-mix.md). Leftover UX (show I/O devices, headset mic) is product-followups, not this initiative.
 - [ ] Local speaker diarization when feasible on Apple Silicon  
 - [ ] Timestamps / segment navigation in the transcript  
 - [ ] On-device noise-robust preprocessing options  

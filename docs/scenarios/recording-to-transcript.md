@@ -24,7 +24,7 @@ User records microphone + system audio, then transcribes the result locally.
 - Temp WAV under `~/Library/Caches/Scribe/recordings/` during/after capture.
 - Selecting/dropping/recording another file deletes the previous owned temp recording.
 - Transcript produced on-device like file ingest.
-- **Dual-path finalize:** no headphones (built-in speakers) → **mic-only** WAV; headphones / BT → **level-matched mic + system `amix`**; unknown route → mix (never mic-only). See [recording-clean-mix](../initiatives/recording-clean-mix.md) / `PP-2026-07-29-001`.
+- **Dual-path finalize:** no headphones (built-in speakers) → **mic-only** WAV; headphones / BT → **level-matched mic + system `amix`**; unknown route → mix (never mic-only). See closed initiative [recording-clean-mix](../initiatives/recording-clean-mix.md).
 
 ## Edge cases
 

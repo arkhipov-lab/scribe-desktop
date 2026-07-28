@@ -11,6 +11,8 @@ Use this folder when work needs a durable plan that:
 
 Each initiative file owns: problem, success criteria, ordered phases, what each phase cures / costs / risks breaking, and current status.
 
+**Closed initiatives** stay in this folder as archive (status **closed**); do not reopen phases without a new PO-approved campaign.
+
 **ROADMAP** may hold a one-line pointer. **Product follow-ups** may hold a discoverability row. Iteration ledgers under [docs/iterations/](../iterations/) record what each slice actually shipped.
 
 Do not implement initiative phases unless the Product Owner approves a bounded iteration scope.
