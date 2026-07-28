@@ -1,9 +1,9 @@
 # Iteration: Recording Mix Dual Path (Phase 3′)
 
-**Status:** commit-ready
+**Status:** retrospective
 **Date started:** 2026-07-29
 **Date completed:**
-**Commit:**
+**Commit:** `c13dd58bb1a26a457471d0b57714ab1e2d0f4c97`
 
 ## Approved Scope
 
@@ -48,23 +48,16 @@
 | Re-review | Codex | loop 2: 0 new; R1–R3 verified | done |
 | Triage | review-triage | loop 2 clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan + human **passed with follow-ups** 2026-07-29 | done |
-| Commit prep | commit-manager | prep ready; awaiting human approval | in progress |
+| Commit prep | commit-manager | commit `c13dd58` created 2026-07-29 | done |
 | Retrospective | iteration-retrospective | — | pending |
 
 ## Commit preparation
 
-**Suggested message:**
+**Commit created:** `c13dd58bb1a26a457471d0b57714ab1e2d0f4c97`
 
 ```
 feat(recording): dual-path finalize by speakers vs headphones
-
-Avoid digital+acoustic double on speakers with mic-only WAV; keep
-leveled mic+system amix on headphones. Bundle output_route in .app builds.
 ```
-
-**Files to stage:** all modified + untracked listed in commit-manager output (no `dist/`).
-
-**Awaiting:** explicit human approval to create the commit.
 
 ## Implementation Phase
 
@@ -187,7 +180,7 @@ Logs: `~/Library/Logs/Scribe/app.log`
 | Human decisions | 3 (analyst + Option A + QA pass w/ follow-ups) |
 | High / Medium / Low findings | 0 / 1 / 2 (all fixed) |
 | QA outcome | passed_with_followups |
-| Outcome | |
+| Outcome | committed (`c13dd58`) — retrospective pending |
 
 ## Retrospective
 

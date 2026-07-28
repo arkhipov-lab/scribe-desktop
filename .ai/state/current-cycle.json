@@ -4,7 +4,7 @@
     "id": "2026-07-29-recording-mix-dual-path",
     "name": "Recording Mix Dual Path (Phase 3′)",
     "ledger_path": "docs/iterations/2026-07-29-recording-mix-dual-path.md",
-    "status": "commit-ready",
+    "status": "retrospective",
     "date_started": "2026-07-29",
     "date_completed": null
   },
@@ -31,7 +31,7 @@
       "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64 platforms"
     ]
   },
-  "phase": "commit-ready",
+  "phase": "retrospective",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
@@ -40,7 +40,7 @@
     "supervisor_qa": "passed",
     "retrospective": "pending",
     "commit_allowed": false,
-    "committed": false
+    "committed": true
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -49,17 +49,17 @@
     "latest_review": "loop 2: 0H/0M/0L new — R1–R3 verified fixed",
     "latest_triage": "loop 2 clean; review gate clean → supervisor-qa",
     "latest_qa": "passed_with_followups 2026-07-29 — 4 modes; PP-2026-07-29-003/004",
-    "latest_commit_prep": "docs/iterations/2026-07-29-recording-mix-dual-path.md — commit prep 2026-07-29; awaiting human approval",
+    "latest_commit_prep": "commit c13dd58 created 2026-07-29",
     "latest_retrospective": null,
-    "commit": null,
+    "commit": "c13dd58bb1a26a457471d0b57714ab1e2d0f4c97",
     "previous_iteration": "2026-07-28-recording-mix-aec-spike",
     "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Recording Mix Dual Path 2026-07-29",
     "latest_implementation_summary": "docs/iterations/2026-07-29-recording-mix-dual-path.md#implementation-summary",
-    "human_involvement_reason": "Explicit commit approval required"
+    "human_involvement_reason": null
   },
   "metrics": {
     "review_loops": 2,
-    "human_decisions": 3,
+    "human_decisions": 4,
     "high_findings": 0,
     "medium_findings": 1,
     "low_findings": 2,
@@ -67,18 +67,16 @@
     "outcome": null
   },
   "handoff": {
-    "next_role": "human-product-owner",
-    "reason": "Commit preparation ready — approve to create commit",
+    "next_role": "iteration-retrospective",
+    "reason": "Commit landed; run iteration retrospective then close Ideal follow-ups as shipped",
     "required_inputs": [
-      "Suggested message in commit-manager output / ledger",
-      "Explicit human approval to commit"
+      "docs/iterations/2026-07-29-recording-mix-dual-path.md",
+      "commit c13dd58"
     ],
     "blocked_by": [],
     "latest_artifacts": [
-      "docs/iterations/2026-07-29-recording-mix-dual-path.md",
-      "backend/output_route.py",
-      "backend/recorder.py",
-      "scripts/build.sh"
+      "c13dd58bb1a26a457471d0b57714ab1e2d0f4c97",
+      "docs/iterations/2026-07-29-recording-mix-dual-path.md"
     ]
   },
   "last_updated": "2026-07-29"
