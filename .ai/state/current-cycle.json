@@ -1,82 +1,80 @@
 {
   "schema_version": 1,
   "iteration": {
-    "id": "2026-07-28-partial-copy",
-    "name": "Partial Copy Actions",
-    "ledger_path": "docs/iterations/2026-07-28-partial-copy.md",
-    "status": "shipped",
+    "id": "2026-07-28-control-height-ux",
+    "name": "Control Height + Textarea No-Resize",
+    "ledger_path": "docs/iterations/2026-07-28-control-height-ux.md",
+    "status": "commit-ready",
     "date_started": "2026-07-28",
-    "date_completed": "2026-07-28"
+    "date_completed": null
   },
   "approved_scope": {
-    "source": "chat — Product Owner approved product-analyst partial-copy recommendation, then roadmap-planner Option A",
+    "source": "chat — Product Owner approved product-analyst control-height recommendation, then roadmap-planner Option A",
     "date": "2026-07-28",
-    "goal": "Add explicit Copy transcript, Copy summary, and Copy action items actions so users can put the right content on the clipboard without depending only on the active results tab or a full export.",
+    "goal": "Unify interactive control height to the icon-button standard (42px) for buttons, selects, and segmented controls; disable user resize on product textareas without breaking internal alignment.",
     "in_scope": [
-      "Explicit copy actions for transcript, full summary, and Action items section when present",
-      "Parse Action items from summary markdown using known localized/English section headings; empty/missing → clear disabled or short feedback",
-      "i18n labels/tooltips; Copied feedback",
-      "Prefer frontend clipboard from existing state (no new backend Api unless needed)",
-      "Scenario docs/scenarios/partial-copy.md + TESTING / scenarios index",
-      "Light PRODUCT/README/ROADMAP capability wording",
-      "No transcript/summary bodies in logs"
+      "CSS (minimal markup/class tweaks only if needed) so .btn, language/select/combobox triggers, and .segmented match .btn.icon-btn height (42px)",
+      "Preserve vertical centering of labels/icons/chevrons inside those controls",
+      "resize: none for app textareas (transcript editor and other product textareas)",
+      "Light TESTING visual QA note if useful",
+      "Frontend build verification"
     ],
     "out_of_scope": [
-      "Editable summary (PP-003)",
-      "Dedicated Action items task-list view",
-      "Export format changes",
-      "Timestamps / SRT / VTT, diarization",
-      "Language auto-detect (PP-002)",
-      "Process work (P-004, schemas, package extraction)",
+      "Layout redesign, new components, color/theme changes",
+      "Backend / bridge / ML / i18n copy",
+      "PP-002, PP-003, Action items view, process work",
+      "Dist packaging",
       "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64 platforms"
     ]
   },
-  "phase": "shipped",
+  "phase": "commit-ready",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "done",
+    "retrospective": "pending",
     "commit_allowed": true,
-    "committed": true
+    "committed": false
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
     "product_followups_register": ".ai/state/product-followups.md",
     "iteration_directory": "docs/iterations",
-    "latest_review": "loop 2 (re-review): 0 High, 0 Medium, 0 Low — R1–R3 verified fixed",
-    "latest_triage": "loop 2 clean; review gate clean; route to supervisor-qa",
-    "latest_qa": "passed 2026-07-28 by human Product Owner; no new follow-ups",
-    "latest_commit_prep": "commit 80f07e7 created 2026-07-28",
-    "latest_retrospective": "completed 2026-07-28; scenario/fallback alignment + TESTING multi-section checklist; next planning → product-analyst",
-    "commit": "80f07e70884db02069a37501a9a90cbdfab3c799",
-    "previous_iteration": "2026-07-28-review-findings-reconciliation",
-    "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Partial Copy Actions 2026-07-28",
-    "latest_implementation_summary": "docs/iterations/2026-07-28-partial-copy.md — Implementation Summary",
-    "latest_auto_fix": "applied 2026-07-28 — R1 remove heading-less fallback; R2 TESTING § D; R3 tsx edge cases + QA deferral",
-    "human_involvement_reason": "Supervisor QA pass; commit approval 2026-07-28"
+    "latest_review": "loop 1: 0 High, 0 Medium, 0 Low — clean",
+    "latest_triage": "loop 1 clean; review gate clean; route to supervisor-qa",
+    "latest_qa": "passed 2026-07-28 by human Product Owner; follow-ups PP-2026-07-28-001..003",
+    "latest_commit_prep": "prepared 2026-07-28; awaiting human commit approval",
+    "latest_retrospective": null,
+    "commit": null,
+    "previous_iteration": "2026-07-28-partial-copy",
+    "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Control Height + Textarea No-Resize 2026-07-28",
+    "latest_implementation_summary": "docs/iterations/2026-07-28-control-height-ux.md — Implementation Summary",
+    "human_involvement_reason": "Supervisor QA pass with follow-ups; commit approval pending 2026-07-28"
   },
   "metrics": {
-    "review_loops": 2,
+    "review_loops": 1,
     "human_decisions": 4,
     "high_findings": 0,
-    "medium_findings": 1,
-    "low_findings": 2,
+    "medium_findings": 0,
+    "low_findings": 0,
     "qa_outcome": "passed",
-    "outcome": "shipped"
+    "outcome": null
   },
   "handoff": {
-    "next_role": "none",
-    "reason": "iteration shipped; start next planning from a fresh cycle via product-analyst / roadmap-planner (PP-003 vs PP-002 vs Action items view vs P-004)",
-    "required_inputs": [],
+    "next_role": "human-product-owner",
+    "reason": "Commit preparation ready; human must explicitly approve creating the commit",
+    "required_inputs": [
+      "Explicit commit approval from Product Owner"
+    ],
     "blocked_by": [],
     "latest_artifacts": [
-      "docs/iterations/2026-07-28-partial-copy.md",
+      "docs/iterations/2026-07-28-control-height-ux.md",
       ".ai/state/current-cycle.json",
-      ".ai/state/review-findings.json",
-      "80f07e70884db02069a37501a9a90cbdfab3c799"
+      ".ai/state/product-followups.md",
+      "frontend/src/styles.css",
+      "TESTING.md"
     ]
   },
   "last_updated": "2026-07-28"

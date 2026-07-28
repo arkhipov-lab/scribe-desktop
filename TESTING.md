@@ -27,7 +27,8 @@ Run:
 1. Window opens with the Scribe UI.
 2. No persistent “Desktop bridge is not available” error.
 3. Transcript language control populates. Summary language lives under Processing options (defaults from UI locale).
-4. Log file appears/updates at `~/Library/Logs/Scribe/app.log`.
+4. Toolbar / actions buttons, language selects, and segmented controls share the same height as icon buttons; product textareas are not user-resizable.
+5. Log file appears/updates at `~/Library/Logs/Scribe/app.log`.
 
 ### B. File ingest
 

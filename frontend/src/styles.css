@@ -125,6 +125,10 @@ textarea {
   font: inherit;
 }
 
+textarea {
+  resize: none;
+}
+
 .app {
   width: min(820px, 100%);
   margin: 0;
@@ -321,27 +325,36 @@ textarea {
 
 .sidebar-locale.segmented,
 .sidebar-theme.segmented {
+  height: 42px;
   padding: 2px;
   gap: 2px;
   border-radius: 10px;
+  box-sizing: border-box;
 }
 
 .sidebar-locale button {
   flex: 1 1 0;
   min-width: 0;
-  padding: 5px 4px;
+  height: 100%;
+  padding: 0 4px;
   font-size: 0.7rem;
   border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .sidebar-theme button {
   flex: 1 1 0;
   min-width: 0;
-  padding: 5px 4px;
+  height: 100%;
+  padding: 0 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 7px;
+  box-sizing: border-box;
 }
 
 .sidebar-theme button svg {
@@ -516,17 +529,19 @@ h1.page-title {
 
 .language-select {
   width: 100%;
+  box-sizing: border-box;
+  height: 42px;
   appearance: none;
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 11px 40px 11px 14px;
+  padding: 0 40px 0 14px;
   background-color: var(--surface);
   background-image:
     linear-gradient(45deg, transparent 50%, var(--muted) 50%),
     linear-gradient(135deg, var(--muted) 50%, transparent 50%);
   background-position:
-    calc(100% - 14px) calc(50% - 2px),
-    calc(100% - 9px) calc(50% - 2px);
+    calc(100% - 14px) 50%,
+    calc(100% - 9px) 50%;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
   color: var(--ink);
@@ -534,6 +549,12 @@ h1.page-title {
   font-weight: 500;
   text-align: left;
   cursor: pointer;
+  line-height: 1.2;
+}
+
+.language-select.language-trigger {
+  display: inline-flex;
+  align-items: center;
 }
 
 .language-select.language-search {
@@ -911,6 +932,9 @@ h1.page-title {
 
 .segmented {
   display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  height: 42px;
   padding: 4px;
   border-radius: 12px;
   background: var(--fill);
@@ -921,10 +945,16 @@ h1.page-title {
   border: 0;
   background: transparent;
   color: var(--muted);
-  padding: 10px 16px;
+  height: 100%;
+  padding: 0 16px;
   border-radius: 9px;
   cursor: pointer;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  line-height: 1.2;
 }
 
 .segmented button.active {
@@ -947,9 +977,15 @@ h1.page-title {
 .btn {
   border: 0;
   border-radius: 12px;
-  padding: 12px 18px;
+  box-sizing: border-box;
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-weight: 600;
+  line-height: 1.2;
   transition: transform 120ms ease, opacity 120ms ease, background 120ms ease;
 }
 
@@ -1180,7 +1216,7 @@ h1.page-title {
 .transcript-editor {
   max-height: min(52vh, 480px);
   overflow: auto;
-  resize: vertical;
+  resize: none;
   box-sizing: border-box;
   white-space: pre-wrap;
 }

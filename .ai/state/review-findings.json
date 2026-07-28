@@ -1,43 +1,6 @@
 {
   "schema_version": 1,
-  "iteration_id": "2026-07-28-partial-copy",
-  "findings": [
-    {
-      "id": "R1",
-      "review_loop": 1,
-      "severity": "Medium",
-      "status": "fixed",
-      "summary": "Heading-less summary fallback treats entire body as action items, violating scenario",
-      "location": "frontend/src/actionItems.ts:61-69",
-      "owner": "implementation-agent",
-      "resolution": "Removed heading-less full-body fallback; Action items require a known heading",
-      "debt_id": null,
-      "product_followup_id": null
-    },
-    {
-      "id": "R2",
-      "review_loop": 1,
-      "severity": "Low",
-      "status": "fixed",
-      "summary": "Partial-copy smoke only under TESTING § C; missing § D summary coverage",
-      "location": "TESTING.md:48",
-      "owner": "implementation-agent",
-      "resolution": "Added TESTING § D step 9 for Copy summary / Copy action items",
-      "debt_id": null,
-      "product_followup_id": null
-    },
-    {
-      "id": "R3",
-      "review_loop": 1,
-      "severity": "Low",
-      "status": "fixed",
-      "summary": "Interactive run-dev copy smoke not executed by implementer",
-      "location": "docs/iterations/2026-07-28-partial-copy.md:79",
-      "owner": "implementation-agent",
-      "resolution": "extractActionItems edge cases verified via tsx; interactive clipboard/menu smoke deferred to supervisor QA",
-      "debt_id": null,
-      "product_followup_id": null
-    }
-  ],
+  "iteration_id": "2026-07-28-control-height-ux",
+  "findings": [],
   "last_updated": "2026-07-28"
 }
