@@ -95,10 +95,33 @@ Rotating file (≈2 MB × 3 backups) plus console while running under the termin
 | Script exits on arch check | Not arm64 / Rosetta-only shell |
 | `ffmpeg not found` | Install Homebrew ffmpeg; ensure PATH |
 | Window never opens | Check log; pywebview / display issues |
-| Recording permission errors | Grant Mic + Screen & System Audio; **restart app** |
+| Recording permission errors | Grant Mic + Screen & System Audio to the **process that records** — for `./scripts/run-dev.sh` that is often Terminal/Cursor and/or `native/build/AudioRecorder`, **not** only `/Applications/Scribe.app`. Prefer `./scripts/build.sh` + `open dist/Scribe.app` for Record QA. **Restart** after granting Screen Recording. |
 | First transcription very slow | Model download into Hugging Face cache |
 | `Desktop bridge is not available` | UI loaded outside pywebview, API not ready yet, or a failed first connect was cached — use **Retry** / relaunch via `./scripts/run-dev.sh` or the built `.app` (not a bare browser tab) |
 | Stale AudioRecorder | Delete `native/build/AudioRecorder` and re-run `run-dev.sh` |
+
+### Offline AEC spike (Phase 3, not product default)
+
+Requires Homebrew `speexdsp` + `ffmpeg`. Does **not** change Record:
+
+```bash
+brew install speexdsp
+SCRIBE_KEEP_RAW_RECORDING=1  # when capturing a speakers bleed fixture via dist/Scribe.app
+SCRIBE_AEC_SPIKE=1 python3 scripts/aec-spike.py \
+  --input ~/Library/Caches/Scribe/recordings/recording-….m4a \
+  --outdir /tmp/scribe-aec-spike
+# Optional: --ref-delay-ms 40..200  --filter-ms 200..500
+```
+
+Compare `mic.wav` vs `mic_aec.wav` and `mix_plain.wav` vs `mix_aec.wav`. Paths/timings only — do not commit fixtures.
+
+**QA note (2026-07-29):** Speex did not cancel bleed on speakers fixtures; product Ideal moved to **dual-path finalize** (see [docs/initiatives/recording-clean-mix.md](docs/initiatives/recording-clean-mix.md)). Keep-raw launch that works with TCC:
+
+```bash
+open --env SCRIBE_KEEP_RAW_RECORDING=1 ./dist/Scribe.app
+```
+
+Do **not** run `Contents/MacOS/Scribe` directly if you need Privacy prompts.
 
 ## Working on the frontend alone
 

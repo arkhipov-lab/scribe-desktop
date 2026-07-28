@@ -77,6 +77,7 @@ On-disk only (no cloud):
 
 ## Audio & transcription quality
 
+- [x] **Clean meeting mix (initiative closed)** — dual-path finalize shipped (`c13dd58`, 2026-07-29): speakers → mic-only; headphones → leveled mic+system. Archive: [docs/initiatives/recording-clean-mix.md](docs/initiatives/recording-clean-mix.md). Leftover UX (show I/O devices, headset mic) is product-followups, not this initiative.
 - [ ] Local speaker diarization when feasible on Apple Silicon  
 - [ ] Timestamps / segment navigation in the transcript  
 - [ ] On-device noise-robust preprocessing options  

@@ -10,6 +10,7 @@ The roadmap is a hypothesis, not an implementation contract. Product analysis an
 - scenario coverage in [../../docs/scenarios/](../../docs/scenarios/);
 - open debt and planned process work in [../state/debt.md](../state/debt.md);
 - open product follow-ups / wishes in [../state/product-followups.md](../state/product-followups.md);
+- active multi-iteration engineering campaigns in [../../docs/initiatives/](../../docs/initiatives/);
 - recent iteration metrics and retrospectives in [../../docs/iterations/](../../docs/iterations/).
 
 When ROADMAP and PRODUCT diverge, PRODUCT wins for value decisions. Human approval is required before roadmap direction changes.

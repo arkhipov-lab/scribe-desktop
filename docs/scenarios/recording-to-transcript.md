@@ -15,7 +15,7 @@ User records microphone + system audio, then transcribes the result locally.
 
 1. Click **Record**; speak and play system audio (call or local media).
 2. Stop recording.
-3. Confirm a mixed WAV is ready for transcription.
+3. Confirm a finalized WAV is ready for transcription.
 4. Click **Transcribe**; wait for transcript.
 
 ## Expected behavior
@@ -24,14 +24,19 @@ User records microphone + system audio, then transcribes the result locally.
 - Temp WAV under `~/Library/Caches/Scribe/recordings/` during/after capture.
 - Selecting/dropping/recording another file deletes the previous owned temp recording.
 - Transcript produced on-device like file ingest.
+- **Dual-path finalize:** no headphones (built-in speakers) → **mic-only** WAV; headphones / BT → **level-matched mic + system `amix`**; unknown route → mix (never mic-only). See closed initiative [recording-clean-mix](../initiatives/recording-clean-mix.md).
 
 ## Edge cases
 
 - Permissions denied → clear error / guidance; no silent failure.
 - Stop immediately → short/empty file handled without crash.
 - Weak hardware → prefer Small / 1.5B for full-pipeline smoke.
+- Speakers vs headphones → different bleed; do not assume mic-only is always enough (headphones need system audio).
+- Bluetooth room speakers may still finalize as mix (possible double); USB/HDMI/AirPlay → unknown → mix.
+- Output route is classified at **stop** (plug/unplug mid-call uses the end state).
 
 ## Related docs / tests
 
 - [SECURITY-PRIVACY.md](../../SECURITY-PRIVACY.md), [TESTING.md](../../TESTING.md) § E
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) recording layer
+- [docs/initiatives/recording-clean-mix.md](../initiatives/recording-clean-mix.md)

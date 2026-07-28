@@ -24,6 +24,7 @@ Read this file first. Then open the linked docs for depth.
 | [docs/MANIFEST.md](docs/MANIFEST.md) | Dual goals: product + AI development process |
 | [docs/workflows/](docs/workflows/) | Planning → implement → review → QA → commit loop |
 | [docs/scenarios/](docs/scenarios/) | Concrete user/system behavior specs |
+| [docs/initiatives/](docs/initiatives/) | Active multi-iteration engineering campaigns (not ROADMAP detail) |
 | [`.ai/skills/`](.ai/skills/) | Invoke with `Use roadmap-planner.` / `Use feature-manager.` / etc. |
 
 For planning, independent review, supervisor QA, and commit preparation, use the workflow docs and [`.ai/skills/`](.ai/skills/) rather than inventing a one-off process. Human approval is still required for product direction, major docs/process changes, and every commit.

@@ -1,6 +1,43 @@
 {
   "schema_version": 1,
-  "iteration_id": "2026-07-28-control-height-ux",
-  "findings": [],
-  "last_updated": "2026-07-28"
+  "iteration_id": "2026-07-29-recording-mix-dual-path",
+  "last_updated": "2026-07-29",
+  "findings": [
+    {
+      "id": "R1",
+      "review_loop": 1,
+      "severity": "Medium",
+      "status": "fixed",
+      "summary": "Full-file dual volumedetect + amix on sync stop_recording can stall long headphone finalizes; no 30–60min CPU note",
+      "location": "backend/recorder.py:425-460",
+      "owner": "implementation-agent",
+      "resolution": "volumedetect capped to first 30s (-t); log window_s; mic_only unchanged; ledger CPU note — verified on re-review",
+      "debt_id": null,
+      "product_followup_id": null
+    },
+    {
+      "id": "R2",
+      "review_loop": 1,
+      "severity": "Low",
+      "status": "fixed",
+      "summary": "LOCAL_DATA still describes Record as always ffmpeg mix; dual-path finalize not mentioned",
+      "location": "LOCAL_DATA.md:79",
+      "owner": "implementation-agent",
+      "resolution": "LOCAL_DATA dual-path wording — verified on re-review",
+      "debt_id": null,
+      "product_followup_id": null
+    },
+    {
+      "id": "R3",
+      "review_loop": 1,
+      "severity": "Low",
+      "status": "fixed",
+      "summary": "Detection edge cases (BT speakers, USB, route-at-stop) under-documented vs initiative exit notes",
+      "location": "TESTING.md:73",
+      "owner": "implementation-agent",
+      "resolution": "TESTING § E + scenario edges — verified on re-review",
+      "debt_id": null,
+      "product_followup_id": null
+    }
+  ]
 }
