@@ -17,6 +17,8 @@ Read this file first. Then open the linked docs for depth.
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Change style, what not to commit |
 | [SECURITY-PRIVACY.md](SECURITY-PRIVACY.md) | Local-only processing, permissions, logging rules |
 | [ROADMAP.md](ROADMAP.md) | Planned work (do not implement unless asked) |
+| [AI_CONVENTION.md](AI_CONVENTION.md) | Product convention for the AI development system |
+| [AI_SYSTEM_ROADMAP.md](AI_SYSTEM_ROADMAP.md) | Roadmap for process / AI-organization evolution |
 | [README.md](README.md) | User-facing overview |
 | [SYSTEM-REQUIREMENTS.md](SYSTEM-REQUIREMENTS.md) | Hardware and model defaults |
 | [docs/MANIFEST.md](docs/MANIFEST.md) | Dual goals: product + AI development process |
@@ -34,7 +36,7 @@ In this repo’s AI-organization experiment:
 - Human roles: customer, Product Owner, supervisor QA, product reviewer, commit approver.
 - **All** durable code and documentation changes are made by an AI agent.
 - The human may describe requirements, accept/reject product behavior, defer debt, and **request an AI fix** — not patch the working tree themselves.
-- Low review findings: AI fix via a bounded fix prompt, or explicit human accept/defer as debt — never “human will fix it in the editor.”
+- Low review findings: AI auto-fixes cheap/local items per review-triage policy; product-facing Lows need human judgment; never “human will fix it in the editor.”
 
 See [docs/MANIFEST.md](docs/MANIFEST.md) and [docs/workflows/feature-development-pipeline.md](docs/workflows/feature-development-pipeline.md).
 
@@ -152,6 +154,7 @@ The React UI talks only through `window.pywebview.api` (`Api` in `backend/app.py
 | `get_state` / polling | Current status, transcript, summary, errors |
 | `select_file` / `set_file_path` | Choose or drop media |
 | `save_audio_copy` / `export_notes` / `get_playback_src` | Save audio copy / export notes / in-app playback bytes |
+| `update_transcript` | Persist user-edited plain-text transcript (state + history) |
 | `start_recording` / `stop_recording` | Mic + system audio |
 | `start_transcription` / `cancel_transcription` | Whisper pipeline |
 | `start_summary` / `cancel_summary` | Local LLM notes |

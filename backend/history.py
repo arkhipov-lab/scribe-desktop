@@ -196,6 +196,39 @@ def update_session_title(session_id: str, title: str) -> dict[str, Any] | None:
         return _index_entry_from_meta(meta)
 
 
+def update_session_transcript(session_id: str, transcript: str) -> dict[str, Any] | None:
+    """Update stored transcript text without clearing an existing summary."""
+    sid = (session_id or "").strip()
+    if not sid:
+        return None
+    text = (transcript or "").replace("\x00", "")
+    with _lock:
+        session_path = _session_dir(sid)
+        meta_path = session_path / "meta.json"
+        meta = _read_json(meta_path)
+        if not isinstance(meta, dict):
+            return None
+        _atomic_write_text(session_path / "transcript.md", text.rstrip() + ("\n" if text else ""))
+        meta["has_transcript"] = bool(text.strip())
+        meta["updated_at"] = _now_iso()
+        _atomic_write_json(meta_path, meta)
+        entries = _load_index()
+        for i, entry in enumerate(entries):
+            if entry.get("id") == sid:
+                entries[i] = _index_entry_from_meta(meta)
+                break
+        else:
+            entries.insert(0, _index_entry_from_meta(meta))
+        _save_index(entries)
+        get_logger().info(
+            "Updated history transcript id=%s chars=%s has_transcript=%s",
+            sid,
+            len(text),
+            meta["has_transcript"],
+        )
+        return _index_entry_from_meta(meta)
+
+
 def update_session_summary(
     session_id: str,
     summary: str,
@@ -203,6 +236,7 @@ def update_session_summary(
     summary_model: str | None = None,
     summary_preset: str | None = None,
     summary_length: str | None = None,
+    summary_language: str | None = None,
     has_extra_instructions: bool | None = None,
 ) -> dict[str, Any] | None:
     sid = (session_id or "").strip()
@@ -224,6 +258,8 @@ def update_session_summary(
             meta["summary_preset"] = summary_preset
         if summary_length is not None:
             meta["summary_length"] = summary_length
+        if summary_language is not None:
+            meta["summary_language"] = summary_language
         if has_extra_instructions is not None:
             meta["has_extra_instructions"] = bool(has_extra_instructions)
         _atomic_write_json(meta_path, meta)
@@ -278,6 +314,7 @@ def upsert_after_transcript(
             meta["summary_model"] = None
             meta["summary_preset"] = None
             meta["summary_length"] = None
+            meta["summary_language"] = None
             meta["has_extra_instructions"] = False
 
         has_audio = False

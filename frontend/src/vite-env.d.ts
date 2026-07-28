@@ -26,7 +26,12 @@ export interface AppState {
   file_path: string | null;
   file_name: string | null;
   language: LanguageCode | string;
+  summary_language: LanguageCode | string;
+  /** False until settings.json has an explicit summary_language (UI may seed from locale). */
+  summary_language_persisted?: boolean;
   transcript: string;
+  /** Monotonic counter bumped on every transcript write (Whisper, clear, user edit). */
+  transcript_epoch?: number;
   summary: string;
   summary_status: SummaryStatus;
   summary_error: string | null;
@@ -46,6 +51,7 @@ export interface AppState {
   history_sidebar_open?: boolean;
   /** Settings actually used for the last successful run (not live Processing options). */
   used_language?: string | null;
+  used_summary_language?: string | null;
   used_whisper_model?: string | null;
   used_summary_model?: string | null;
   used_summary_preset?: string | null;
@@ -89,6 +95,7 @@ export interface HistorySession {
 
 export interface AppSettings {
   language: string;
+  summary_language: string;
   summary_preset: string;
   additional_instructions: string;
   summary_length: SummaryLength | string;
@@ -137,6 +144,10 @@ export interface PywebviewApi {
   list_sessions: () => Promise<HistorySession[]>;
   open_session: (sessionId: string) => Promise<ApiResult>;
   delete_session: (sessionId: string) => Promise<ApiResult>;
+  update_transcript: (
+    text: string,
+    basedOnEpoch?: number,
+  ) => Promise<ApiResult>;
   start_transcription: () => Promise<ApiResult>;
   cancel_transcription: () => Promise<ApiResult>;
   start_summary: () => Promise<ApiResult>;

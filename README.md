@@ -95,10 +95,10 @@ The **Record** button captures **microphone + system audio** (via ScreenCaptureK
 ## Usage
 
 1. Drop or select an audio/video file (`.m4a`, `.mp3`, `.wav`, `.mp4`, `.mov`) — or record
-2. Choose language; open **Processing options** for Whisper/summary models, preset, length, instructions
+2. Choose transcript language; open **Processing options** for summary language (defaults from UI locale), Whisper/summary models, preset, length, instructions
 3. Click **Transcribe**
 4. Wait for local processing — first use of each model downloads it once, then caches locally
-5. Review **Transcript** and **Summary**, then Copy
+5. Review **Transcript** (editable plain text) and **Summary**, then Copy (transcript / summary / action items) / Export. After editing the transcript, regenerate the summary manually when you want notes updated.
 
 Preferences are stored in `~/Library/Application Support/Scribe/settings.json`. On first launch, Scribe picks stronger models + auto-summary on capable Macs (M3+ / ample RAM) and lighter models with auto-summary off on weaker machines. All processing is local. No cloud upload.
 

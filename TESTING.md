@@ -26,8 +26,9 @@ Run:
 
 1. Window opens with the Scribe UI.
 2. No persistent “Desktop bridge is not available” error.
-3. Language dropdown populates.
-4. Log file appears/updates at `~/Library/Logs/Scribe/app.log`.
+3. Transcript language control populates. Summary language lives under Processing options (defaults from UI locale).
+4. Toolbar / actions buttons, language selects, and segmented controls share the same height as icon buttons; product textareas are not user-resizable.
+5. Log file appears/updates at `~/Library/Logs/Scribe/app.log`.
 
 ### B. File ingest
 
@@ -38,21 +39,26 @@ Run:
 
 ### C. Transcription
 
-1. Pick language (try at least `en` and one other you care about).
+1. Pick transcript language (try at least `en` and one other you care about). Optionally open Processing options and set a different **summary language**.
 2. Click **Transcribe**.
 3. First run may download the Whisper model — wait; status should show loading/transcribing.
 4. Transcript appears; elapsed timer behaves.
 5. **Cancel** mid-run returns to a sane idle/ready state.
 6. Confirm the log contains path/status lines but **not** the transcript body.
+7. Edit the transcript as plain text; confirm edits survive a short wait and appear in Copy/Export; regenerating summary uses the edited text. Transcribe again fully replaces the transcript. See [docs/scenarios/editable-transcript.md](docs/scenarios/editable-transcript.md).
+8. Open the **Copy** menu: Copy transcript / Copy summary / Copy action items work for available content and are disabled when missing; copy works from either results tab. See [docs/scenarios/partial-copy.md](docs/scenarios/partial-copy.md).
 
 ### D. Summary
 
 1. After a transcript exists, summary should run when auto-summary is on (or via Generate/Regenerate).
 2. Change preset / length / additional instructions and regenerate — output shape should follow the preset.
-3. With auto-summary off, transcription completes without starting summary; Generate still works.
-4. Preferences survive relaunch (`~/Library/Application Support/Scribe/settings.json`).
-5. Cancel summary does not corrupt the existing transcript.
-6. Log must not contain summary text or additional-instructions body.
+3. With a different summary language than transcript language (set under Processing options), regenerate and confirm notes follow the summary-language intent.
+4. With auto-summary off, transcription completes without starting summary; Generate still works.
+5. Preferences survive relaunch (`~/Library/Application Support/Scribe/settings.json`), including transcript language and summary language (when seeded or overridden).
+6. Cancel summary does not corrupt the existing transcript.
+7. Log must not contain summary text or additional-instructions body.
+8. After editing the transcript, summary does not auto-restart; manual Generate/Regenerate overwrites the summary from the current transcript.
+9. Open the **Copy** menu: **Copy summary** copies the full notes; **Copy action items** is enabled only when a non-empty Action items section exists (disabled when the heading is missing or empty). See [docs/scenarios/partial-copy.md](docs/scenarios/partial-copy.md).
 
 ### E. Recording
 

@@ -66,6 +66,15 @@ At the beginning of a cycle, assume:
 - decisions are recorded when needed ([DECISIONS.md](../../DECISIONS.md));
 - previous iteration results are available when applicable.
 
+Every approved iteration must also have durable process state:
+
+- an iteration ledger under [`docs/iterations/`](../iterations/);
+- current phase and gate status in [`.ai/state/current-cycle.json`](../../.ai/state/current-cycle.json);
+- accepted or deferred debt in [`.ai/state/debt.md`](../../.ai/state/debt.md);
+- product follow-ups / wishes in [`.ai/state/product-followups.md`](../../.ai/state/product-followups.md).
+
+Create or update these artifacts at phase transitions. Do not treat chat history as durable cycle memory.
+
 The process must **not** assume a perfect specification. [ROADMAP.md](../../ROADMAP.md) is a hypothesis.
 
 ---
@@ -78,11 +87,11 @@ Identify the highest-value next product slice; compare alternatives; preserve hu
 
 **Role:** [roadmap-planner](../../.ai/skills/roadmap-planner.md)
 
-**Output:** A bounded, human-approved product slice: goal, in scope, out of scope, hypothesis, acceptance signals.
+**Output:** A bounded, human-approved product slice: goal, in scope, out of scope, hypothesis, acceptance signals. After approval, create or update the iteration ledger and `.ai/state/current-cycle.json`.
 
 ### 2. Engineering delivery
 
-Translate the approved slice into engineering work; implement; independent review; fix blocking findings; run verification and technical smoke checks.
+Translate the approved slice into engineering work via **feature-manager** (sole post-approval orchestrator): implementation handoff → pending → summary → independent review → auto-fix blocking and cheap Low findings → verification and technical smoke checks.
 
 **Implementation:** [Feature Development Pipeline](./feature-development-pipeline.md)
 
@@ -101,6 +110,8 @@ The human reviews the **product**, not the code: observable user actions in Scri
 
 Separate from product validation. Analyze review-cycle count, defects, rework, scope creep, failed verification, and expensive AI-role behavior.
 
+**Role:** [iteration-retrospective](../../.ai/skills/iteration-retrospective.md)
+
 ### 5. Product retrospective
 
 Did the user receive meaningful value? Did assumptions in PRODUCT, ROADMAP, or scenarios change? Should planned work be postponed?
@@ -111,6 +122,8 @@ Primary dimensions: task completion, elapsed time, AI resource use. Secondary: h
 
 Distinguish **observed facts** from **AI estimates**. Measurement does not replace Product Owner decisions.
 
+Retrospective metrics must record value, source type, and evidence separately so future planning can tell measured facts from estimates.
+
 ### 7. Process evolution
 
 Adjust roles, handoffs, or gates based on recurring friction — not every minor inconvenience. Major process changes need human approval.
@@ -118,6 +131,10 @@ Adjust roles, handoffs, or gates based on recurring friction — not every minor
 ### 8. Grooming and next-priority selection
 
 Re-evaluate candidates using validation, retrospectives, analytics, and updated risks. Input to the next planning cycle.
+
+**Role:** [product-analyst](../../.ai/skills/product-analyst.md)
+
+Product analysis compares ROADMAP, scenarios, debt, recent metrics, and retrospective evidence before roadmap planning turns a direction into a bounded slice.
 
 ---
 
@@ -176,7 +193,7 @@ See [docs/MANIFEST.md](../MANIFEST.md) experimental hard rule.
 
 ## Cycle output
 
-Durable outputs such as: shipped or rejected increment; Product Owner notes; retrospectives; analytics summary; updated roadmap candidates; context for next planning.
+Durable outputs such as: shipped or rejected increment; Product Owner notes; retrospectives; analytics summary; updated roadmap candidates; context for next planning. These belong in the iteration ledger and state files, not only in chat.
 
 Only update documentation when understanding or behavior actually changes.
 
@@ -203,13 +220,15 @@ A single commit is not necessarily completion of a product goal.
 
 | Need | Skill / doc |
 |------|-------------|
+| Backlog intelligence | [product-analyst](../../.ai/skills/product-analyst.md) (recommendation before evidence appendix) |
 | Next slice | [roadmap-planner](../../.ai/skills/roadmap-planner.md) |
-| Orchestration | [feature-manager](../../.ai/skills/feature-manager.md) |
-| Implementation prompt | [cursor-implementation-prompt](../../.ai/skills/cursor-implementation-prompt.md) |
-| Independent review | [codex-review](../../.ai/skills/codex-review.md) |
-| Triage | [review-triage](../../.ai/skills/review-triage.md) |
+| Orchestration after approval | [feature-manager](../../.ai/skills/feature-manager.md) — sole normal PO-facing entrypoint |
+| Implementation handoff (internal) | [cursor-implementation-prompt](../../.ai/skills/cursor-implementation-prompt.md) — specialized; not an alternative PO next step |
+| Independent review | [codex-review](../../.ai/skills/codex-review.md) — only after implementation summary |
+| Triage | [review-triage](../../.ai/skills/review-triage.md) — auto-fix policy |
 | Manual QA plan | [supervisor-qa](../../.ai/skills/supervisor-qa.md) |
 | Commit preparation | [commit-manager](../../.ai/skills/commit-manager.md) |
+| Retrospective + metrics | [iteration-retrospective](../../.ai/skills/iteration-retrospective.md) |
 | Skill index | [`.ai/skills/README.md`](../../.ai/skills/README.md) |
 
 ---

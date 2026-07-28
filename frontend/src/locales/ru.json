@@ -59,15 +59,19 @@
   },
   "language": {
     "title": "Язык",
+    "transcriptTitle": "Язык транскрипта",
+    "summaryTitle": "Язык саммари",
     "search": "Поиск языка…",
-    "listAria": "Языки"
+    "listAria": "Языки",
+    "transcriptListAria": "Языки транскрипта",
+    "summaryListAria": "Языки саммари"
   },
   "actions": {
     "transcribe": "Транскрибировать"
   },
   "processing": {
     "title": "Параметры обработки",
-    "hint": "Модели, стиль саммари и автосаммари",
+    "hint": "Модели, язык саммари, стиль и автосаммари",
     "recommended": "Рекомендовано для этого Mac ({tier}): {reason}",
     "tierAuto": "авто",
     "transcriptionModel": "Модель транскрипции",
@@ -134,7 +138,9 @@
   "meta": {
     "whisper": "Whisper {name}",
     "notes": "Заметки {name}",
-    "customInstructions": "Свои инструкции"
+    "customInstructions": "Свои инструкции",
+    "transcriptLanguage": "Транскрипт {name}",
+    "summaryLanguage": "Саммари {name}"
   },
   "result": {
     "aria": "Результат",
@@ -143,7 +149,13 @@
     "generateSummary": "Создать саммари",
     "regenerateSummary": "Пересоздать саммари",
     "exportNotes": "Экспортировать заметки",
+    "copyMenu": "Копировать",
+    "copyTranscript": "Копировать транскрипт",
+    "copySummary": "Копировать саммари",
+    "copyActionItems": "Копировать задачи",
+    "copyActionItemsUnavailable": "В этом саммари нет раздела задач",
     "transcriptEmpty": "Здесь появится транскрипт.",
+    "transcriptEditedHint": "Транскрипт изменён. Пересоздайте саммари, чтобы обновить заметки.",
     "summaryEmpty": "Здесь появится саммари.",
     "loadingSummaryModel": "Загрузка модели саммари…",
     "writingSummary": "Пишем саммари…",

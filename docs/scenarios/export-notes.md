@@ -17,7 +17,7 @@ User exports transcript and/or summary to a local `.md` or `.txt` file they choo
 ## Expected behavior
 
 - Export writes only to the user-selected path — no upload.
-- Content matches what the user sees (within format differences).
+- Content matches what the user sees (within format differences), including an edited plain-text transcript.
 - Does not require network.
 
 ## Edge cases

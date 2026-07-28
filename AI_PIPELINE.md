@@ -42,7 +42,7 @@ File select / drop  —or—  Record (mic + system audio)
          │
          ▼
 ┌───────────────────┐
-│ 6. Summary opts   │  ← preset, language, length, additional instructions
+│ 6. Summary opts   │  ← preset, summary language, length, additional instructions
 └────────┬──────────┘
          │ auto-summary on  —or—  user Generate
          ▼
@@ -87,7 +87,7 @@ After transcription (and between stages as designed), `backend/memory.py` unload
 
 ### 6. Summary controls
 
-Preset, length, additional instructions, auto-summary, and summary model come from settings + catalog (`get_summary_presets`, `get_summary_models`, `get_settings` / `update_settings`). Additional-instructions body must not be logged.
+Preset, length, summary language (independent of Whisper transcript language; defaults from UI locale; override under Processing options), additional instructions, auto-summary, and summary model come from settings + catalog (`get_summary_presets`, `get_summary_models`, `get_settings` / `update_settings`). Additional-instructions body must not be logged.
 
 ### 7. Summary generation
 
@@ -103,6 +103,7 @@ Section headings are localized for common languages. Cancel is cooperative betwe
 ### 8. Local outputs
 
 - **App state** via `get_state` (transcript, summary, status, errors).
+- **Transcript edits** via `update_transcript` (plain text into state + history when a session exists; does not clear summary). Manual Generate/Regenerate uses the current transcript; auto-summary still runs after Transcribe when enabled.
 - **History** under Application Support (`meta.json`, `transcript.md`, `summary.md`, optional audio) — [LOCAL_DATA.md](LOCAL_DATA.md).
 - **Export** (`export_notes`), **playback** (`get_playback_src`), **save audio copy** as user actions.
 

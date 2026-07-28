@@ -125,6 +125,10 @@ textarea {
   font: inherit;
 }
 
+textarea {
+  resize: none;
+}
+
 .app {
   width: min(820px, 100%);
   margin: 0;
@@ -321,27 +325,36 @@ textarea {
 
 .sidebar-locale.segmented,
 .sidebar-theme.segmented {
+  height: 42px;
   padding: 2px;
   gap: 2px;
   border-radius: 10px;
+  box-sizing: border-box;
 }
 
 .sidebar-locale button {
   flex: 1 1 0;
   min-width: 0;
-  padding: 5px 4px;
+  height: 100%;
+  padding: 0 4px;
   font-size: 0.7rem;
   border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .sidebar-theme button {
   flex: 1 1 0;
   min-width: 0;
-  padding: 5px 4px;
+  height: 100%;
+  padding: 0 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 7px;
+  box-sizing: border-box;
 }
 
 .sidebar-theme button svg {
@@ -495,6 +508,11 @@ h1.page-title {
   flex-wrap: wrap;
 }
 
+.language-row .field {
+  flex: 1 1 180px;
+  min-width: 160px;
+}
+
 .field {
   flex: 1 1 240px;
 }
@@ -511,17 +529,19 @@ h1.page-title {
 
 .language-select {
   width: 100%;
+  box-sizing: border-box;
+  height: 42px;
   appearance: none;
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 11px 40px 11px 14px;
+  padding: 0 40px 0 14px;
   background-color: var(--surface);
   background-image:
     linear-gradient(45deg, transparent 50%, var(--muted) 50%),
     linear-gradient(135deg, var(--muted) 50%, transparent 50%);
   background-position:
-    calc(100% - 14px) calc(50% - 2px),
-    calc(100% - 9px) calc(50% - 2px);
+    calc(100% - 14px) 50%,
+    calc(100% - 9px) 50%;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
   color: var(--ink);
@@ -529,6 +549,12 @@ h1.page-title {
   font-weight: 500;
   text-align: left;
   cursor: pointer;
+  line-height: 1.2;
+}
+
+.language-select.language-trigger {
+  display: inline-flex;
+  align-items: center;
 }
 
 .language-select.language-search {
@@ -906,6 +932,9 @@ h1.page-title {
 
 .segmented {
   display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  height: 42px;
   padding: 4px;
   border-radius: 12px;
   background: var(--fill);
@@ -916,10 +945,16 @@ h1.page-title {
   border: 0;
   background: transparent;
   color: var(--muted);
-  padding: 10px 16px;
+  height: 100%;
+  padding: 0 16px;
   border-radius: 9px;
   cursor: pointer;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  line-height: 1.2;
 }
 
 .segmented button.active {
@@ -942,9 +977,15 @@ h1.page-title {
 .btn {
   border: 0;
   border-radius: 12px;
-  padding: 12px 18px;
+  box-sizing: border-box;
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-weight: 600;
+  line-height: 1.2;
   transition: transform 120ms ease, opacity 120ms ease, background 120ms ease;
 }
 
@@ -1107,9 +1148,55 @@ h1.page-title {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
+}
+
+.copy-menu {
+  position: relative;
+}
+
+.copy-menu-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 188px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  box-shadow: var(--menu-shadow);
+}
+
+.copy-menu-option {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.copy-menu-option:hover:not(:disabled),
+.copy-menu-option:focus-visible {
+  background: var(--accent-soft-mid);
+  outline: none;
+}
+
+.copy-menu-option:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .transcript,
+.transcript-editor,
 .markdown-body {
   width: 100%;
   min-height: 220px;
@@ -1119,6 +1206,34 @@ h1.page-title {
   background: var(--surface);
   color: var(--ink);
   line-height: 1.55;
+}
+
+.transcript-edit {
+  display: grid;
+  gap: 8px;
+}
+
+.transcript-editor {
+  max-height: min(52vh, 480px);
+  overflow: auto;
+  resize: none;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+}
+
+.transcript-editor:disabled {
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+.transcript-editor.is-empty {
+  color: var(--muted);
+}
+
+.transcript-edit-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
 .markdown-body {

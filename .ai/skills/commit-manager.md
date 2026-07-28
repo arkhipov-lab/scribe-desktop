@@ -22,6 +22,14 @@ Use commit-manager.
 | Implementation summary | Behavior, files, verification |
 | Supervisor QA plan + outcome | Pass / fail / explicit skip |
 | Approved slice | Scope match |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active iteration, gate state, QA status |
+| [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred debt that must be recorded before commit |
+| [`.ai/state/product-followups.md`](../state/product-followups.md) | QA/planning wishes — confirm captured here (not in debt) when notes mention them |
+| Active ledger in [docs/iterations/](../../docs/iterations/) | Full iteration record and handoffs |
+| [`.ai/org/`](../org/) | Reusable gate and workflow rules |
+| [`.ai/product/`](../product/) | Product-layer constraints for scope check |
+| [`.ai/repo/`](../repo/) | Validation commands and forbidden-path adapter |
+| [`.ai/repo/forbidden-paths.md`](../repo/forbidden-paths.md) | Forbidden staging paths source |
 | Git working tree | `git status`, `git diff`, `git diff --cached` |
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | Conventional Commits / what not to commit |
 
@@ -30,9 +38,11 @@ Use commit-manager.
 ## Preconditions
 
 - No unresolved High/Medium
-- Lows fixed or **explicitly accepted**
+- Lows fixed or accepted/deferred **under review-triage auto-fix policy** (reason documented in ledger/debt); product-facing Lows require Product Owner judgment — never silently deferred
 - Supervisor QA **passed** or **explicitly skipped** (record skip)
 - Verification reported
+- Active ledger and current-cycle state are up to date through QA
+- `scripts/ai-cycle-validate.sh` passes
 - Human has **not** yet authorized the commit in the current message — prepare first
 
 ---
@@ -41,7 +51,7 @@ Use commit-manager.
 
 ### Check gate
 
-If not clean, stop and route to review-triage / codex-review / supervisor-qa. Do not prepare a commit.
+Run `scripts/ai-cycle-validate.sh`. If it fails, stop and route to review-triage / codex-review / supervisor-qa or state repair. Do not prepare a commit.
 
 ### Run final verification
 
@@ -59,11 +69,13 @@ Relevant checks only:
 2. Suggested Conventional Commits message
 3. Changed files with one-line purpose
 4. Accepted Lows + QA skip notes
-5. **Ask for explicit commit approval** — do not commit until requested
+5. If Supervisor QA / ledger notes mention product wishes, confirm they are in `.ai/state/product-followups.md` and the ledger Product Follow-ups section — **not** in `debt.md`
+6. Update the active ledger and `.ai/state/current-cycle.json` to `commit-ready` with `handoff.next_role=human-product-owner` (commit approval) or `commit-manager` while prep is still in progress
+7. **Ask for explicit commit approval** — do not commit until requested
 
 ### Exclude from commit
 
-Never stage:
+Follow the forbidden-path policy in [`.ai/repo/forbidden-paths.md`](../repo/forbidden-paths.md). Never stage:
 
 - `dist/`, `.cache/`, `.venv/`, `node_modules/`, `frontend/dist/`, `native/build/`
 - logs, recordings, HF caches, secrets
@@ -82,7 +94,7 @@ Confirm **no** path under `ai-md-condidates/` is staged. If any candidate path i
 
 ### After commit (only when human approved)
 
-Produce a short implementation summary for the next roadmap-planner cycle.
+Record the commit hash in the active ledger and update `.ai/state/current-cycle.json` to post-commit retrospective state: `phase=retrospective`, `iteration.status=retrospective`, `gates.committed=true`, `artifacts.commit=<hash>`, and `handoff.next_role=iteration-retrospective`. Then route to `Use iteration-retrospective.` The retrospective role sets `phase=shipped` / `status=shipped` and `handoff.next_role=none` after it completes.
 
 ---
 
@@ -90,13 +102,14 @@ Produce a short implementation summary for the next roadmap-planner cycle.
 
 - Does **not** commit without explicit human approval in the current message
 - Does **not** bypass review or QA (unless QA explicitly skipped)
-- Does **not** silently accept Lows
+- Does **not** silently accept High/Medium, or silently defer product-facing Lows
+- Does **not** re-ask the human about routine policy-deferred non-product Lows already recorded by triage
 
 ---
 
 ## Output Contract
 
-```markdown
+````markdown
 ## Commit preparation — <iteration name>
 
 ### Review gate
@@ -142,6 +155,7 @@ Produce a short implementation summary for the next roadmap-planner cycle.
 |-------|--------|
 | `(cd frontend && npm run build)` | pass/fail/skipped |
 | `./scripts/run-dev.sh` smoke | ... |
+| `scripts/ai-cycle-validate.sh` | pass/fail |
 
 ### Suggested commit message
 
@@ -156,7 +170,13 @@ Types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `build`, `ci`, `perf`
 ### Approval needed
 
 Human must explicitly request the commit before it is created.
-```
+
+### State updates
+
+- Ledger:
+- Current cycle:
+- Debt register:
+````
 
 When the human approves, create the commit per repo conventions ([CONTRIBUTING.md](../../CONTRIBUTING.md)) and produce the post-commit summary.
 
@@ -168,7 +188,7 @@ Required:
 
 - Before skipping supervisor QA
 - Before every commit
-- Before accepting unresolved Lows
+- Before accepting or deferring **product-facing** Lows / meaningful UX tradeoffs (routine non-product Lows are handled by triage auto-fix / policy defer)
 
 ---
 
@@ -178,7 +198,7 @@ Required:
 |------|--------|
 | Human approval | Required for every commit |
 | High/Medium block | Never commit with open blockers |
-| Low / QA skip | Must be explicit and documented |
+| Low / QA skip | Lows: fixed or accepted/deferred under policy with documented reason; product-facing Lows need human judgment. QA skip must be explicit |
 | Message format | Conventional Commits |
 | Scope | Only current iteration files |
 | Candidate folder | Never stage `ai-md-condidates/` unless human explicitly requests |

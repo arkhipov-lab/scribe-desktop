@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState, type DragEvent } from "react";
+import { useEffect, useId, useRef, useState, type DragEvent } from "react";
 import {
   formatElapsed,
   getApi,
   getDefaultState,
   resetApi,
 } from "./api";
-import { LOCALE_OPTIONS, t, useI18n } from "./i18n";
+import { extractActionItems } from "./actionItems";
+import { LOCALE_OPTIONS, getLocale, t, useI18n } from "./i18n";
 import LanguageSelect from "./LanguageSelect";
 import MarkdownBody from "./MarkdownBody";
 import PresetSelect from "./PresetSelect";
@@ -24,7 +25,7 @@ import {
   IconStop,
   IconSun,
 } from "./icons";
-import { DEFAULT_LANGUAGE, languageLabel } from "./languages";
+import { DEFAULT_LANGUAGE, isWhisperLanguage, languageLabel } from "./languages";
 import { useTheme } from "./theme";
 import type {
   AppState,
@@ -67,6 +68,12 @@ function isSummaryBusy(status: SummaryStatus): boolean {
   return status === "loading_model" || status === "summarizing";
 }
 
+/** Map resolved UI locale (en/ru/…) to a Whisper summary language code. */
+function summaryLanguageFromUiLocale(locale: string): string {
+  const short = (locale || "").toLowerCase().split("-")[0] || DEFAULT_LANGUAGE;
+  return isWhisperLanguage(short) ? short : DEFAULT_LANGUAGE;
+}
+
 function mergeState(next: AppState): AppState {
   return {
     status: next.status,
@@ -74,7 +81,10 @@ function mergeState(next: AppState): AppState {
     file_path: next.file_path,
     file_name: next.file_name,
     language: next.language,
+    summary_language: next.summary_language ?? next.language ?? DEFAULT_LANGUAGE,
+    summary_language_persisted: Boolean(next.summary_language_persisted),
     transcript: next.transcript,
+    transcript_epoch: Number(next.transcript_epoch ?? 0),
     summary: next.summary ?? "",
     summary_status: next.summary_status ?? "idle",
     summary_error: next.summary_error ?? null,
@@ -93,6 +103,7 @@ function mergeState(next: AppState): AppState {
     session_title: next.session_title ?? null,
     history_sidebar_open: next.history_sidebar_open ?? true,
     used_language: next.used_language ?? null,
+    used_summary_language: next.used_summary_language ?? null,
     used_whisper_model: next.used_whisper_model ?? null,
     used_summary_model: next.used_summary_model ?? null,
     used_summary_preset: next.used_summary_preset ?? null,
@@ -169,7 +180,30 @@ function buildUsedMetaTags(
 ): { key: string; label: string }[] {
   const tags: { key: string; label: string }[] = [];
   if (state.used_language) {
-    tags.push({ key: "lang", label: languageLabel(state.used_language) });
+    tags.push({
+      key: "lang",
+      label: t("meta.transcriptLanguage", {
+        name: languageLabel(state.used_language),
+      }),
+    });
+  }
+  if (
+    state.used_summary_language &&
+    state.used_summary_language !== state.used_language
+  ) {
+    tags.push({
+      key: "summary-lang",
+      label: t("meta.summaryLanguage", {
+        name: languageLabel(state.used_summary_language),
+      }),
+    });
+  } else if (state.used_summary_language && !state.used_language) {
+    tags.push({
+      key: "summary-lang",
+      label: t("meta.summaryLanguage", {
+        name: languageLabel(state.used_summary_language),
+      }),
+    });
   }
   const whisper = labelFromOptions(state.used_whisper_model, whisperModels);
   if (whisper) {
@@ -235,8 +269,10 @@ export default function App() {
   const [bridgeError, setBridgeError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copyMenuOpen, setCopyMenuOpen] = useState(false);
   const [exported, setExported] = useState(false);
   const [resultTab, setResultTab] = useState<ResultTab>("transcript");
+  const copyMenuId = useId();
   const [presetsRaw, setPresetsRaw] = useState<SummaryPresetOption[]>(() =>
     fallbackPresets(),
   );
@@ -247,14 +283,24 @@ export default function App() {
     fallbackSummaryModels(),
   );
   const [instructionsDraft, setInstructionsDraft] = useState("");
+  const [transcriptDraft, setTranscriptDraft] = useState("");
+  const [summaryStale, setSummaryStale] = useState(false);
   const [summaryOptionsOpen, setSummaryOptionsOpen] = useState(false);
   const [sidebarSettingsOpen, setSidebarSettingsOpen] = useState(false);
   const [appVersion, setAppVersion] = useState<string | null>(null);
   const [sessions, setSessions] = useState<HistorySession[]>([]);
   const [playback, setPlayback] = useState<PlaybackState>("idle");
   const copyTimer = useRef<number | null>(null);
+  const copyMenuRef = useRef<HTMLDivElement | null>(null);
   const exportTimer = useRef<number | null>(null);
   const instructionsTimer = useRef<number | null>(null);
+  const transcriptPersistTimer = useRef<number | null>(null);
+  const transcriptDirtyRef = useRef(false);
+  const transcriptDraftRef = useRef("");
+  const transcriptFlushEpochRef = useRef(0);
+  const transcriptEpochRef = useRef(0);
+  const summaryRunActiveRef = useRef(false);
+  const summarizedFromRef = useRef("");
   const lastTranscriptRef = useRef("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
@@ -289,7 +335,27 @@ export default function App() {
         if (cancelled) return;
         const merged = mergeState(initial);
         setState(merged);
+        setTranscriptDraft(merged.transcript || "");
+        transcriptDraftRef.current = merged.transcript || "";
+        transcriptEpochRef.current = Number(merged.transcript_epoch ?? 0);
+        transcriptDirtyRef.current = false;
+        setSummaryStale(false);
+        summaryRunActiveRef.current = false;
+        summarizedFromRef.current = "";
         setInstructionsDraft(merged.additional_instructions);
+        if (!merged.summary_language_persisted && api.update_settings) {
+          const seeded = summaryLanguageFromUiLocale(getLocale());
+          try {
+            const seededState = await api.update_settings({
+              summary_language: seeded,
+            });
+            if (!cancelled && seededState) {
+              setState(mergeState(seededState));
+            }
+          } catch {
+            // Seed is best-effort; interim DEFAULT_LANGUAGE remains usable.
+          }
+        }
         if (Array.isArray(presetList) && presetList.length > 0) {
           setPresetsRaw(presetList);
         }
@@ -321,7 +387,13 @@ export default function App() {
         intervalId = window.setInterval(async () => {
           try {
             const next = await api.get_state();
-            if (!cancelled) setState(mergeState(next));
+            if (cancelled) return;
+            const merged = mergeState(next);
+            transcriptEpochRef.current = Number(merged.transcript_epoch ?? 0);
+            if (transcriptDirtyRef.current) {
+              merged.transcript = transcriptDraftRef.current;
+            }
+            setState(merged);
           } catch {
             // Keep last known state if a poll fails briefly.
           }
@@ -342,6 +414,9 @@ export default function App() {
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       if (exportTimer.current) window.clearTimeout(exportTimer.current);
       if (instructionsTimer.current) window.clearTimeout(instructionsTimer.current);
+      if (transcriptPersistTimer.current) {
+        window.clearTimeout(transcriptPersistTimer.current);
+      }
       teardownAudio();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -380,12 +455,51 @@ export default function App() {
   }
 
   useEffect(() => {
-    // New transcript → always land on Transcript tab.
+    // Accept bridge transcript when not dirty, or when Transcribe/clear replaces it.
+    const pipelineReplace =
+      state.status === "loading_model" ||
+      state.status === "transcribing" ||
+      (!state.transcript && Boolean(lastTranscriptRef.current));
+    if (pipelineReplace) {
+      transcriptFlushEpochRef.current += 1;
+      transcriptDirtyRef.current = false;
+      setTranscriptDraft(state.transcript || "");
+      transcriptDraftRef.current = state.transcript || "";
+      transcriptEpochRef.current = Number(state.transcript_epoch ?? 0);
+      setSummaryStale(false);
+      summaryRunActiveRef.current = false;
+      summarizedFromRef.current = "";
+    } else if (!transcriptDirtyRef.current && state.transcript !== transcriptDraftRef.current) {
+      setTranscriptDraft(state.transcript || "");
+      transcriptDraftRef.current = state.transcript || "";
+      transcriptEpochRef.current = Number(state.transcript_epoch ?? 0);
+    } else {
+      transcriptEpochRef.current = Number(state.transcript_epoch ?? 0);
+    }
     if (state.transcript && state.transcript !== lastTranscriptRef.current) {
       setResultTab("transcript");
     }
     lastTranscriptRef.current = state.transcript;
-  }, [state.transcript]);
+  }, [state.transcript, state.status, state.transcript_epoch]);
+
+  useEffect(() => {
+    const busySummary =
+      state.summary_status === "loading_model" ||
+      state.summary_status === "summarizing";
+    if (busySummary) {
+      if (!summaryRunActiveRef.current) {
+        summaryRunActiveRef.current = true;
+        summarizedFromRef.current = transcriptDraftRef.current;
+      }
+      return;
+    }
+    if (summaryRunActiveRef.current) {
+      summaryRunActiveRef.current = false;
+      if (state.summary_status === "completed" && state.summary?.trim()) {
+        setSummaryStale(transcriptDraftRef.current !== summarizedFromRef.current);
+      }
+    }
+  }, [state.summary_status, state.summary]);
 
   useEffect(() => {
     // Keep draft aligned when settings load/change from the bridge (not while typing).
@@ -411,6 +525,27 @@ export default function App() {
     };
   }, [state.session_id, state.session_title, state.summary_status, state.status]);
 
+  useEffect(() => {
+    if (!copyMenuOpen) return;
+
+    function onPointerDown(event: MouseEvent) {
+      if (!copyMenuRef.current?.contains(event.target as Node)) {
+        setCopyMenuOpen(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setCopyMenuOpen(false);
+    }
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [copyMenuOpen]);
+
   async function withApi(
     action: (api: Awaited<ReturnType<typeof getApi>>) => Promise<AppState>,
   ) {
@@ -418,6 +553,13 @@ export default function App() {
       const api = await getApi();
       const next = await action(api);
       const merged = mergeState(next);
+      transcriptEpochRef.current = Number(merged.transcript_epoch ?? 0);
+      if (transcriptDirtyRef.current) {
+        merged.transcript = transcriptDraftRef.current;
+      } else {
+        setTranscriptDraft(merged.transcript || "");
+        transcriptDraftRef.current = merged.transcript || "";
+      }
       setState(merged);
       setBridgeError(null);
       return merged;
@@ -439,13 +581,107 @@ export default function App() {
   const locked = busy || recording;
   const canTranscribe = Boolean(state.file_path) && !locked;
   const language = state.language || DEFAULT_LANGUAGE;
-  const hasTranscript = Boolean(state.transcript?.trim());
-  const audioLocked = hasTranscript;
-  const activeText =
-    resultTab === "summary" ? state.summary : state.transcript;
-  const canCopy = Boolean(activeText);
-  const canExport = Boolean(state.transcript?.trim() || state.summary?.trim());
+  const summaryLanguage =
+    state.summary_language || state.language || DEFAULT_LANGUAGE;
+  const displayTranscript = transcriptDraft;
+  const hasTranscript = Boolean(displayTranscript?.trim());
+  const audioLocked =
+    Boolean(state.session_id) ||
+    Boolean(state.transcript?.trim()) ||
+    hasTranscript;
+  const summaryText = state.summary || "";
+  const actionItemsText = extractActionItems(summaryText);
+  const canCopyTranscript = Boolean(displayTranscript?.trim());
+  const canCopySummary = Boolean(summaryText.trim());
+  const canCopyActionItems = Boolean(actionItemsText);
+  const canOpenCopyMenu =
+    canCopyTranscript || canCopySummary || canCopyActionItems;
+  const canExport = Boolean(displayTranscript?.trim() || summaryText.trim());
   const summaryLength = (state.summary_length || "normal") as SummaryLength;
+  const showRegenHint = summaryStale && Boolean(state.summary?.trim());
+
+  async function flushTranscript(): Promise<boolean> {
+    if (!transcriptDirtyRef.current) return true;
+    if (transcriptPersistTimer.current) {
+      window.clearTimeout(transcriptPersistTimer.current);
+      transcriptPersistTimer.current = null;
+    }
+    const flushEpoch = transcriptFlushEpochRef.current;
+    const basedOnEpoch = transcriptEpochRef.current;
+    const text = transcriptDraftRef.current;
+    try {
+      const api = await getApi();
+      if (flushEpoch !== transcriptFlushEpochRef.current) {
+        return false;
+      }
+      if (!transcriptDirtyRef.current) {
+        return true;
+      }
+      if (!api.update_transcript) {
+        setBridgeError(t("errors.bridgeUnavailable"));
+        return false;
+      }
+      const next = await api.update_transcript(text, basedOnEpoch);
+      if (flushEpoch !== transcriptFlushEpochRef.current) {
+        return false;
+      }
+      if (next.ok === false) {
+        setBridgeError(next.error || t("errors.bridgeUnavailable"));
+        return false;
+      }
+      const merged = mergeState(next);
+      transcriptDirtyRef.current = false;
+      const saved = merged.transcript || text;
+      setTranscriptDraft(saved);
+      transcriptDraftRef.current = saved;
+      transcriptEpochRef.current = Number(merged.transcript_epoch ?? basedOnEpoch + 1);
+      setState(merged);
+      setBridgeError(null);
+      return true;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : t("errors.bridgeUnavailable");
+      if (message.includes("Desktop bridge is not available")) {
+        resetApi();
+      }
+      setBridgeError(message);
+      return false;
+    }
+  }
+
+  function onTranscriptChange(value: string) {
+    transcriptDirtyRef.current = true;
+    setTranscriptDraft(value);
+    transcriptDraftRef.current = value;
+    setState((prev) => ({ ...prev, transcript: value }));
+    const summaryPresent = Boolean(state.summary?.trim());
+    const summarizingNow =
+      state.summary_status === "loading_model" ||
+      state.summary_status === "summarizing";
+    if (summaryPresent || summarizingNow) {
+      setSummaryStale(value !== summarizedFromRef.current);
+    }
+    if (transcriptPersistTimer.current) {
+      window.clearTimeout(transcriptPersistTimer.current);
+    }
+    transcriptPersistTimer.current = window.setTimeout(() => {
+      void flushTranscript();
+    }, 450);
+  }
+
+  function clearTranscriptDraft() {
+    transcriptFlushEpochRef.current += 1;
+    transcriptDirtyRef.current = false;
+    setTranscriptDraft("");
+    transcriptDraftRef.current = "";
+    setSummaryStale(false);
+    summaryRunActiveRef.current = false;
+    summarizedFromRef.current = "";
+    if (transcriptPersistTimer.current) {
+      window.clearTimeout(transcriptPersistTimer.current);
+      transcriptPersistTimer.current = null;
+    }
+  }
 
   async function onSelectFile() {
     await withApi((api) => api.select_file());
@@ -594,6 +830,8 @@ export default function App() {
   }
 
   async function onExportNotes() {
+    const flushed = await flushTranscript();
+    if (!flushed) return;
     try {
       const api = await getApi();
       if (!api.export_notes) {
@@ -601,7 +839,11 @@ export default function App() {
         return;
       }
       const next = await api.export_notes();
-      setState(mergeState(next));
+      const merged = mergeState(next);
+      if (transcriptDirtyRef.current) {
+        merged.transcript = transcriptDraftRef.current;
+      }
+      setState(merged);
       setBridgeError(null);
       if (next.ok) {
         setExported(true);
@@ -624,6 +866,8 @@ export default function App() {
 
   async function onSettingsPatch(
     patch: Partial<{
+      language: string;
+      summary_language: string;
       summary_preset: string;
       additional_instructions: string;
       summary_length: SummaryLength;
@@ -636,7 +880,12 @@ export default function App() {
   }
 
   async function onOpenSession(sessionId: string) {
-    await withApi((api) => api.open_session(sessionId));
+    clearTranscriptDraft();
+    const merged = await withApi((api) => api.open_session(sessionId));
+    if (merged?.summary?.trim()) {
+      summarizedFromRef.current = merged.transcript || "";
+      setSummaryStale(false);
+    }
     setResultTab("transcript");
   }
 
@@ -646,6 +895,7 @@ export default function App() {
       return;
     }
     teardownAudio();
+    clearTranscriptDraft();
     await withApi((api) => api.reset_for_another_file());
     setResultTab("transcript");
   }
@@ -669,6 +919,7 @@ export default function App() {
 
   async function onTranscribe() {
     setResultTab("transcript");
+    clearTranscriptDraft();
     await withApi((api) => api.start_transcription());
   }
 
@@ -686,6 +937,10 @@ export default function App() {
   }
 
   async function onSummarize() {
+    const flushed = await flushTranscript();
+    if (!flushed) return;
+    summarizedFromRef.current = transcriptDraftRef.current;
+    summaryRunActiveRef.current = true;
     await withApi((api) => api.start_summary());
   }
 
@@ -701,14 +956,10 @@ export default function App() {
     }, 450);
   }
 
-  async function onCopy() {
-    const text = activeText;
+  async function copyText(text: string) {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      if (copyTimer.current) window.clearTimeout(copyTimer.current);
-      copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
     } catch {
       // Fallback for environments without clipboard permissions
       const area = document.createElement("textarea");
@@ -719,10 +970,30 @@ export default function App() {
       area.select();
       document.execCommand("copy");
       document.body.removeChild(area);
-      setCopied(true);
-      if (copyTimer.current) window.clearTimeout(copyTimer.current);
-      copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
     }
+    setCopied(true);
+    setCopyMenuOpen(false);
+    if (copyTimer.current) window.clearTimeout(copyTimer.current);
+    copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function onCopyTarget(
+    target: "transcript" | "summary" | "action_items",
+  ) {
+    if (target === "transcript") {
+      const text = displayTranscript?.trim();
+      if (!text) return;
+      await copyText(text);
+      return;
+    }
+    if (target === "summary") {
+      const text = summaryText.trim();
+      if (!text) return;
+      await copyText(text);
+      return;
+    }
+    if (!actionItemsText) return;
+    await copyText(actionItemsText);
   }
 
   function onDragOver(e: DragEvent) {
@@ -1022,14 +1293,16 @@ export default function App() {
         )}
       </section>
 
-      <section className="panel row">
+      <section className="panel row language-row">
         <div className="field">
-          <h2>{t("language.title")}</h2>
-          <label className="sr-only" htmlFor="language-select">
-            {t("language.title")}
+          <h2>{t("language.transcriptTitle")}</h2>
+          <label className="sr-only" htmlFor="transcript-language-select">
+            {t("language.transcriptTitle")}
           </label>
           <LanguageSelect
             value={language}
+            inputId="transcript-language-select"
+            listAriaLabel={t("language.transcriptListAria")}
             disabled={locked || summaryBusy}
             onChange={(next) => void onLanguageChange(next)}
           />
@@ -1085,6 +1358,21 @@ export default function App() {
                 })}
               </p>
             )}
+
+            <div className="field">
+              <label className="field-label" htmlFor="summary-language-select">
+                {t("language.summaryTitle")}
+              </label>
+              <LanguageSelect
+                value={summaryLanguage}
+                inputId="summary-language-select"
+                listAriaLabel={t("language.summaryListAria")}
+                disabled={locked || summaryBusy}
+                onChange={(next) =>
+                  void onSettingsPatch({ summary_language: next })
+                }
+              />
+            </div>
 
             <div className="summary-settings-grid">
               <div className="field">
@@ -1301,24 +1589,87 @@ export default function App() {
               >
                 {exported ? <IconCheck /> : <IconExport />}
               </button>
-              <button
-                type="button"
-                className="btn secondary icon-btn"
-                onClick={() => void onCopy()}
-                disabled={!canCopy}
-                title={copied ? t("common.copied") : t("common.copy")}
-                aria-label={copied ? t("common.copied") : t("common.copy")}
-              >
-                {copied ? <IconCheck /> : <IconCopy />}
-              </button>
+              <div className="copy-menu" ref={copyMenuRef}>
+                <button
+                  type="button"
+                  className="btn secondary icon-btn"
+                  onClick={() => setCopyMenuOpen((open) => !open)}
+                  disabled={!canOpenCopyMenu}
+                  aria-haspopup="menu"
+                  aria-expanded={copyMenuOpen}
+                  aria-controls={copyMenuOpen ? copyMenuId : undefined}
+                  title={copied ? t("common.copied") : t("common.copy")}
+                  aria-label={copied ? t("common.copied") : t("result.copyMenu")}
+                >
+                  {copied ? <IconCheck /> : <IconCopy />}
+                </button>
+                {copyMenuOpen && (
+                  <ul
+                    id={copyMenuId}
+                    className="copy-menu-list"
+                    role="menu"
+                    aria-label={t("result.copyMenu")}
+                  >
+                    <li role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="copy-menu-option"
+                        disabled={!canCopyTranscript}
+                        onClick={() => void onCopyTarget("transcript")}
+                      >
+                        {t("result.copyTranscript")}
+                      </button>
+                    </li>
+                    <li role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="copy-menu-option"
+                        disabled={!canCopySummary}
+                        onClick={() => void onCopyTarget("summary")}
+                      >
+                        {t("result.copySummary")}
+                      </button>
+                    </li>
+                    <li role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="copy-menu-option"
+                        disabled={!canCopyActionItems}
+                        title={
+                          canCopyActionItems
+                            ? undefined
+                            : t("result.copyActionItemsUnavailable")
+                        }
+                        onClick={() => void onCopyTarget("action_items")}
+                      >
+                        {t("result.copyActionItems")}
+                      </button>
+                    </li>
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
 
           {resultTab === "transcript" ? (
-            <MarkdownBody
-              content={state.transcript}
-              emptyLabel={t("result.transcriptEmpty")}
-            />
+            <div className="transcript-edit">
+              <textarea
+                id="transcript-editor"
+                className="transcript-editor"
+                value={transcriptDraft}
+                onChange={(e) => onTranscriptChange(e.target.value)}
+                disabled={locked}
+                spellCheck
+                aria-label={t("result.transcript")}
+                placeholder={t("result.transcriptEmpty")}
+              />
+              {showRegenHint && (
+                <p className="transcript-edit-hint">{t("result.transcriptEditedHint")}</p>
+              )}
+            </div>
           ) : summaryBusy ? (
             <div className="summary-empty" aria-live="polite">
               <div className="summary-busy">

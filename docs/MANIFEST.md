@@ -144,6 +144,8 @@ The principle does not: **narrow responsibility, clear interfaces, independent e
 
 Operational docs: [docs/workflows/](workflows/), skills: [`.ai/skills/`](../.ai/skills/).
 
+The broader convention for the AI development system is recorded in [AI_CONVENTION.md](../AI_CONVENTION.md). Its process roadmap is recorded in [AI_SYSTEM_ROADMAP.md](../AI_SYSTEM_ROADMAP.md).
+
 ---
 
 # Product over implementation
@@ -206,6 +208,8 @@ Process evolution asks questions such as:
 - Were privacy or local-only invariants put at risk?
 
 Measurement informs judgment. It does not replace Product Owner decisions.
+
+Iteration-level memory should be durable, not reconstructed from chat. Use [docs/workflows/iteration-ledger.md](workflows/iteration-ledger.md) as the expected record shape when an iteration needs persistent process history.
 
 ---
 

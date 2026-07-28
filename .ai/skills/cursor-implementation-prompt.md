@@ -4,6 +4,10 @@
 
 Generate a strict, iteration-bounded prompt for Cursor to implement an approved Scribe roadmap slice. One shippable slice per cycle.
 
+**This skill is an internal / specialized implementation-handoff artifact generator.** The normal Product Owner-facing next step after scope approval is always `Use feature-manager.`, which creates or records this handoff as a sub-step. Do not present this skill as an alternative normal next action for the Product Owner.
+
+Maintainers or explicit low-level use may still invoke this skill directly when they need only the prompt artifact.
+
 ---
 
 ## Invocation
@@ -12,7 +16,7 @@ Generate a strict, iteration-bounded prompt for Cursor to implement an approved 
 Use cursor-implementation-prompt.
 ```
 
-(or via `Use feature-manager.` after human approves the slice)
+Prefer orchestration via `Use feature-manager.` after the Product Owner approves the slice. Feature-manager owns ledger/current-cycle updates for **implementation prompt prepared** → **implementation pending**.
 
 ---
 
@@ -30,6 +34,9 @@ Use cursor-implementation-prompt.
 | [TESTING.md](../../TESTING.md) | Verification baseline |
 | [docs/scenarios/](../../docs/scenarios/) | If user-facing flow touched |
 | [AGENTS.md](../../AGENTS.md) | Hard constraints |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Approved active iteration and current phase |
+| [`.ai/state/debt.md`](../state/debt.md) | Relevant accepted/deferred debt |
+| Active ledger in [docs/iterations/](../../docs/iterations/) | Approved scope and prior handoffs |
 | Approved roadmap recommendation | In/out of scope |
 | Latest implementation summary | Current gaps |
 
@@ -38,7 +45,9 @@ Use cursor-implementation-prompt.
 ## Preconditions
 
 - Human approved a bounded roadmap slice
+- Active iteration ledger and `.ai/state/current-cycle.json` exist
 - Slice fits one review cycle
+- Current phase is not already past implementation (do not regenerate as if review can start without an implementation summary)
 
 ---
 
@@ -49,6 +58,8 @@ Use cursor-implementation-prompt.
 - Scribe-appropriate verification commands
 - Require final response format from Cursor
 - Remind: do not commit unless asked; do not log meeting content; sync bridge types
+- Require Cursor to report the exact implementation summary needed for the ledger
+- After generating the prompt, the orchestrator (feature-manager) must record handoff state: prompt prepared, implementation pending — review must wait for the summary
 
 ---
 
@@ -56,6 +67,8 @@ Use cursor-implementation-prompt.
 
 - Does not implement, approve scope, review, or commit
 - Does not combine unrelated roadmap items
+- Does not start `codex-review` or imply review is ready before implementation completes
+- Does not replace feature-manager as the Product Owner-facing post-approval entrypoint
 
 ---
 
@@ -80,6 +93,9 @@ DOCUMENTS TO READ
 - docs/scenarios/<name>.md — <if applicable>
 - TESTING.md — relevant smoke rows
 - ROADMAP.md — <reference only>
+- .ai/state/current-cycle.json — active phase and approved scope
+- .ai/state/debt.md — relevant accepted/deferred debt
+- docs/iterations/<active-ledger>.md — approved scope and handoffs
 
 =========================================
 CURRENT STATE
@@ -175,6 +191,7 @@ Report:
 4. **Verification results**
 5. **Remaining work**
 6. **Documentation changes**
+7. **Ledger update details** — summary fields the agent manager should record
 
 Do not commit unless explicitly asked.
 ```
@@ -183,7 +200,7 @@ Do not commit unless explicitly asked.
 
 ## Human Checkpoints
 
-Human approval of the roadmap slice is **required** before generating this prompt.
+Human approval of the roadmap slice is **required** before generating this prompt. After approval, the Product Owner’s normal instruction is `Use feature-manager.` — not a choice between this skill and feature-manager.
 
 ---
 
@@ -194,3 +211,4 @@ Human approval of the roadmap slice is **required** before generating this promp
 - Verification is mandatory
 - Docs only when behavior changes
 - If docs and request conflict, stop and report
+- Implementation remains pending until the implementer returns a summary; only then is review ready

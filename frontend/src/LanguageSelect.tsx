@@ -17,6 +17,8 @@ interface LanguageSelectProps {
   value: string;
   disabled?: boolean;
   onChange: (code: string) => void;
+  inputId?: string;
+  listAriaLabel?: string;
 }
 
 function filterLanguages(query: string): WhisperLanguage[] {
@@ -32,6 +34,8 @@ export default function LanguageSelect({
   value,
   disabled = false,
   onChange,
+  inputId = "language-select",
+  listAriaLabel,
 }: LanguageSelectProps) {
   useI18n();
   const listId = useId();
@@ -130,7 +134,7 @@ export default function LanguageSelect({
       {open ? (
         <input
           ref={inputRef}
-          id="language-select"
+          id={inputId}
           className="language-select language-search"
           type="text"
           role="combobox"
@@ -149,7 +153,7 @@ export default function LanguageSelect({
       ) : (
         <button
           type="button"
-          id="language-select"
+          id={inputId}
           className="language-select language-trigger"
           disabled={disabled}
           aria-haspopup="listbox"
@@ -166,7 +170,7 @@ export default function LanguageSelect({
           id={listId}
           className="language-menu"
           role="listbox"
-          aria-label={t("language.listAria")}
+          aria-label={listAriaLabel || t("language.listAria")}
         >
           {filtered.length === 0 ? (
             <li className="language-empty" role="presentation">

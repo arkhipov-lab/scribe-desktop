@@ -20,7 +20,7 @@ from macos_app import configure_macos_app
 from memory import release_ml_memory
 from profile_config import get_app_name
 from recorder import CaptureRecorder, RecorderError, delete_path_quiet, is_temp_recording
-from settings import ensure_settings_file, merge_settings
+from settings import ensure_settings_file, merge_settings, summary_language_persisted
 from summarizer import (
     SummaryError,
     generate_session_title,
@@ -40,6 +40,7 @@ from history import (
     load_session,
     update_session_summary,
     update_session_title,
+    update_session_transcript,
     upsert_after_transcript,
 )
 from transcriber import (
@@ -137,7 +138,10 @@ class Api:
             "file_path": None,
             "file_name": None,
             "language": prefs["language"],
+            "summary_language": prefs["summary_language"],
+            "summary_language_persisted": summary_language_persisted(),
             "transcript": "",
+            "transcript_epoch": 0,
             "summary": "",
             "summary_status": "idle",
             "summary_error": None,
@@ -156,6 +160,7 @@ class Api:
             "session_title": None,
             "history_sidebar_open": bool(prefs.get("history_sidebar_open", True)),
             "used_language": None,
+            "used_summary_language": None,
             "used_whisper_model": None,
             "used_summary_model": None,
             "used_summary_preset": None,
@@ -172,6 +177,8 @@ class Api:
         snap = self._snapshot()
         return {
             "language": snap.get("language") or DEFAULT_LANGUAGE,
+            "summary_language": snap.get("summary_language")
+            or DEFAULT_LANGUAGE,
             "summary_preset": snap.get("summary_preset"),
             "additional_instructions": snap.get("additional_instructions") or "",
             "summary_length": snap.get("summary_length"),
@@ -184,6 +191,8 @@ class Api:
     def _apply_prefs(self, prefs: dict[str, Any]) -> None:
         self._update(
             language=prefs["language"],
+            summary_language=prefs["summary_language"],
+            summary_language_persisted=summary_language_persisted(),
             summary_preset=prefs["summary_preset"],
             additional_instructions=prefs["additional_instructions"],
             summary_length=prefs["summary_length"],
@@ -209,6 +218,11 @@ class Api:
 
     def _update(self, **kwargs: Any) -> None:
         with self._lock:
+            if "transcript" in kwargs and "transcript_epoch" not in kwargs:
+                kwargs = {
+                    **kwargs,
+                    "transcript_epoch": int(self._state.get("transcript_epoch") or 0) + 1,
+                }
             self._state.update(kwargs)
 
     def _discard_owned_temp(self, *, keep: str | None = None) -> None:
@@ -227,6 +241,7 @@ class Api:
         # Reflect what actually ran, even if history write fails.
         self._update(
             used_language=language,
+            used_summary_language=None,
             used_whisper_model=whisper_model,
             used_summary_model=None,
             used_summary_preset=None,
@@ -255,8 +270,12 @@ class Api:
         summary_model = str(snap.get("summary_model") or "")
         summary_preset = str(snap.get("summary_preset") or "")
         summary_length = str(snap.get("summary_length") or "")
+        summary_language = str(
+            snap.get("summary_language") or snap.get("language") or DEFAULT_LANGUAGE
+        )
         has_extra = bool(str(snap.get("additional_instructions") or "").strip())
         self._update(
+            used_summary_language=summary_language,
             used_summary_model=summary_model,
             used_summary_preset=summary_preset,
             used_summary_length=summary_length,
@@ -272,6 +291,7 @@ class Api:
                 summary_model=summary_model,
                 summary_preset=summary_preset,
                 summary_length=summary_length,
+                summary_language=summary_language,
                 has_extra_instructions=has_extra,
             )
             if entry:
@@ -306,6 +326,47 @@ class Api:
 
     def get_state(self) -> dict[str, Any]:
         return self._snapshot()
+
+    def update_transcript(
+        self, text: Any = None, based_on_epoch: Any = None
+    ) -> dict[str, Any]:
+        """Persist user-edited plain-text transcript (does not clear summary)."""
+        if text is None or not isinstance(text, str):
+            return self._snapshot() | {"ok": False, "error": "Invalid transcript."}
+        state = self._snapshot()
+        if state["status"] in {"loading_model", "transcribing", "recording"}:
+            return state | {
+                "ok": False,
+                "error": "Cannot edit transcript while transcription or recording is running.",
+            }
+        current_epoch = int(state.get("transcript_epoch") or 0)
+        if based_on_epoch is not None:
+            try:
+                expected = int(based_on_epoch)
+            except (TypeError, ValueError):
+                return state | {"ok": False, "error": "Invalid transcript epoch."}
+            if expected != current_epoch:
+                return state | {
+                    "ok": False,
+                    "error": "Transcript changed; edit discarded.",
+                }
+        cleaned = text.replace("\x00", "")
+        self._update(transcript=cleaned)
+        sid = self._snapshot().get("session_id")
+        if sid:
+            try:
+                entry = update_session_transcript(str(sid), cleaned)
+                if entry:
+                    self._update(session_title=entry.get("title") or state.get("session_title"))
+            except Exception:
+                log_exception("Failed to persist edited transcript to history")
+        self.logger.info(
+            "Transcript updated by user: chars=%s session=%s epoch=%s",
+            len(cleaned),
+            sid or "none",
+            int(self._snapshot().get("transcript_epoch") or 0),
+        )
+        return self._snapshot() | {"ok": True}
 
     def get_supported_extensions(self) -> list[str]:
         return sorted(SUPPORTED_EXTENSIONS)
@@ -718,6 +779,7 @@ class Api:
             return self._snapshot() | {"ok": False, "error": "Invalid settings."}
         allowed = {
             "language",
+            "summary_language",
             "summary_preset",
             "additional_instructions",
             "summary_length",
@@ -887,7 +949,9 @@ class Api:
             summary_error=None,
         )
         snap = self._snapshot()
-        language = str(snap.get("language") or DEFAULT_LANGUAGE)
+        language = str(
+            snap.get("summary_language") or snap.get("language") or DEFAULT_LANGUAGE
+        )
         language_name = WHISPER_LANGUAGES.get(language, language)
         preset_id = str(snap.get("summary_preset") or "")
         additional = str(snap.get("additional_instructions") or "")
@@ -1034,6 +1098,12 @@ class Api:
             file_path=file_path,
             file_name=file_name,
             language=meta.get("language") or self._snapshot().get("language"),
+            summary_language=(
+                meta.get("summary_language")
+                or meta.get("language")
+                or self._snapshot().get("summary_language")
+                or self._snapshot().get("language")
+            ),
             transcript=transcript,
             summary=summary,
             summary_status="completed" if summary.strip() else "idle",
@@ -1048,6 +1118,7 @@ class Api:
             whisper_model=meta.get("whisper_model") or self._snapshot().get("whisper_model"),
             summary_model=meta.get("summary_model") or self._snapshot().get("summary_model"),
             used_language=meta.get("language"),
+            used_summary_language=meta.get("summary_language") or meta.get("language"),
             used_whisper_model=meta.get("whisper_model"),
             used_summary_model=meta.get("summary_model"),
             used_summary_preset=meta.get("summary_preset"),
@@ -1081,6 +1152,7 @@ class Api:
                 session_id=None,
                 session_title=None,
                 used_language=None,
+                used_summary_language=None,
                 used_whisper_model=None,
                 used_summary_model=None,
                 used_summary_preset=None,
@@ -1127,6 +1199,7 @@ class Api:
             session_id=None,
             session_title=None,
             used_language=None,
+            used_summary_language=None,
             used_whisper_model=None,
             used_summary_model=None,
             used_summary_preset=None,

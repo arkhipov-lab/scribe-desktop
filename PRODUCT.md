@@ -57,7 +57,7 @@ First-launch defaults come from a local hardware probe: stronger Whisper/summary
 
 ## User controls summary shape
 
-Presets, summary length, language, and additional instructions shape notes. Model ids and token caps come from the backend catalog — not hard-coded in the UI.
+Presets, summary length, summary language (independent of transcript language; override under **Processing options**), and additional instructions shape notes. Model ids and token caps come from the backend catalog — not hard-coded in the UI.
 
 ## Export and history are local user-owned outputs
 
@@ -76,13 +76,13 @@ Open Scribe
       ↓
 Drop / select media  —or—  Record (mic + system audio)
       ↓
-Choose language + Processing options (optional)
+Choose transcript language + Processing options (optional; includes summary language override)
       ↓
 Transcribe (MLX Whisper)
       ↓
 Summary (MLX LM) when auto-summary is on, or Generate later
       ↓
-Review Transcript + Summary → Copy / Export / History
+Review Transcript (plain-text editable) + Summary → Copy / Export / History
 ```
 
 ---
@@ -92,11 +92,11 @@ Review Transcript + Summary → Copy / Export / History
 | Area | Behavior |
 | --- | --- |
 | Ingest | File select/drop (`.m4a`, `.mp3`, `.wav`, `.mp4`, `.mov`) or Record |
-| Transcription | Local mlx-whisper; language picker; cancel |
-| Summary | Local mlx-lm; presets, length, instructions; map-reduce for long text; cancel |
+| Transcription | Local mlx-whisper; transcript language picker; cancel; plain-text transcript editable in-app |
+| Summary | Local mlx-lm; presets, length, summary language (Processing options; defaults from UI locale), instructions; map-reduce for long text; cancel; Markdown display (not in-app editable yet) |
 | Models | Whisper small/medium; Qwen2.5 1.5B/3B 4-bit; catalog in `backend/model_catalog.py` |
-| History | On-disk sessions (meta, transcript, summary, optional audio) |
-| Export / playback | Local notes export; in-app playback of selected/recorded audio |
+| History | On-disk sessions (meta, transcript, summary, optional audio); transcript edits persist into the session |
+| Export / playback | Local notes export; partial copy (transcript / summary / action items); in-app playback of selected/recorded audio |
 
 Layer detail: [ARCHITECTURE.md](ARCHITECTURE.md). Pipeline detail: [AI_PIPELINE.md](AI_PIPELINE.md). Local paths: [LOCAL_DATA.md](LOCAL_DATA.md).
 

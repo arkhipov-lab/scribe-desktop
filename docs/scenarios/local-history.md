@@ -21,6 +21,7 @@ User can browse, open, and delete on-disk sessions without any cloud sync.
 - Index drives the sidebar (`index.json`).
 - Optional audio copy may be skipped for very large sources.
 - All history remains local user data.
+- User transcript edits persist into the session transcript file; reopening shows the edited plain text (summary unchanged until regenerate). See [editable-transcript.md](./editable-transcript.md).
 
 ## Edge cases
 

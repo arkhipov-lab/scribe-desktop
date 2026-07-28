@@ -34,6 +34,14 @@ Read these **before doing anything**:
 | [TESTING.md](../../TESTING.md) | Smoke expectations |
 | [AGENTS.md](../../AGENTS.md) | Agent constraints |
 | [docs/scenarios/](../../docs/scenarios/) | Relevant behavior specs |
+| [`.ai/org/`](../org/) | Reusable process mechanics and metrics context |
+| [`.ai/product/`](../product/) | Product-layer adapters for invariants, roadmap, and scenarios |
+| [`.ai/repo/`](../repo/) | Repository validation and stack adapters |
+| [`.ai/state/current-cycle.json`](../state/current-cycle.json) | Active/previous iteration state |
+| [`.ai/state/debt.md`](../state/debt.md) | Accepted/deferred engineering and process debt; planned process work |
+| [`.ai/state/product-followups.md`](../state/product-followups.md) | Product wishes / QA follow-ups — candidates only until human approval |
+| [docs/iterations/](../../docs/iterations/) | Latest iteration ledgers and retrospectives |
+| Latest product-analyst output | Evidence-based next-work comparison, if available |
 | Latest implementation summary / review / QA notes | Current cycle context |
 
 When docs conflict on **scope or architecture**, stop and ask the human.
@@ -52,9 +60,12 @@ When ROADMAP and PRODUCT diverge, **PRODUCT wins for value decisions**.
 ## Responsibilities
 
 - Identify current roadmap position vs shipped reality
+- Use product-analyst output when available; if absent, do the minimum evidence check needed before recommending a slice
 - Evaluate 2–3 candidate slices with product-value heuristics and ROI trade-offs
 - Prefer small shippable slices (one review cycle, one coherent behavior)
 - Prefer finishing open user-facing gaps over polish
+- Use the latest ledger, current-cycle state, debt register, and product-followups register as durable sources for previous iteration outcomes
+- May turn an open follow-up (`PP-*`) into a **bounded slice recommendation** only after Product Owner approval — do not auto-scope follow-ups into the active iteration
 - Prefer foundational UX/reliability before speculative ML (diarization, etc.) unless value is clear
 - Never recommend cloud sync, remote AI APIs, telemetry of meeting content, or non-arm64 platforms
 - Ask for explicit human approval before any implementation prompt
@@ -96,6 +107,7 @@ Recommend **pause implementation** when remaining candidates are polish-only, pr
 - Does **not** write code, review prompts, triage, or commit
 - Does **not** change ROADMAP/PRODUCT without human approval
 - Does **not** force a slice when pausing is higher value
+- Does **not** start implementation without creating or confirming the required iteration memory after approval
 
 ---
 
@@ -146,7 +158,8 @@ Recommend **pause implementation** when remaining candidates are polish-only, pr
 - **Why acceptable:**
 - **Implement later when:**
 
-**Product debt from deferral:**
+**Deferred product follow-ups / opportunity cost:**
+<capture new wishes in `.ai/state/product-followups.md` when deferring; do not file as review debt>
 ...
 
 **In scope:**
@@ -172,10 +185,12 @@ Recommend **pause implementation** when remaining candidates are polish-only, pr
 Small / Medium / Large
 
 **Human approval needed:**
-Yes — confirm before implementation prompt.
+Yes — confirm before implementation. After approval, the normal next step is `Use feature-manager.` (not a choice of specialized handoff skills).
 ```
 
 End with an approval question.
+
+If the human approves the recommendation in the same turn, create or update the iteration ledger and `.ai/state/current-cycle.json` before any implementation prompt is generated. Route through feature-manager for the implementation handoff.
 
 ---
 
@@ -198,5 +213,5 @@ After summary controls mostly shipped, prefer **separate transcript vs summary l
 ## Integration
 
 ```
-Roadmap Planner → Human approves → Feature Manager → Cursor → Review → Triage → Supervisor QA → Commit Manager
+Product Analyst → Roadmap Planner → Human approves → Feature Manager → (implementation pending → summary) → Review → Triage → Supervisor QA → Commit Manager → Retrospective
 ```

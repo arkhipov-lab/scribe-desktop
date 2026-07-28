@@ -15,27 +15,31 @@ This roadmap is a **hypothesis**. Prioritize using [PRODUCT.md](PRODUCT.md) and 
 
 ## P1 — Summary controls
 
-Most of this shipped (presets, length, additional instructions, auto-summary, local `settings.json`). Remaining:
+Most of this shipped (presets, length, additional instructions, auto-summary, local `settings.json`, independent transcript vs summary language). Remaining:
 
-### Separate transcript language vs summary language
+### Language UX follow-ups (from QA 2026-07-27)
 
-Allow e.g. transcribe in Russian, summarize in English (and the reverse). Whisper language and summary output language should be independent controls.
+Captured as product follow-ups `PP-2026-07-27-001` / `PP-2026-07-27-002` in [`.ai/state/product-followups.md`](.ai/state/product-followups.md) — do not lose these in chat; do not treat as review debt.
+
+- [x] Default **summary language** from system/UI language; hide the summary-language control in the primary flow and expose it under **Processing options** (override for power users)
+- [ ] Longer-term: reduce/remove language selectors from the direct flow; auto-detect **transcript language** from audio when reliable on-device
 
 ### Technical leftovers
 
 - [ ] Optional markdown post-process: drop duplicate headings, ensure expected sections, empty sections → localized “None”, then optional checklist UI  
 - [ ] Keep advanced model knobs (chunk size, raw token caps) behind an **Advanced** panel — easy to tank performance otherwise  
-- [ ] Separate transcript language vs summary language
+- [x] Separate transcript language vs summary language
 
 ---
 
 ## P2 — Editable results & export
 
-- [ ] Edit transcript and summary in-app before copy/export  
+- [x] Edit transcript in-app as plain text before copy/export (summary editing deferred — see `PP-2026-07-27-003`)
 - [x] Export `.md` and `.txt` (PDF optional later)  
 - [ ] `.srt` / `.vtt` once timestamps exist  
-- [ ] Partial copy actions: Copy transcript / Copy summary / Copy action items  
+- [x] Partial copy actions: Copy transcript / Copy summary / Copy action items  
 - [ ] Dedicated Action items view — parse the markdown section into a task list  
+- [ ] Edit summary in-app without a full Markdown document editor (`PP-2026-07-27-003`)
 
 ---
 
