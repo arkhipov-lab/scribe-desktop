@@ -1,8 +1,8 @@
 # Iteration: Control Height + Textarea No-Resize
 
-**Status:** retrospective
+**Status:** shipped
 **Date started:** 2026-07-28
-**Date completed:**
+**Date completed:** 2026-07-28
 **Commit:** `106183878bf941e473397112a622081926acf43d`
 
 ## Approved Scope
@@ -42,7 +42,7 @@
 | Triage / auto-fix | review-triage | loop 1 clean; review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human **passed** 2026-07-28 with follow-ups | done |
 | Commit prep | commit-manager | commit `1061838` created 2026-07-28 | done |
-| Retrospective | iteration-retrospective | — | pending |
+| Retrospective | iteration-retrospective | completed 2026-07-28; next planning → product-analyst | done |
 
 ## Implementation Phase
 
@@ -159,8 +159,77 @@ height so the chrome feels consistent; stop drag-resizing textareas.
 
 ## Metrics
 
-_(finalize at retrospective)_
+| Metric | Value | Source |
+| --- | --- | --- |
+| Elapsed time | ~overnight span (planning evening → commit next morning) | estimated |
+| Agent turns | ~10 user skill/step turns | estimated |
+| Approx token use | not measured | estimated |
+| Review loops | 1 | observed |
+| High findings | 0 | observed (structured) |
+| Medium findings | 0 | observed (structured) |
+| Low findings | 0 | observed (structured) |
+| Human decisions | 4 (approve polish; Option A; QA pass; commit) | observed |
+| QA outcome | passed | observed |
+| Outcome | shipped | observed |
 
 ## Retrospective
 
-_(pending)_
+# Iteration Retrospective — Control Height + Textarea No-Resize
+
+## Outcome
+
+- **Status:** shipped
+- **Commit:** `106183878bf941e473397112a622081926acf43d` (hash record `b354d9f`)
+- **QA:** passed
+
+## Metrics
+
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ~overnight span (evening planning → morning commit) | estimated | chat timestamps 2026-07-28; commits `1061838` / `b354d9f` |
+| Agent turns | ~10 user skill/step turns | estimated | analyst → planner → implement → review → triage/QA plan → QA pass → commit → retrospective |
+| Approx token use | not measured | estimated | no tooling report |
+| Review loops | 1 | observed | ledger / current-cycle |
+| High findings | 0 | observed | review-findings.json |
+| Medium findings | 0 | observed | review-findings.json |
+| Low findings | 0 | observed | review-findings.json |
+| Human decisions | 4 | observed | approve polish direction; Option A; QA pass; commit |
+| QA outcome | passed | observed | ledger |
+| Outcome | shipped | observed | commit + this retrospective |
+
+## Rework Analysis
+
+- **What caused rework:** None — review loop 1 clean (0 findings).
+- **What avoided rework:** Tight CSS-only scope; explicit height target (`.btn.icon-btn` 42px); frontend build before review; QA follow-ups routed to product-followups instead of expanding the slice.
+- **Human routine effort:** Authority checkpoints only (direction, Option A, QA, commit). No review-loop involvement.
+
+## Repeated Failure Analysis
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Asking human about routine Lows | No Lows this loop | no | none; keep auto-fix |
+| Clean first-loop CSS polish | 0 findings vs prior partial-copy 2 loops | yes (positive) | none; small visual slices remain high ROI for process health |
+| QA surfaces adjacent UX as follow-ups not fail | PP-2026-07-28-001..003 captured; slice still passed | yes (desired) | none; keep pass-with-follow-ups path |
+| Height change reveals neighboring layout debt | Settings panel + sidebar spacing noted after unify | new (adjacent UX) | planning: after chrome polish, prefer product-analyst on fresh PP-* before unrelated roadmap leaps |
+
+## Process Recommendations
+
+1. No process change recommended — one clean review loop, follow-ups captured correctly, gates held.
+2. _(optional)_ When Supervisor QA returns multiple adjacent UX wishes, keep them as separate PP-* rows (done here) so the next product-analyst pass can compare them without chat archaeology.
+
+## Debt / Planned Work Updates
+
+- **Debt register:** no new Open Debt
+- **Planned process work:** unchanged (P-004 still planned; schemas remain demand-driven)
+- **Product follow-ups captured:** yes — PP-2026-07-28-001, PP-2026-07-28-002, PP-2026-07-28-003 (plus prior PP-002 / PP-003)
+
+## Next Planning Input
+
+Use `product-analyst` (then roadmap-planner). Strong fresh candidates from this QA: `PP-2026-07-28-001` (settings panel layout), `PP-2026-07-28-003` (no control outlines — needs a11y stance), `PP-2026-07-28-002` (fullscreen sidebar fixed + show/hide — larger). Also still open: `PP-2026-07-27-003` (editable summary), `PP-2026-07-27-002` (language auto-detect), Action items view, process `P-2026-07-27-004`. Prefer a small UX polish (001 or 003) if wanting another fast ship; treat 002 as a shell/layout slice.
+
+## State Updates
+
+- Ledger: retrospective completed; status shipped; metrics finalized
+- Current cycle: `phase=shipped`, `retrospective=done`, `handoff.next_role=none`, commit hash retained
+- Structured review-findings.json: metrics aligned (0/0/0); empty findings
+- Debt register: unchanged

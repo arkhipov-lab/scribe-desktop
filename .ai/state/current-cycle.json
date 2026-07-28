@@ -4,9 +4,9 @@
     "id": "2026-07-28-control-height-ux",
     "name": "Control Height + Textarea No-Resize",
     "ledger_path": "docs/iterations/2026-07-28-control-height-ux.md",
-    "status": "retrospective",
+    "status": "shipped",
     "date_started": "2026-07-28",
-    "date_completed": null
+    "date_completed": "2026-07-28"
   },
   "approved_scope": {
     "source": "chat — Product Owner approved product-analyst control-height recommendation, then roadmap-planner Option A",
@@ -27,14 +27,14 @@
       "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64 platforms"
     ]
   },
-  "phase": "retrospective",
+  "phase": "shipped",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "pending",
+    "retrospective": "done",
     "commit_allowed": true,
     "committed": true
   },
@@ -46,7 +46,7 @@
     "latest_triage": "loop 1 clean; review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-28 by human Product Owner; follow-ups PP-2026-07-28-001..003",
     "latest_commit_prep": "commit 1061838 created 2026-07-28",
-    "latest_retrospective": null,
+    "latest_retrospective": "completed 2026-07-28; clean loop; next planning → product-analyst (PP-001/002/003 UX vs PP-003 editable summary)",
     "commit": "106183878bf941e473397112a622081926acf43d",
     "previous_iteration": "2026-07-28-partial-copy",
     "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Control Height + Textarea No-Resize 2026-07-28",
@@ -55,24 +55,22 @@
   },
   "metrics": {
     "review_loops": 1,
-    "human_decisions": 5,
+    "human_decisions": 4,
     "high_findings": 0,
     "medium_findings": 0,
     "low_findings": 0,
     "qa_outcome": "passed",
-    "outcome": null
+    "outcome": "shipped"
   },
   "handoff": {
-    "next_role": "iteration-retrospective",
-    "reason": "Commit landed; run retrospective then mark shipped",
-    "required_inputs": [
-      "docs/iterations/2026-07-28-control-height-ux.md",
-      "commit 106183878bf941e473397112a622081926acf43d"
-    ],
+    "next_role": "none",
+    "reason": "iteration shipped; start next planning from a fresh cycle via product-analyst / roadmap-planner (PP-2026-07-28-001/002/003 vs PP-003 vs PP-002 vs Action items view vs P-004)",
+    "required_inputs": [],
     "blocked_by": [],
     "latest_artifacts": [
       "docs/iterations/2026-07-28-control-height-ux.md",
       ".ai/state/current-cycle.json",
+      ".ai/state/product-followups.md",
       "106183878bf941e473397112a622081926acf43d"
     ]
   },
