@@ -1,9 +1,9 @@
 # Iteration: Control Height + Textarea No-Resize
 
-**Status:** commit-ready
+**Status:** retrospective
 **Date started:** 2026-07-28
 **Date completed:**
-**Commit:**
+**Commit:** `106183878bf941e473397112a622081926acf43d`
 
 ## Approved Scope
 
@@ -41,7 +41,7 @@
 | Review ready → Review | Codex | loop 1: 0 High, 0 Medium, 0 Low — clean | done |
 | Triage / auto-fix | review-triage | loop 1 clean; review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human **passed** 2026-07-28 with follow-ups | done |
-| Commit prep | commit-manager | prepared 2026-07-28; awaiting human commit approval | done |
+| Commit prep | commit-manager | commit `1061838` created 2026-07-28 | done |
 | Retrospective | iteration-retrospective | — | pending |
 
 ## Implementation Phase
@@ -122,7 +122,7 @@
 ## Commit Preparation
 
 **Prepared:** 2026-07-28
-**Commit:** _(awaiting human approval)_
+**Commit:** `106183878bf941e473397112a622081926acf43d` created 2026-07-28 after explicit human approval.
 
 Suggested message:
 

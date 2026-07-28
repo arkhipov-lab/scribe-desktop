@@ -4,7 +4,7 @@
     "id": "2026-07-28-control-height-ux",
     "name": "Control Height + Textarea No-Resize",
     "ledger_path": "docs/iterations/2026-07-28-control-height-ux.md",
-    "status": "commit-ready",
+    "status": "retrospective",
     "date_started": "2026-07-28",
     "date_completed": null
   },
@@ -27,7 +27,7 @@
       "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64 platforms"
     ]
   },
-  "phase": "commit-ready",
+  "phase": "retrospective",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
@@ -36,7 +36,7 @@
     "supervisor_qa": "passed",
     "retrospective": "pending",
     "commit_allowed": true,
-    "committed": false
+    "committed": true
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -45,17 +45,17 @@
     "latest_review": "loop 1: 0 High, 0 Medium, 0 Low — clean",
     "latest_triage": "loop 1 clean; review gate clean; route to supervisor-qa",
     "latest_qa": "passed 2026-07-28 by human Product Owner; follow-ups PP-2026-07-28-001..003",
-    "latest_commit_prep": "prepared 2026-07-28; awaiting human commit approval",
+    "latest_commit_prep": "commit 1061838 created 2026-07-28",
     "latest_retrospective": null,
-    "commit": null,
+    "commit": "106183878bf941e473397112a622081926acf43d",
     "previous_iteration": "2026-07-28-partial-copy",
     "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Control Height + Textarea No-Resize 2026-07-28",
     "latest_implementation_summary": "docs/iterations/2026-07-28-control-height-ux.md — Implementation Summary",
-    "human_involvement_reason": "Supervisor QA pass with follow-ups; commit approval pending 2026-07-28"
+    "human_involvement_reason": "Supervisor QA pass with follow-ups; commit approval 2026-07-28"
   },
   "metrics": {
     "review_loops": 1,
-    "human_decisions": 4,
+    "human_decisions": 5,
     "high_findings": 0,
     "medium_findings": 0,
     "low_findings": 0,
@@ -63,18 +63,17 @@
     "outcome": null
   },
   "handoff": {
-    "next_role": "human-product-owner",
-    "reason": "Commit preparation ready; human must explicitly approve creating the commit",
+    "next_role": "iteration-retrospective",
+    "reason": "Commit landed; run retrospective then mark shipped",
     "required_inputs": [
-      "Explicit commit approval from Product Owner"
+      "docs/iterations/2026-07-28-control-height-ux.md",
+      "commit 106183878bf941e473397112a622081926acf43d"
     ],
     "blocked_by": [],
     "latest_artifacts": [
       "docs/iterations/2026-07-28-control-height-ux.md",
       ".ai/state/current-cycle.json",
-      ".ai/state/product-followups.md",
-      "frontend/src/styles.css",
-      "TESTING.md"
+      "106183878bf941e473397112a622081926acf43d"
     ]
   },
   "last_updated": "2026-07-28"
