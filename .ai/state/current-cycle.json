@@ -4,9 +4,9 @@
     "id": "2026-07-28-recording-mix-sync",
     "name": "Recording Mix Sync (Phase 0 + Phase 1)",
     "ledger_path": "docs/iterations/2026-07-28-recording-mix-sync.md",
-    "status": "commit-ready",
+    "status": "shipped",
     "date_started": "2026-07-28",
-    "date_completed": null
+    "date_completed": "2026-07-28"
   },
   "approved_scope": {
     "source": "chat — Product Owner approved product-analyst recording-mix-sync recommendation, then roadmap-planner Option A",
@@ -30,16 +30,16 @@
       "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64 platforms"
     ]
   },
-  "phase": "commit-ready",
+  "phase": "shipped",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "pending",
+    "retrospective": "done",
     "commit_allowed": true,
-    "committed": false
+    "committed": true
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
@@ -48,35 +48,33 @@
     "latest_review": "loop 2: 0 High, 0 Medium, 0 Low — R1–R3 verified fixed; R2 smoke→QA",
     "latest_triage": "loop 2 clean; review gate clean; route to supervisor-qa",
     "latest_qa": "passed with follow-ups 2026-07-28 by human Product Owner; Phase 1 exit; PP-005..007",
-    "latest_commit_prep": "prepared 2026-07-28 — awaiting human approval",
-    "latest_retrospective": null,
-    "commit": null,
+    "latest_commit_prep": "commit 9d845b2 created 2026-07-28",
+    "latest_retrospective": "completed 2026-07-28; next planning → product-analyst (AEC PP-004/005 vs UX PP-* / PP-006/007)",
+    "commit": "9d845b2caaddc3b1ce21d5b6efd0f8cef27c7b3d",
     "previous_iteration": "2026-07-28-control-height-ux",
     "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Recording Mix Sync 2026-07-28",
     "latest_implementation_summary": "docs/iterations/2026-07-28-recording-mix-sync.md — Implementation Summary",
-    "human_involvement_reason": "Supervisor QA pass with follow-ups; Phase 1 scope (not Ideal)"
+    "human_involvement_reason": "Supervisor QA pass with follow-ups; commit approval 2026-07-28"
   },
   "metrics": {
     "review_loops": 2,
-    "human_decisions": 4,
+    "human_decisions": 5,
     "high_findings": 0,
     "medium_findings": 2,
     "low_findings": 1,
     "qa_outcome": "passed",
-    "outcome": null
+    "outcome": "shipped"
   },
   "handoff": {
-    "next_role": "human-product-owner",
-    "reason": "Commit preparation ready; awaiting explicit human approval to create commit",
-    "required_inputs": [
-      "Explicit commit approval"
-    ],
+    "next_role": "none",
+    "reason": "iteration shipped; start next planning from a fresh cycle via product-analyst / roadmap-planner (AEC PP-004/005 vs UX polish PP-001/003 vs PP-006/007)",
+    "required_inputs": [],
     "blocked_by": [],
     "latest_artifacts": [
       "docs/iterations/2026-07-28-recording-mix-sync.md",
-      "native/AudioRecorder.swift",
-      "backend/recorder.py",
-      ".ai/state/product-followups.md"
+      ".ai/state/current-cycle.json",
+      ".ai/state/product-followups.md",
+      "9d845b2caaddc3b1ce21d5b6efd0f8cef27c7b3d"
     ]
   },
   "last_updated": "2026-07-28"

@@ -1,9 +1,9 @@
 # Iteration: Recording Mix Sync (Phase 0 + Phase 1)
 
-**Status:** active
+**Status:** shipped
 **Date started:** 2026-07-28
-**Date completed:**
-**Commit:**
+**Date completed:** 2026-07-28
+**Commit:** `9d845b2caaddc3b1ce21d5b6efd0f8cef27c7b3d`
 
 ## Approved Scope
 
@@ -47,8 +47,8 @@
 | Review ready → Review | Codex | loop 2: 0 High, 0 Medium, 0 Low — R1–R3 verified fixed | done |
 | Triage / auto-fix | review-triage | loop 2 clean; review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan generated; human **passed with follow-ups** 2026-07-28 | done |
-| Commit prep | commit-manager | prepared 2026-07-28; awaiting human approval | pending |
-| Retrospective | iteration-retrospective | — | pending |
+| Commit prep | commit-manager | commit `9d845b2` created 2026-07-28 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-28; next planning → product-analyst (AEC vs UX PP-*) | done |
 
 ## Implementation Phase
 
@@ -163,14 +163,73 @@ Follow-ups: `PP-2026-07-28-005` (fixed-delay double / AEC), `PP-006` (overlap au
 
 ## Metrics
 
-| Metric | Value |
-| --- | --- |
-| Review loops | 2 |
-| Human decisions | 4 (analyst + planner + R2→QA + QA verdict) |
-| High / Medium / Low findings | 0 / 2 / 1 (all fixed) |
-| QA outcome | passed (with follow-ups) |
-| Outcome | |
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Review loops | 2 | observed | ledger / current-cycle |
+| Human decisions | 5 | observed | analyst; Option A; R2→QA; QA pass w/ follow-ups; commit |
+| High / Medium / Low findings | 0 / 2 / 1 (all fixed) | observed | review-findings.json |
+| QA outcome | passed (with follow-ups) | observed | ledger |
+| Outcome | shipped | observed | commit `9d845b2` + this retrospective |
 
 ## Retrospective
 
-_Pending._
+# Iteration Retrospective — Recording Mix Sync (Phase 0 + Phase 1)
+
+## Outcome
+
+- **Status:** shipped
+- **Commit:** `9d845b2caaddc3b1ce21d5b6efd0f8cef27c7b3d`
+- **QA:** passed (with follow-ups)
+
+## Metrics
+
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ~same calendar day (afternoon → evening) | estimated | chat + commit timestamp 2026-07-28 |
+| Agent turns | ~18 skill/step turns | estimated | analyst → planner → implement → review → triage → fix → re-review → triage/QA → TCC unblock → build.app → QA → commit → retrospective |
+| Approx token use | not measured | estimated | no tooling report |
+| Review loops | 2 | observed | ledger / current-cycle |
+| High findings | 0 | observed | review-findings.json |
+| Medium findings | 2 | observed | review-findings.json (R1, R2 fixed) |
+| Low findings | 1 | observed | review-findings.json (R3 fixed) |
+| Human decisions | 5 | observed | direction; Option A; R2 smoke→QA; QA verdict; commit |
+| QA outcome | passed | observed | ledger (Phase 1 scope; Ideal deferred) |
+| Outcome | shipped | observed | commit + this retrospective |
+
+## Rework Analysis
+
+- **What caused rework:** Review loop 1 Mediums (stop drain R1; missing Record smoke R2) + Low keep-raw docs (R3). R2 could not be closed by CLI smoke (TCC on `native/build/AudioRecorder`); PO waived to Supervisor QA.
+- **What avoided rework:** Initiative doc with Phase 1 vs Ideal tradeoffs; auto-fix without asking on R1/R3; pass-with-follow-ups for remaining bleed; local `build.sh` .app for QA after TCC confusion.
+- **Human routine effort:** Authority checkpoints + substantial QA matrix + TCC/permissions unblock (dev vs prod identity). More human time than CSS polish slices.
+
+## Repeated Failure Analysis
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Implementer compile-only when recording path changes | R2 Medium this cycle | yes (similar to “verification deferred to QA”) | skill: for native Record changes, prefer local `.app` smoke path in fix/verification notes; CLI helper TCC is unreliable |
+| Dev Record TCC ≠ prod Scribe.app | QA blocker mid-cycle; log showed `native/build` vs `/Applications/Scribe.app` | new / likely recurring | docs: DEVELOPMENT + TESTING § E tip on identity |
+| Ideal matrix wording vs Phase exit | PO unsure pass/fail despite Phase 1 exit met | new | supervisor-qa: label Phase exit vs Ideal Ideal rows explicitly |
+| Auto-fix High/Medium without asking | R1/R3 fixed; R2 process waiver asked PO | yes (desired) | none; keep policy |
+| Pass-with-follow-ups for Ideal remainder | PP-005..007 + PP-004 | yes (desired) | none |
+
+## Process Recommendations
+
+1. For recording/native slices: document that Screen Recording / Mic must be granted to the **dev host** (Terminal/Cursor) or a freshly built `dist/Scribe.app` — granting only `/Applications/Scribe.app` does not authorize `native/build/AudioRecorder`. Prefer `./scripts/build.sh` + open local `.app` for Supervisor QA when testing Record.
+2. When an initiative has phased Ideal vs slice exit: Supervisor QA plans should title criteria as “Phase N exit” vs “Ideal (later)” so PO is not asked to fail a sync slice for remaining acoustic bleed.
+
+## Debt / Planned Work Updates
+
+- **Debt register:** no new Open Debt
+- **Planned process work:** unchanged (optional later: bake recommendation 1 into DEVELOPMENT.md — do not edit without PO ask)
+- **Product follow-ups captured:** yes — `PP-2026-07-28-005`, `PP-006`, `PP-007`; `PP-004` updated for Phase 3 next
+
+## Next Planning Input
+
+Use `product-analyst` (then roadmap-planner). Primary candidate: Phase 3 AEC (`PP-004` / `PP-005`, initiative `recording-mix-aec-spike` then integrate). Secondary: UX polish `PP-001`/`PP-003`, overlap/`PP-006`, headphones levels/`PP-007`, editable summary `PP-2026-07-27-003`. Prefer AEC next if Ideal clean mix remains Critical.
+
+## State Updates
+
+- Ledger: retrospective completed; status shipped; metrics finalized
+- Current cycle: `phase=shipped`, `retrospective=done`, `handoff.next_role=none`, commit hash retained
+- Structured review-findings.json: metrics aligned (0/2/1 all fixed)
+- Debt register: unchanged
