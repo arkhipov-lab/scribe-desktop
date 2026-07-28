@@ -68,6 +68,7 @@ Run:
 4. Stop → a file is ready for transcription.
 5. Confirm a WAV under `~/Library/Caches/Scribe/recordings/` during/after capture.
 6. Selecting another file deletes the previous owned temp recording.
+7. **Mix sync QA (speakers):** remote speech should not appear as a multi-second delayed second copy. Optional: `SCRIBE_KEEP_RAW_RECORDING=1 ./scripts/run-dev.sh`, then after stop split tracks with `ffprobe` / `ffmpeg -map 0:a:0` and `0:a:1` on the kept `.m4a`. Check app.log for `DIAG: session_start` / drop counts (metadata only). Headphones should be no worse than before.
 
 ### F. ffmpeg
 

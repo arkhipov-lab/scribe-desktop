@@ -1,6 +1,6 @@
 # Initiative: Clean meeting mix (no double remote)
 
-**Status:** active — next work = Phase 0 diagnostics + Phase 1 sync  
+**Status:** active — Phase 0+1 exited (QA pass w/ follow-ups 2026-07-28); next = Phase 3 AEC (Phase 2 still optional)  
 **Opened:** 2026-07-28  
 **Owner roles:** product-analyst / roadmap-planner (slice scope) → feature-manager / implementer → human Supervisor QA  
 **Related:** [recording-to-transcript](../scenarios/recording-to-transcript.md), `native/AudioRecorder.swift`, `backend/recorder.py`  
@@ -83,7 +83,7 @@ Work **in order**. Do not skip Phase 1. Do not promote Phase 2 to product defaul
 **Breaks:** Nothing in product.  
 **Exit:** Written notes in this file or the first iteration ledger: “remote on both tracks?”, “Δ range?”.
 
-**Status:** pending
+**Status:** done — notes in ledger `2026-07-28-recording-mix-sync` (QA 2026-07-28): speakers still have remote on mic (bleed); Δ consistent / length-independent; transcript OK
 
 ---
 
@@ -103,7 +103,7 @@ Work **in order**. Do not skip Phase 1. Do not promote Phase 2 to product defaul
 **Exit:** On speakers, any remaining double is **short** (room-like), not seconds. Transcript no longer destroyed by huge delay.  
 **CPU:** Negligible.
 
-**Status:** pending — **next implementation slice after Phase 0 notes (or combined 0+1)**
+**Status:** done — QA 2026-07-28: remaining double is fixed-delay (not growing with duration); Whisper usable; acoustic bleed remains (Phase 3)
 
 ---
 
@@ -203,7 +203,7 @@ Phase 2 duck spike only if PO asks for a temporary mitigation before AEC.
 | 2026-07-28 | Root cause framed as system-on-both-tracks + timeline skew; own voice not doubled. |
 | 2026-07-28 | Ideal = clean dual source for transcript + listening; no paid AEC; no headphones-as-fix. |
 | 2026-07-28 | Ordered path: diagnostics → sync → (duck optional) → reference AEC → polish. VPIO not primary. |
-| 2026-07-28 | P0 transcript integrity over P1 beauty; light CPU; preserve overlaps. |
+| 2026-07-28 | Phase 0+1 QA: pass for sync slice — consistent fixed-delay double on speakers (transcript OK); Ideal clean remote still needs Phase 3 AEC. Overlap mic buried + headphones mic quiet → follow-ups. |
 
 ---
 

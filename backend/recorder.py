@@ -16,6 +16,16 @@ from transcriber import find_ffmpeg
 CACHE_DIR = Path.home() / "Library" / "Caches" / "Scribe" / "recordings"
 
 
+def _keep_raw_recording() -> bool:
+    """Dev/QA: keep pre-mix .m4a when SCRIBE_KEEP_RAW_RECORDING is truthy."""
+    return os.environ.get("SCRIBE_KEEP_RAW_RECORDING", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
 class RecorderError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
@@ -173,7 +183,7 @@ class CaptureRecorder:
                     return mixed_candidate
                 if raw_path.is_file() and raw_path.stat().st_size > 64:
                     mixed = self._mix_to_wav(raw_path)
-                    delete_path_quiet(raw_path)
+                    self._dispose_raw_after_mix(raw_path)
                     self._raw_path = None
                     self._started_at = None
                     return mixed
@@ -225,7 +235,7 @@ class CaptureRecorder:
             if raw_path is not None and raw_path.is_file() and raw_path.stat().st_size > 64:
                 try:
                     mixed = self._mix_to_wav(raw_path)
-                    delete_path_quiet(raw_path)
+                    self._dispose_raw_after_mix(raw_path)
                     self._raw_path = None
                     self._started_at = None
                     return mixed
@@ -241,7 +251,7 @@ class CaptureRecorder:
             )
 
         mixed = self._mix_to_wav(raw_path)
-        delete_path_quiet(raw_path)
+        self._dispose_raw_after_mix(raw_path)
         self._raw_path = None
         self._started_at = None
         return mixed
@@ -253,6 +263,12 @@ class CaptureRecorder:
         delete_path_quiet(self._raw_path)
         self._raw_path = None
         self._started_at = None
+
+    def _dispose_raw_after_mix(self, raw_path: Path) -> None:
+        if _keep_raw_recording():
+            self.logger.info("Keeping pre-mix raw recording path=%s", raw_path)
+            return
+        delete_path_quiet(raw_path)
 
     def _mix_to_wav(self, raw_path: Path) -> Path:
         ffmpeg = find_ffmpeg()

@@ -1,77 +1,82 @@
 {
   "schema_version": 1,
   "iteration": {
-    "id": "2026-07-28-control-height-ux",
-    "name": "Control Height + Textarea No-Resize",
-    "ledger_path": "docs/iterations/2026-07-28-control-height-ux.md",
-    "status": "shipped",
+    "id": "2026-07-28-recording-mix-sync",
+    "name": "Recording Mix Sync (Phase 0 + Phase 1)",
+    "ledger_path": "docs/iterations/2026-07-28-recording-mix-sync.md",
+    "status": "commit-ready",
     "date_started": "2026-07-28",
-    "date_completed": "2026-07-28"
+    "date_completed": null
   },
   "approved_scope": {
-    "source": "chat — Product Owner approved product-analyst control-height recommendation, then roadmap-planner Option A",
+    "source": "chat — Product Owner approved product-analyst recording-mix-sync recommendation, then roadmap-planner Option A",
     "date": "2026-07-28",
-    "goal": "Unify interactive control height to the icon-button standard (42px) for buttons, selects, and segmented controls; disable user resize on product textareas without breaking internal alignment.",
+    "goal": "Eliminate multi-second mic/system track skew so speaker-mode Record mixes no longer destroy remote speech for Whisper; keep headphones no worse; leave short acoustic bleed for later AEC.",
     "in_scope": [
-      "CSS (minimal markup/class tweaks only if needed) so .btn, language/select/combobox triggers, and .segmented match .btn.icon-btn height (42px)",
-      "Preserve vertical centering of labels/icons/chevrons inside those controls",
-      "resize: none for app textareas (transcript editor and other product textareas)",
-      "Light TESTING visual QA note if useful",
-      "Frontend build verification"
+      "Phase 0: keep/export pre-mix .m4a for QA; split tracks; matrix A–D notes (remote on both tracks? Δ range?) in ledger and/or initiative",
+      "Phase 1 Swift: shared timeline — do not start writer only from first system sample while dropping earlier mic; align startSession/PTS; avoid silent drop-on-!isReadyForMoreMediaData without queue and/or drop diagnostics",
+      "Re-run QA matrix A–D after sync; optional short transcribe (E) if feasible",
+      "Update initiative phase status on Phase 0/1 exit",
+      "Light TESTING § E / scenario tip only if agents/QA need a durable note (not full Phase 5 docs)"
     ],
     "out_of_scope": [
-      "Layout redesign, new components, color/theme changes",
-      "Backend / bridge / ML / i18n copy",
-      "PP-002, PP-003, Action items view, process work",
-      "Dist packaging",
+      "Phase 2 sidechain duck as product default",
+      "Phase 3 AEC (WebRTC/SpeexDSP/VPIO)",
+      "Phase 4 mix polish / Phase 5 full docs lock-in",
+      "Headphones-as-fix; paid AEC; cloud/audio APIs",
+      "Frontend UX polish follow-ups; summary editing; Action items",
+      "Dist packaging / notarization",
+      "Logging transcript or raw meeting audio content",
       "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64 platforms"
     ]
   },
-  "phase": "shipped",
+  "phase": "commit-ready",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "done",
+    "retrospective": "pending",
     "commit_allowed": true,
-    "committed": true
+    "committed": false
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
     "product_followups_register": ".ai/state/product-followups.md",
     "iteration_directory": "docs/iterations",
-    "latest_review": "loop 1: 0 High, 0 Medium, 0 Low — clean",
-    "latest_triage": "loop 1 clean; review gate clean; route to supervisor-qa",
-    "latest_qa": "passed 2026-07-28 by human Product Owner; follow-ups PP-2026-07-28-001..003",
-    "latest_commit_prep": "commit 1061838 created 2026-07-28",
-    "latest_retrospective": "completed 2026-07-28; clean loop; next planning → product-analyst (PP-001/002/003 UX vs PP-003 editable summary)",
-    "commit": "106183878bf941e473397112a622081926acf43d",
-    "previous_iteration": "2026-07-28-partial-copy",
-    "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Control Height + Textarea No-Resize 2026-07-28",
-    "latest_implementation_summary": "docs/iterations/2026-07-28-control-height-ux.md — Implementation Summary",
-    "human_involvement_reason": "Supervisor QA pass with follow-ups; commit approval 2026-07-28"
+    "latest_review": "loop 2: 0 High, 0 Medium, 0 Low — R1–R3 verified fixed; R2 smoke→QA",
+    "latest_triage": "loop 2 clean; review gate clean; route to supervisor-qa",
+    "latest_qa": "passed with follow-ups 2026-07-28 by human Product Owner; Phase 1 exit; PP-005..007",
+    "latest_commit_prep": "prepared 2026-07-28 — awaiting human approval",
+    "latest_retrospective": null,
+    "commit": null,
+    "previous_iteration": "2026-07-28-control-height-ux",
+    "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Recording Mix Sync 2026-07-28",
+    "latest_implementation_summary": "docs/iterations/2026-07-28-recording-mix-sync.md — Implementation Summary",
+    "human_involvement_reason": "Supervisor QA pass with follow-ups; Phase 1 scope (not Ideal)"
   },
   "metrics": {
-    "review_loops": 1,
+    "review_loops": 2,
     "human_decisions": 4,
     "high_findings": 0,
-    "medium_findings": 0,
-    "low_findings": 0,
+    "medium_findings": 2,
+    "low_findings": 1,
     "qa_outcome": "passed",
-    "outcome": "shipped"
+    "outcome": null
   },
   "handoff": {
-    "next_role": "none",
-    "reason": "iteration shipped; start next planning from a fresh cycle via product-analyst / roadmap-planner (PP-2026-07-28-001/002/003 vs PP-003 vs PP-002 vs Action items view vs P-004)",
-    "required_inputs": [],
+    "next_role": "human-product-owner",
+    "reason": "Commit preparation ready; awaiting explicit human approval to create commit",
+    "required_inputs": [
+      "Explicit commit approval"
+    ],
     "blocked_by": [],
     "latest_artifacts": [
-      "docs/iterations/2026-07-28-control-height-ux.md",
-      ".ai/state/current-cycle.json",
-      ".ai/state/product-followups.md",
-      "106183878bf941e473397112a622081926acf43d"
+      "docs/iterations/2026-07-28-recording-mix-sync.md",
+      "native/AudioRecorder.swift",
+      "backend/recorder.py",
+      ".ai/state/product-followups.md"
     ]
   },
   "last_updated": "2026-07-28"

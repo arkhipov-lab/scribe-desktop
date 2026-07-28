@@ -78,6 +78,8 @@ Bridge: `list_sessions`, `open_session`, `delete_session`. See [docs/scenarios/l
 
 WAVs produced by Record (Swift helper + ffmpeg mix). Owned temp files are **deleted** when the user selects, drops, or records another file. Do not leave orphaned sensitive audio in world-readable locations.
 
+Dev/QA only: set `SCRIBE_KEEP_RAW_RECORDING=1` to keep the pre-mix dual-track `.m4a` beside the WAV after stop (for track split / sync diagnostics). Still local cache only — do not share meeting audio. Unset the env when finished; delete kept `.m4a` files from this cache after diagnosing — leaving the flag on accumulates meeting audio.
+
 ---
 
 ## Logs
