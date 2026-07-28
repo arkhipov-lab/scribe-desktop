@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import signal
 import subprocess
 import threading
@@ -11,9 +12,20 @@ from datetime import datetime
 from pathlib import Path
 
 from logger import get_logger, log_exception
+from output_route import OutputRouteInfo, classify_default_output_route
 from transcriber import find_ffmpeg
 
 CACHE_DIR = Path.home() / "Library" / "Caches" / "Scribe" / "recordings"
+
+# Dual-track .m4a from AudioRecorder: stream 0 = system, stream 1 = mic.
+_SYSTEM_TRACK = "0:a:0"
+_MIC_TRACK = "0:a:1"
+
+# Clamp mic gain when level-matching toward system (dB).
+_LEVEL_MATCH_GAIN_MIN_DB = -12.0
+_LEVEL_MATCH_GAIN_MAX_DB = 24.0
+# Only analyze this many seconds for mean_volume (start of file) so Stop stays light.
+_LEVEL_MATCH_DETECT_WINDOW_S = 30.0
 
 
 def _keep_raw_recording() -> bool:
@@ -276,22 +288,41 @@ class CaptureRecorder:
             raise RecorderError("ffmpeg not found. Install ffmpeg with: brew install ffmpeg")
 
         out = raw_path.with_suffix(".wav")
-        # Prefer mixing both audio tracks when present; fall back to first track.
-        cmd_mix = [
-            str(ffmpeg),
-            "-y",
-            "-i",
-            str(raw_path),
-            "-filter_complex",
-            "[0:a:0][0:a:1]amix=inputs=2:duration=longest:normalize=0",
-            "-ac",
-            "1",
-            "-ar",
-            "16000",
-            str(out),
-        ]
-        mixed = subprocess.run(cmd_mix, capture_output=True, text=True)
-        if mixed.returncode == 0 and out.is_file() and out.stat().st_size > 64:
+        route = classify_default_output_route()
+        mode = route.finalize_mode
+        self.logger.info(
+            "Recording finalize route_class=%s mode=%s transport=%s data_source=%s reason=%s",
+            route.route_class.value,
+            mode,
+            route.transport,
+            route.data_source or "none",
+            route.reason,
+        )
+
+        if mode == "mic_only":
+            if self._ffmpeg_extract_track(ffmpeg, raw_path, out, _MIC_TRACK):
+                return out
+            self.logger.warning(
+                "Mic-only finalize failed; falling back to level-match amix "
+                "(will not drop remote)"
+            )
+            route = OutputRouteInfo(
+                route_class=route.route_class,
+                transport=route.transport,
+                data_source=route.data_source,
+                device_id=route.device_id,
+                reason=f"{route.reason}+mic_extract_fallback",
+            )
+
+        if self._ffmpeg_level_match_amix(ffmpeg, raw_path, out, route):
+            return out
+
+        # Dual-track path failed — salvage any single stream rather than delete.
+        if self._ffmpeg_extract_track(ffmpeg, raw_path, out, _SYSTEM_TRACK):
+            self.logger.warning("Finalize fell back to system track only")
+            return out
+        if self._ffmpeg_extract_track(ffmpeg, raw_path, out, _MIC_TRACK):
+            self.logger.warning("Finalize fell back to mic track only")
             return out
 
         cmd_single = [
@@ -306,10 +337,152 @@ class CaptureRecorder:
             str(out),
         ]
         single = subprocess.run(cmd_single, capture_output=True, text=True)
-        if single.returncode != 0 or not out.is_file():
-            self.logger.error("ffmpeg mix failed: %s | %s", mixed.stderr, single.stderr)
+        if single.returncode != 0 or not out.is_file() or out.stat().st_size <= 64:
+            self.logger.error("ffmpeg finalize failed: %s", (single.stderr or "")[:500])
             raise RecorderError("Could not finalize the recording audio.")
         return out
+
+    def _ffmpeg_extract_track(
+        self,
+        ffmpeg: Path,
+        raw_path: Path,
+        out: Path,
+        track: str,
+    ) -> bool:
+        cmd = [
+            str(ffmpeg),
+            "-y",
+            "-i",
+            str(raw_path),
+            "-map",
+            track,
+            "-ac",
+            "1",
+            "-ar",
+            "16000",
+            str(out),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        return result.returncode == 0 and out.is_file() and out.stat().st_size > 64
+
+    def _ffmpeg_level_match_amix(
+        self,
+        ffmpeg: Path,
+        raw_path: Path,
+        out: Path,
+        route: OutputRouteInfo,
+    ) -> bool:
+        """amix(level_match(mic), system). Track 0 = system, track 1 = mic."""
+        gain_db = self._mic_level_match_gain_db(ffmpeg, raw_path)
+        self.logger.info(
+            "Recording level-match mic_gain_db=%.1f route_class=%s",
+            gain_db,
+            route.route_class.value,
+        )
+        filter_complex = (
+            f"[{_SYSTEM_TRACK}]aformat=channel_layouts=mono[sys];"
+            f"[{_MIC_TRACK}]aformat=channel_layouts=mono,volume={gain_db:.2f}dB[mic];"
+            f"[sys][mic]amix=inputs=2:duration=longest:normalize=0[mix]"
+        )
+        cmd = [
+            str(ffmpeg),
+            "-y",
+            "-i",
+            str(raw_path),
+            "-filter_complex",
+            filter_complex,
+            "-map",
+            "[mix]",
+            "-ac",
+            "1",
+            "-ar",
+            "16000",
+            str(out),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0 and out.is_file() and out.stat().st_size > 64:
+            return True
+
+        # Plain amix without level match (still keeps both tracks).
+        self.logger.warning(
+            "Level-match amix failed; retrying plain amix (%s)",
+            (result.stderr or "")[:300],
+        )
+        cmd_plain = [
+            str(ffmpeg),
+            "-y",
+            "-i",
+            str(raw_path),
+            "-filter_complex",
+            f"[{_SYSTEM_TRACK}][{_MIC_TRACK}]amix=inputs=2:duration=longest:normalize=0",
+            "-ac",
+            "1",
+            "-ar",
+            "16000",
+            str(out),
+        ]
+        plain = subprocess.run(cmd_plain, capture_output=True, text=True)
+        return plain.returncode == 0 and out.is_file() and out.stat().st_size > 64
+
+    def _mic_level_match_gain_db(self, ffmpeg: Path, raw_path: Path) -> float:
+        """Gain (dB) so mic mean volume approaches system mean; clamped.
+
+        Means are estimated from the first ``_LEVEL_MATCH_DETECT_WINDOW_S``
+        seconds only so long recordings do not stall Stop on full-file decode.
+        """
+        window_s = _LEVEL_MATCH_DETECT_WINDOW_S
+        sys_mean = self._volumedetect_mean_db(ffmpeg, raw_path, _SYSTEM_TRACK, window_s)
+        mic_mean = self._volumedetect_mean_db(ffmpeg, raw_path, _MIC_TRACK, window_s)
+        if sys_mean is None or mic_mean is None:
+            self.logger.info(
+                "Level-match skipped (volumedetect unavailable) window_s=%.1f",
+                window_s,
+            )
+            return 0.0
+        raw_gain = sys_mean - mic_mean
+        gain = max(_LEVEL_MATCH_GAIN_MIN_DB, min(_LEVEL_MATCH_GAIN_MAX_DB, raw_gain))
+        self.logger.info(
+            "Level-match window_s=%.1f system_db=%.1f mic_db=%.1f "
+            "raw_gain_db=%.1f clamped_db=%.1f",
+            window_s,
+            sys_mean,
+            mic_mean,
+            raw_gain,
+            gain,
+        )
+        return gain
+
+    def _volumedetect_mean_db(
+        self,
+        ffmpeg: Path,
+        raw_path: Path,
+        track: str,
+        window_s: float = _LEVEL_MATCH_DETECT_WINDOW_S,
+    ) -> float | None:
+        # Cap decode: analyze from the start of the file only (stable, cheap).
+        cmd = [
+            str(ffmpeg),
+            "-i",
+            str(raw_path),
+            "-t",
+            f"{window_s:.3f}",
+            "-map",
+            track,
+            "-af",
+            "volumedetect",
+            "-f",
+            "null",
+            "-",
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        text = (result.stderr or "") + (result.stdout or "")
+        match = re.search(r"mean_volume:\s*([-\d.]+)\s*dB", text)
+        if not match:
+            return None
+        try:
+            return float(match.group(1))
+        except ValueError:
+            return None
 
     def _terminate_quiet(self) -> None:
         proc = self._proc

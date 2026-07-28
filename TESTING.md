@@ -70,7 +70,8 @@ Run:
 6. Selecting another file deletes the previous owned temp recording.
 7. **Mix sync QA (speakers):** remote speech should not appear as a multi-second delayed second copy. Optional: `SCRIBE_KEEP_RAW_RECORDING=1` via `open --env SCRIBE_KEEP_RAW_RECORDING=1 ./dist/Scribe.app` (preferred for TCC), then after stop split tracks with `ffprobe` / `ffmpeg -map 0:a:0` and `0:a:1` on the kept `.m4a`. Check app.log for `DIAG: session_start` / drop counts (metadata only). Headphones should be no worse than before.
 8. **AEC spike (dev only, not product):** `SCRIBE_AEC_SPIKE=1 python3 scripts/aec-spike.py --input <dual.m4a> --outdir /tmp/scribe-aec-spike` after `brew install speexdsp`. Speex cancel was **not** proven in QA 2026-07-29 — tool remains for experiments. See [DEVELOPMENT.md](DEVELOPMENT.md).
-9. **Clean-mix Ideal (not shipped yet):** dual-path finalize — speakers/no headphones → mic-only; headphones → mic+system with mic level match. Track [recording-clean-mix](docs/initiatives/recording-clean-mix.md) / `PP-2026-07-29-001`. Do not fail current Record for Ideal until that slice ships.
+9. **Dual-path finalize:** on **speakers** (no headphones), product WAV should be **mic-only** (no digital+acoustic double of remote). On **headphones** / BT earbuds, product WAV should include **system + level-matched mic**. Check `~/Library/Logs/Scribe/app.log` for `Recording finalize route_class=… mode=…` (metadata only — no audio bodies). Unknown routes (USB/HDMI/etc.) use mix mode. Matrix A–E: [recording-clean-mix](docs/initiatives/recording-clean-mix.md) / `PP-2026-07-29-001`.
+   - **Edges:** Bluetooth *room* speakers are still classified private → mix (possible double). USB / HDMI / AirPlay / aggregate → unknown → mix. Route is sampled at **stop** (mid-call plug/unplug uses the end-of-recording route). Level-match analyzes only a short window (~30s from start), not the full file.
 
 ### F. ffmpeg
 

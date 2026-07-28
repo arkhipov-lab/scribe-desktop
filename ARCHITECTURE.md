@@ -59,8 +59,8 @@ Scribe is a single-window macOS desktop app. The UI is a React SPA hosted inside
 
 - Python finds and launches the **AudioRecorder** Mach-O helper.
 - Helper uses **ScreenCaptureKit** (+ AVFoundation) for microphone **and** system audio.
-- Today the product WAV is typically an ffmpeg **`amix`** of both tracks. On speakers this can **double** remote (digital system + acoustic bleed on mic). Initiative Ideal: **dual-path finalize** (mic-only without headphones; leveled mic+system with headphones) — see [docs/initiatives/recording-clean-mix.md](../docs/initiatives/recording-clean-mix.md). Not shipped until that slice lands.
-- Raw capture is mixed/normalized with ffmpeg into a WAV under:
+- Dual-track capture (system + mic) always. On stop, **dual-path finalize** (`backend/output_route.py` + `recorder.py`): **speakers / open air** → product WAV from **mic track only**; **headphones / Bluetooth private** → ffmpeg **`amix`** after mic level-match toward system; **unknown** route (USB/HDMI/AirPlay/etc.) → headphones-style mix so remote is not dropped. See [docs/initiatives/recording-clean-mix.md](../docs/initiatives/recording-clean-mix.md).
+- Finalized WAV under:
 
   ```text
   ~/Library/Caches/Scribe/recordings/

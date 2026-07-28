@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "iteration_id": "2026-07-28-recording-mix-aec-spike",
-  "last_updated": "2026-07-28",
+  "iteration_id": "2026-07-29-recording-mix-dual-path",
+  "last_updated": "2026-07-29",
   "findings": [
     {
       "id": "R1",
       "review_loop": 1,
       "severity": "Medium",
       "status": "fixed",
-      "summary": "When --ref-delay-ms>0, delayed ref is used for mix_plain/mix_aec system track, skewing listen compares",
-      "location": "scripts/aec-spike.py:259-292",
+      "summary": "Full-file dual volumedetect + amix on sync stop_recording can stall long headphone finalizes; no 30–60min CPU note",
+      "location": "backend/recorder.py:425-460",
       "owner": "implementation-agent",
-      "resolution": "Delay only aec_ref_pcm; mix_sys_pcm / system_aligned / mixes stay undelayed",
+      "resolution": "volumedetect capped to first 30s (-t); log window_s; mic_only unchanged; ledger CPU note — verified on re-review",
       "debt_id": null,
       "product_followup_id": null
     },
@@ -20,10 +20,10 @@
       "review_loop": 1,
       "severity": "Low",
       "status": "fixed",
-      "summary": "--ref-delay-ms help text mismatches implementation; unused locals",
-      "location": "scripts/aec-spike.py:227-231",
+      "summary": "LOCAL_DATA still describes Record as always ffmpeg mix; dual-path finalize not mentioned",
+      "location": "LOCAL_DATA.md:79",
       "owner": "implementation-agent",
-      "resolution": "Help text matches pad-ref behavior; removed unused delay_bytes and write_pcm16 n",
+      "resolution": "LOCAL_DATA dual-path wording — verified on re-review",
       "debt_id": null,
       "product_followup_id": null
     },
@@ -32,10 +32,10 @@
       "review_loop": 1,
       "severity": "Low",
       "status": "fixed",
-      "summary": "DEVELOPMENT Record permission tip has broken and/`native phrasing",
-      "location": "DEVELOPMENT.md:98",
+      "summary": "Detection edge cases (BT speakers, USB, route-at-stop) under-documented vs initiative exit notes",
+      "location": "TESTING.md:73",
       "owner": "implementation-agent",
-      "resolution": "Fixed to and/or native/build/AudioRecorder",
+      "resolution": "TESTING § E + scenario edges — verified on re-review",
       "debt_id": null,
       "product_followup_id": null
     }

@@ -76,7 +76,7 @@ Bridge: `list_sessions`, `open_session`, `delete_session`. See [docs/scenarios/l
 
 **Path:** `~/Library/Caches/Scribe/recordings/`
 
-WAVs produced by Record (Swift helper + ffmpeg mix). Owned temp files are **deleted** when the user selects, drops, or records another file. Do not leave orphaned sensitive audio in world-readable locations.
+WAVs produced by Record (Swift helper + dual-path finalize). Capture is always dual-track; on stop the product WAV is **mic-only** when the default output is built-in speakers, or a **level-matched mic + system `amix`** when headphones/Bluetooth (or unknown route — never drop remote). Owned temp files are **deleted** when the user selects, drops, or records another file. Do not leave orphaned sensitive audio in world-readable locations.
 
 Dev/QA only: set `SCRIBE_KEEP_RAW_RECORDING=1` to keep the pre-mix dual-track `.m4a` beside the WAV after stop (for track split / sync diagnostics). Still local cache only — do not share meeting audio. Unset the env when finished; delete kept `.m4a` files from this cache after diagnosing — leaving the flag on accumulates meeting audio.
 

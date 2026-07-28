@@ -1,6 +1,6 @@
 # Initiative: Clean meeting mix (no double remote)
 
-**Status:** active — Phase 3 AEC spike **done** (QA pass w/ follow-ups 2026-07-29); **current Ideal direction = dual-path finalize** (`PP-2026-07-29-001`); Phase 0+1 done  
+**Status:** active — Phase 3′ dual-path **QA passed** (`recording-mix-dual-path`, 2026-07-29); pending commit; Phase 3 AEC spike done; Phase 0+1 done
 **Opened:** 2026-07-28  
 **Owner roles:** product-analyst / roadmap-planner (slice scope) → feature-manager / implementer → human Supervisor QA  
 **Related:** [recording-to-transcript](../scenarios/recording-to-transcript.md), `native/AudioRecorder.swift`, `backend/recorder.py`  
@@ -10,7 +10,7 @@
 
 ## Problem
 
-In-app Record captures **system audio** (ScreenCaptureKit) and **microphone**, then ffmpeg `amix`es both tracks into one WAV.
+In-app Record captures **system audio** (ScreenCaptureKit) and **microphone**. Historically ffmpeg always `amix`ed both into one WAV (which doubles remote on speakers). Product finalize is now **dual-path** (mic-only vs leveled amix by output route) — see Phase 3′.
 
 Observed:
 
@@ -45,7 +45,7 @@ headphones connected
      (remote from system; boost mic toward remote amplitude)
 ```
 
-**Still required before ship:** reliable headphone (or “private listen”) detection on macOS; safe fallback if detection is wrong; matrix A–E including headphones.
+**Ship gate:** Supervisor QA matrix A–E (speakers + headphones) on `recording-mix-dual-path`. Detection: Core Audio default-output transport + data source (`backend/output_route.py`); unknown → mix.
 
 ### Deferred / backup Ideal paths
 
@@ -137,7 +137,7 @@ Work **in order** for Phases 0–1 (done). After 2026-07-29, **prefer Phase 3′
 **CPU:** Very low (route check + optional level match + amix).  
 **Exit:** Matrix A–E pass; detection notes in ledger.
 
-**Status:** **next** — plan slice e.g. `recording-mix-dual-path` (detection spike optional then integrate). Follow-up: `PP-2026-07-29-001`.
+**Status:** **QA passed** — slice `recording-mix-dual-path` (2026-07-29); close Ideal / PP-001 on commit. Follow-up: `PP-2026-07-29-001`.
 
 ---
 
@@ -157,7 +157,7 @@ Work **in order** for Phases 0–1 (done). After 2026-07-29, **prefer Phase 3′
 
 **Work:** Update [recording-to-transcript](../scenarios/recording-to-transcript.md), [TESTING.md](../../TESTING.md) § recording, [ARCHITECTURE.md](../../ARCHITECTURE.md) / [DECISIONS.md](../../DECISIONS.md) when finalize path ships; close `PP-2026-07-28-004` when Ideal exit met.
 
-**Status:** pending (scenario already points at initiative for evolving finalize)
+**Status:** **partial** — scenario / TESTING § E / ARCHITECTURE updated with dual-path; close when QA passes and Ideal exit met (`PP-004` / `PP-001`)
 
 ---
 
@@ -195,6 +195,8 @@ Phase 2 duck spike only if PO asks.
 | 2026-07-28 | Phase 3 starts with offline AEC spike (`recording-mix-aec-spike`); integrate is a later slice. Phase 2 duck still not product default. |
 | 2026-07-28 | Spike tool: `scripts/aec-spike.py` + Homebrew SpeexDSP (ctypes). CPU ~150× realtime (arm64). |
 | 2026-07-29 | Speex cancel **not** proven on speakers fixtures. **Ideal direction changed:** dual-path finalize — no headphones → **mic-only**; headphones → **mic+system with mic level matched to remote**. AEC integrate deprioritized (`PP-2026-07-29-001`, `002`). Next slice: `recording-mix-dual-path`. |
+| 2026-07-29 | PO approved product-analyst + roadmap **Option A** — start iteration `recording-mix-dual-path` (Phase 3′). |
+| 2026-07-29 | Dual-path **QA passed** (speakers; BT headphones; aux headphones; mid-record speakers→BT). Follow-ups: UI show I/O devices (`PP-2026-07-29-003`); headset-mic default question (`PP-2026-07-29-004`). |
 
 ---
 
