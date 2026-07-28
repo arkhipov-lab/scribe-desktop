@@ -1,28 +1,29 @@
 {
   "schema_version": 1,
-  "iteration_id": "2026-07-28-recording-mix-sync",
+  "iteration_id": "2026-07-28-recording-mix-aec-spike",
+  "last_updated": "2026-07-28",
   "findings": [
     {
       "id": "R1",
       "review_loop": 1,
       "severity": "Medium",
       "status": "fixed",
-      "summary": "stop() single-pass flush can discard remaining pending samples without retry or drop count",
-      "location": "native/AudioRecorder.swift:184-217",
+      "summary": "When --ref-delay-ms>0, delayed ref is used for mix_plain/mix_aec system track, skewing listen compares",
+      "location": "scripts/aec-spike.py:259-292",
       "owner": "implementation-agent",
-      "resolution": "drainPendingAtStop retries flush for ~1s; leftovers counted as drops_at_stop in DIAG",
+      "resolution": "Delay only aec_ref_pcm; mix_sys_pcm / system_aligned / mixes stay undelayed",
       "debt_id": null,
       "product_followup_id": null
     },
     {
       "id": "R2",
       "review_loop": 1,
-      "severity": "Medium",
+      "severity": "Low",
       "status": "fixed",
-      "summary": "No Record→Stop→WAV smoke reported after dual-track writer changes (compile-only verification)",
-      "location": "docs/iterations/2026-07-28-recording-mix-sync.md:75-79",
-      "owner": "supervisor-qa",
-      "resolution": "PO 2026-07-28: implementer in-app Record smoke waived; verification owned by Supervisor QA (matrix A–D / TESTING § E)",
+      "summary": "--ref-delay-ms help text mismatches implementation; unused locals",
+      "location": "scripts/aec-spike.py:227-231",
+      "owner": "implementation-agent",
+      "resolution": "Help text matches pad-ref behavior; removed unused delay_bytes and write_pcm16 n",
       "debt_id": null,
       "product_followup_id": null
     },
@@ -31,13 +32,12 @@
       "review_loop": 1,
       "severity": "Low",
       "status": "fixed",
-      "summary": "Keep-raw docs should warn that leaving SCRIBE_KEEP_RAW_RECORDING=1 accumulates meeting .m4a files",
-      "location": "LOCAL_DATA.md:81",
+      "summary": "DEVELOPMENT Record permission tip has broken and/`native phrasing",
+      "location": "DEVELOPMENT.md:98",
       "owner": "implementation-agent",
-      "resolution": "LOCAL_DATA warns to unset env and delete kept .m4a after diagnosing",
+      "resolution": "Fixed to and/or native/build/AudioRecorder",
       "debt_id": null,
       "product_followup_id": null
     }
-  ],
-  "last_updated": "2026-07-28"
+  ]
 }

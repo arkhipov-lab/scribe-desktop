@@ -1,81 +1,86 @@
 {
   "schema_version": 1,
   "iteration": {
-    "id": "2026-07-28-recording-mix-sync",
-    "name": "Recording Mix Sync (Phase 0 + Phase 1)",
-    "ledger_path": "docs/iterations/2026-07-28-recording-mix-sync.md",
-    "status": "shipped",
+    "id": "2026-07-28-recording-mix-aec-spike",
+    "name": "Recording Mix AEC Spike (Phase 3 offline)",
+    "ledger_path": "docs/iterations/2026-07-28-recording-mix-aec-spike.md",
+    "status": "commit-ready",
     "date_started": "2026-07-28",
-    "date_completed": "2026-07-28"
+    "date_completed": null
   },
   "approved_scope": {
-    "source": "chat — Product Owner approved product-analyst recording-mix-sync recommendation, then roadmap-planner Option A",
+    "source": "chat — Product Owner approved Phase 3, then roadmap-planner Option A recording-mix-aec-spike",
     "date": "2026-07-28",
-    "goal": "Eliminate multi-second mic/system track skew so speaker-mode Record mixes no longer destroy remote speech for Whisper; keep headphones no worse; leave short acoustic bleed for later AEC.",
+    "goal": "Offline AEC(mic, reference=system) on fixtures; pick SpeexDSP vs WebRTC AEC3; prove bleed reduction without chewing user speech; note CPU — no product default.",
     "in_scope": [
-      "Phase 0: keep/export pre-mix .m4a for QA; split tracks; matrix A–D notes (remote on both tracks? Δ range?) in ledger and/or initiative",
-      "Phase 1 Swift: shared timeline — do not start writer only from first system sample while dropping earlier mic; align startSession/PTS; avoid silent drop-on-!isReadyForMoreMediaData without queue and/or drop diagnostics",
-      "Re-run QA matrix A–D after sync; optional short transcribe (E) if feasible",
-      "Update initiative phase status on Phase 0/1 exit",
-      "Light TESTING § E / scenario tip only if agents/QA need a durable note (not full Phase 5 docs)"
+      "Obtain/split dual-track fixtures (keep-raw / ffmpeg map); no sharing meeting audio",
+      "Offline prototype tool/script (not product default): AEC(mic, ref=system) → cleaned mic → optional compare mix",
+      "Library spike: SpeexDSP and/or WebRTC AEC3 — pick one with reasons",
+      "Stabilize delay assumption given Phase 1 sync",
+      "Fixture matrix A–C (listen); optional short Whisper on A",
+      "CPU wall time on short/medium clip (arm64); paths/durations only",
+      "Initiative Phase 3 in progress / dustpan notes; recommend integrate gates",
+      "Light TESTING/DEVELOPMENT tip only if agents need how to run the spike"
     ],
     "out_of_scope": [
-      "Phase 2 sidechain duck as product default",
-      "Phase 3 AEC (WebRTC/SpeexDSP/VPIO)",
-      "Phase 4 mix polish / Phase 5 full docs lock-in",
-      "Headphones-as-fix; paid AEC; cloud/audio APIs",
-      "Frontend UX polish follow-ups; summary editing; Action items",
-      "Dist packaging / notarization",
-      "Logging transcript or raw meeting audio content",
+      "Shipping AEC as default Record path",
+      "Phase 2 duck as product default",
+      "Phase 4 mix polish / Phase 5 full scenario lock-in",
+      "VPIO as primary Ideal bet",
+      "Paid AEC SDKs; cloud audio APIs",
+      "UX polish follow-ups; packaging/DMG unless tiny helper must link a lib",
+      "Logging transcript or raw audio bodies",
       "Cloud sync, remote AI APIs, telemetry of meeting content, non-arm64 platforms"
     ]
   },
-  "phase": "shipped",
+  "phase": "commit-ready",
   "gates": {
     "scope_approved": true,
     "implementation_finished": true,
     "review_gate": "clean",
     "triage_status": "clean",
     "supervisor_qa": "passed",
-    "retrospective": "done",
-    "commit_allowed": true,
-    "committed": true
+    "retrospective": "pending",
+    "commit_allowed": false,
+    "committed": false
   },
   "artifacts": {
     "debt_register": ".ai/state/debt.md",
     "product_followups_register": ".ai/state/product-followups.md",
     "iteration_directory": "docs/iterations",
-    "latest_review": "loop 2: 0 High, 0 Medium, 0 Low — R1–R3 verified fixed; R2 smoke→QA",
-    "latest_triage": "loop 2 clean; review gate clean; route to supervisor-qa",
-    "latest_qa": "passed with follow-ups 2026-07-28 by human Product Owner; Phase 1 exit; PP-005..007",
-    "latest_commit_prep": "commit 9d845b2 created 2026-07-28",
-    "latest_retrospective": "completed 2026-07-28; next planning → product-analyst (AEC PP-004/005 vs UX PP-* / PP-006/007)",
-    "commit": "9d845b2caaddc3b1ce21d5b6efd0f8cef27c7b3d",
-    "previous_iteration": "2026-07-28-control-height-ux",
-    "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Recording Mix Sync 2026-07-28",
-    "latest_implementation_summary": "docs/iterations/2026-07-28-recording-mix-sync.md — Implementation Summary",
-    "human_involvement_reason": "Supervisor QA pass with follow-ups; commit approval 2026-07-28"
+    "latest_review": "loop 2: 0H/0M/0L new — R1–R3 verified fixed",
+    "latest_triage": "loop 2 clean; review gate clean → supervisor-qa",
+    "latest_qa": "passed with follow-ups 2026-07-29 — Speex no-cancel; dual-path Ideal (PP-2026-07-29-001/002)",
+    "latest_commit_prep": "chat — commit-manager prep 2026-07-29; awaiting human approval",
+    "latest_retrospective": null,
+    "commit": null,
+    "previous_iteration": "2026-07-28-recording-mix-sync",
+    "latest_implementation_prompt": "chat — feature-manager / cursor-implementation-prompt Recording Mix AEC Spike 2026-07-28",
+    "latest_implementation_summary": "docs/iterations/2026-07-28-recording-mix-aec-spike.md — Implementation Summary",
+    "human_involvement_reason": "Human commit approval required for aec-spike + Ideal docs"
   },
   "metrics": {
     "review_loops": 2,
-    "human_decisions": 5,
+    "human_decisions": 3,
     "high_findings": 0,
-    "medium_findings": 2,
-    "low_findings": 1,
-    "qa_outcome": "passed",
-    "outcome": "shipped"
+    "medium_findings": 1,
+    "low_findings": 2,
+    "qa_outcome": "passed_with_followups",
+    "outcome": null
   },
   "handoff": {
-    "next_role": "none",
-    "reason": "iteration shipped; start next planning from a fresh cycle via product-analyst / roadmap-planner (AEC PP-004/005 vs UX polish PP-001/003 vs PP-006/007)",
-    "required_inputs": [],
+    "next_role": "human-product-owner",
+    "reason": "Commit preparation ready — approve to create git commit for recording-mix-aec-spike",
+    "required_inputs": [
+      "Explicit human commit approval"
+    ],
     "blocked_by": [],
     "latest_artifacts": [
-      "docs/iterations/2026-07-28-recording-mix-sync.md",
-      ".ai/state/current-cycle.json",
-      ".ai/state/product-followups.md",
-      "9d845b2caaddc3b1ce21d5b6efd0f8cef27c7b3d"
+      "scripts/aec-spike.py",
+      "docs/iterations/2026-07-28-recording-mix-aec-spike.md",
+      "docs/initiatives/recording-clean-mix.md",
+      ".ai/state/product-followups.md"
     ]
   },
-  "last_updated": "2026-07-28"
+  "last_updated": "2026-07-29"
 }

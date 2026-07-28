@@ -1,10 +1,10 @@
 # Initiative: Clean meeting mix (no double remote)
 
-**Status:** active — Phase 0+1 exited (QA pass w/ follow-ups 2026-07-28); next = Phase 3 AEC (Phase 2 still optional)  
+**Status:** active — Phase 3 AEC spike **done** (QA pass w/ follow-ups 2026-07-29); **current Ideal direction = dual-path finalize** (`PP-2026-07-29-001`); Phase 0+1 done  
 **Opened:** 2026-07-28  
 **Owner roles:** product-analyst / roadmap-planner (slice scope) → feature-manager / implementer → human Supervisor QA  
 **Related:** [recording-to-transcript](../scenarios/recording-to-transcript.md), `native/AudioRecorder.swift`, `backend/recorder.py`  
-**Not:** general [ROADMAP.md](../../ROADMAP.md) polish; headphones-as-product-fix; paid AEC SDKs
+**Not:** general [ROADMAP.md](../../ROADMAP.md) polish; “just use headphones” as the only fix; paid AEC SDKs
 
 ---
 
@@ -15,7 +15,7 @@ In-app Record captures **system audio** (ScreenCaptureKit) and **microphone**, t
 Observed:
 
 - **User’s own voice is not duplicated** → mic path for near-end is fine.
-- **Remote / system sound is duplicated** with a **variable** delay (short echo … multi-second lag) → the same program audio is present **digitally on the system track** and **acoustically on the mic** (speakers), and track timelines are often **misaligned**.
+- **Remote / system sound is duplicated** with a **variable** delay (short echo … multi-second lag) → the same program audio is present **digitally on the system track** and **acoustically on the mic** (speakers), and track timelines were often **misaligned** (Phase 1 reduced multi-second skew).
 
 Code for the dual-track path has been effectively unchanged since early tags (`v1.1.0`+). “It used to be fine” is more likely **OS / usage / speakers vs headphones** than a Scribe regression between those versions. Dual mic via `captureMicrophone` is **macOS 15+** only.
 
@@ -25,15 +25,37 @@ Broken mix → Whisper hears doubled / shifted remote speech → **incomplete or
 
 ## Ideal (definition of done)
 
-On **speakers** (worst case) and headphones (regression):
+On **speakers** (worst case) and **headphones** (must not regress):
 
-1. **P0 — Transcript integrity:** mixed audio must not double or time-shift remote speech enough to break Whisper. Transcript is complete and usable for the spoken meeting.
-2. **P1 — Listening quality:** mix is user-friendly — no obvious distortion, pumping, watery artifacts, or cut beginnings/ends of phrases. Overlapping speech (interruptions that continue) remains audible for **both** sides.
-3. **P2 — CPU:** processing must stay light on Apple Silicon (post-stop mix path and any realtime path). Prefer offline-on-stop over heavy realtime. No paid/licensed AEC packages.
+1. **P0 — Transcript integrity:** finalize audio must not double or time-shift remote speech enough to break Whisper. Transcript is complete and usable for the spoken meeting.
+2. **P1 — Listening quality:** result is user-friendly — no obvious distortion, pumping, watery artifacts, or cut beginnings/ends of phrases. Overlapping speech remains audible for **both** sides when both are present in the chosen path.
+3. **P2 — CPU:** processing must stay light on Apple Silicon (post-stop path). Prefer offline-on-stop. No paid/licensed AEC packages.
+
+### Current Ideal direction (PO, 2026-07-29) — dual-path finalize
+
+Evidence from offline AEC spike QA (`recording-mix-aec-spike`): on **speakers**, the **mic track alone** already has one remote + user at usable levels for Whisper; `amix(mic, system)` recreates the double. Speex `AEC(mic, ref=system)` did **not** cancel bleed. On **headphones**, mic-only would **miss** remote (no speaker bleed).
+
+```text
+headphones NOT connected (speakers / open air)
+  → finalize WAV = mic only
+     (remote arrives via acoustic bleed; no digital double)
+
+headphones connected
+  → finalize WAV = amix( level_match(mic), system )
+     (remote from system; boost mic toward remote amplitude)
+```
+
+**Still required before ship:** reliable headphone (or “private listen”) detection on macOS; safe fallback if detection is wrong; matrix A–E including headphones.
+
+### Deferred / backup Ideal paths
+
+- **AEC then mix** (original Phase 3): Speex offline spike **failed** cancel; WebRTC AEC3 only if dual-path is rejected or needs a speakers fallback that keeps full-band system.
+- **Sidechain duck (Phase 2):** still not product default.
+- **Headphones-as-fix tip:** optional copy later; **not** the product fix (detection + dual-path is the fix).
 
 Non-goals for this initiative:
 
-- Telling users “just use headphones” as the fix
+- Telling users “just use headphones” as the only fix
 - Cloud / third-party audio APIs
 - Perfect studio mastering, diarization, or noise UX beyond what’s needed for (1)–(2)
 
@@ -44,7 +66,7 @@ Non-goals for this initiative:
 | Constraint | Rule |
 | --- | --- |
 | Money | No paid SDKs / licensed AEC. Open-source (e.g. WebRTC AEC3, SpeexDSP) and Apple platform APIs OK if they fit the architecture. |
-| Architecture | Scribe does **not** play meeting audio (Zoom/Meet does). Apple **VoiceProcessingIO** alone is a weak bet: it expects the app to render far-end. Prefer **AEC(mic, reference = system track)**. |
+| Architecture | Scribe does **not** play meeting audio (Zoom/Meet does). Prefer **dual-path finalize** after 2026-07-29 QA. Apple **VoiceProcessingIO** alone remains a weak bet. AEC(mic, ref=system) is **backup**, not the primary Ideal bet after Speex spike. |
 | Privacy | Never log transcript/summary or raw meeting audio content; paths/durations/metrics only. |
 | Process | Each phase ships as a **bounded iteration** with human scope approval. Update this file’s status when a phase completes. |
 
@@ -57,31 +79,18 @@ Non-goals for this initiative:
 | A | Speakers; remote talks; user silent | One clean remote; no delayed second copy |
 | B | Speakers; user talks; remote silent | One clean user; normal level |
 | C | Speakers; overlap / interruptions | Both audible; no dropped “important” tails; no multi-second echo |
-| D | Headphones (regression) | No worse than today; no new artifacts |
-| E | Transcribe A–C | Transcript complete; no doubled garbled remote |
+| D | Headphones (regression) | Remote present (via system); user audible; no new double; mic not buried |
+| E | Transcribe A–C (and D if changed) | Transcript complete; no doubled garbled remote |
 
-CPU smoke: stop→mix on a ~30–60 min recording should not feel like a second “ML job”; note wall time in the iteration ledger (no meeting audio in logs).
+CPU smoke: stop→finalize on a ~30–60 min recording should not feel like a second “ML job”; note wall time in the iteration ledger (no meeting audio in logs).
 
 ---
 
 ## Phased plan
 
-Work **in order**. Do not skip Phase 1. Do not promote Phase 2 to product default if Ideal is still the goal. Re-run the QA matrix after each phase.
+Work **in order** for Phases 0–1 (done). After 2026-07-29, **prefer Phase 3′ dual-path** over shipping Speex/WebRTC AEC as default. Re-run the QA matrix after each phase.
 
 ### Phase 0 — Diagnostics (baseline)
-
-**Goal:** Prove content vs timeline on real captures.
-
-**Work:**
-
-- Keep / export pre-mix `.m4a` for failing sessions (dev-friendly; don’t leave secrets in shared places).
-- Split tracks: `ffprobe` + `ffmpeg -map 0:a:0` / `0:a:1`.
-- Record A/B/C/D once; note Δ between tracks and whether remote appears on mic.
-
-**Cures:** Confusion about root cause.  
-**Tradeoffs:** Manual time.  
-**Breaks:** Nothing in product.  
-**Exit:** Written notes in this file or the first iteration ledger: “remote on both tracks?”, “Δ range?”.
 
 **Status:** done — notes in ledger `2026-07-28-recording-mix-sync` (QA 2026-07-28): speakers still have remote on mic (bleed); Δ consistent / length-independent; transcript OK
 
@@ -89,97 +98,76 @@ Work **in order**. Do not skip Phase 1. Do not promote Phase 2 to product defaul
 
 ### Phase 1 — Track sync (Swift)
 
-**Goal:** One shared timeline for mic + system; stop multi-second desync.
-
-**Work (intent):**
-
-- Do not start the writer session only from the first **system** sample while **dropping** earlier mic buffers.
-- Align `startSession` / PTS policy so both inputs share a coherent clock.
-- Avoid silent drop-on-`!isReadyForMoreMediaData` without a strategy (queue, or count drops for diagnostics).
-
-**Cures:** Variable multi-second lag between identical remote content on the two tracks.  
-**Tradeoffs:** Alone, **does not** remove acoustic double remote (short room echo may remain).  
-**Breaks risk:** Low–medium if PTS handling is wrong (start gaps, rejected samples). Mitigate with A/D matrix + keep raw `.m4a` for compare.  
-**Exit:** On speakers, any remaining double is **short** (room-like), not seconds. Transcript no longer destroyed by huge delay.  
-**CPU:** Negligible.
-
-**Status:** done — QA 2026-07-28: remaining double is fixed-delay (not growing with duration); Whisper usable; acoustic bleed remains (Phase 3)
+**Status:** done — QA 2026-07-28: remaining double is fixed-delay (not growing with duration); Whisper usable; acoustic bleed remains
 
 ---
 
 ### Phase 2 — Sidechain duck (ffmpeg) — experiment only
 
-**Goal:** Measure a cheap content band-aid after sync.
-
-**Work:** Before `amix`, duck mic when system energy is high (`sidechaincompress` or equivalent).
-
-**Cures:** Much of remote bleed when tracks are aligned and speech rarely overlaps.  
-**Tradeoffs:** Pumping; **overlapping speech** may attenuate the user; quiet remote may not duck.  
-**Breaks risk:** High for P1 Ideal (interruptions).  
-**Product rule:** **Not** the default path to Ideal. Optional A/B only; ship only if PO explicitly accepts “good enough” and Ideal is deferred.  
-**CPU:** Very low (ffmpeg filters on stop).
-
-**Status:** deferred as product default; optional spike after Phase 1
+**Status:** deferred as product default; optional only if PO asks; **superseded in priority by dual-path**
 
 ---
 
-### Phase 3 — AEC with system track as reference (Ideal path)
+### Phase 3 — AEC with system track as reference (spike / backup)
 
-**Goal:** Remove speaker bleed from mic using digital system audio as reference; then mix cleaned mic + system.
+**Goal (original):** Remove speaker bleed from mic using digital system as reference; then mix cleaned mic + system.
 
-```text
-system ──► reference ──┐
-mic ───────────────────┴─► AEC ──► cleaned mic ──┐
-system (program) ───────────────────────────────┴─► amix → WAV
-```
+**Spike result (2026-07-29):** offline SpeexDSP (`scripts/aec-spike.py`) — tool/CPU OK (~150× RT); **no audible cancel** on correct `AEC(mic, ref=system)` (`mic≈mic_aec`; `mix_aec≈mix_plain`). Library choice for AEC+mix: **do not** prefer Speex; WebRTC AEC3 only if Ideal returns to AEC+mix.
+
+**Status:** spike **done** (pass w/ follow-ups). **Integrate Speex as product default: no.** Keep tool for experiments. AEC integrate slice **deprioritized** vs Phase 3′.
+
+---
+
+### Phase 3′ — Dual-path finalize (current Ideal path)
+
+**Goal:** Ship PO dual-path so speakers avoid digital+acoustic double without requiring AEC; headphones keep system remote + leveled mic.
 
 **Work:**
 
-1. Offline prototype on saved `mic.wav` + `sys.wav` (WebRTC AEC3 or SpeexDSP — pick one after spike).
-2. Stabilize delay assumption **after** Phase 1 sync.
-3. Integrate into stop/finalize path (native helper or local library; bundleable in dist; no network).
-4. Keep a safe fallback: if AEC fails, behave like Phase 1 mix (never delete the only copy of audio).
+1. Detect headphones / private output vs speakers (macOS Core Audio / route — spike reliability; BT AirPods, USB-C, jack, HDMI-TV edge cases).
+2. On stop/finalize:
+   - **No headphones →** write product WAV from **mic track only** (still capture dual-track raw if useful for QA; don’t amix for product file).
+   - **Headphones →** `amix` after **level-matching mic toward system** (amplitude toward remote; avoid burying user — see `PP-006` / `PP-007`).
+3. Fallback if detection unknown: prefer path that **does not drop remote** (document explicitly in slice — likely headphones-style mix or prompt); never delete the only audio copy.
+4. Matrix A–E + CPU; update scenario/TESTING when behavior ships.
 
-**Cures:** Double remote on speakers while keeping user + remote for transcription and listening.  
-**Tradeoffs:** Integration/tuning time; must validate overlap (C).  
-**Breaks risk:** Bad delay → watery mic or chewed user speech; running AEC on the wrong signal → damaged remote. Mitigate with offline fixtures + matrix + fallback.  
-**VPIO:** Optional micro-spike only; do not bet Ideal on it without evidence it cancels **other apps’** playback.  
-**CPU:** Prefer **on stop** over realtime; target modest arm64 cost (document measured time). Reject approaches that rival Whisper runtime for a 1-hour meeting.
+**Cures:** Speakers double from amix; headphones missing-remote if mic-only were universal.  
+**Tradeoffs:** Detection errors; mic-only on speakers has thinner remote band (PO: OK for Whisper).  
+**Breaks risk:** False “no headphones” → mic-only with no bleed → lost remote; false “headphones” on speakers → double returns. Mitigate with detection spike + conservative fallback.  
+**CPU:** Very low (route check + optional level match + amix).  
+**Exit:** Matrix A–E pass; detection notes in ledger.
 
-**Status:** pending (blocked on Phase 1 exit)
+**Status:** **next** — plan slice e.g. `recording-mix-dual-path` (detection spike optional then integrate). Follow-up: `PP-2026-07-29-001`.
 
 ---
 
 ### Phase 4 — Mix polish
 
-**Goal:** P1 listening quality without harming P0.
+**Goal:** P1 listening quality without harming P0 (especially headphones mic level — `PP-007`; overlap — `PP-006`).
 
-**Work (only after Phase 3 passes A–E):** light level match between cleaned mic and system; avoid aggressive gates/EQ.
+**Work:** After Phase 3′ (or AEC if revived): refine level match; avoid aggressive gates/EQ.
 
-**Cures:** Uneven loudness, harshness.  
-**Tradeoffs / breaks:** Over-gating cuts phrase onsets; over-normalization pumps.  
-**CPU:** Low.
-
-**Status:** pending
+**Status:** pending (partially overlaps headphones branch of 3′)
 
 ---
 
 ### Phase 5 — Docs & scenario lock-in
 
-**Goal:** Make the Ideal behavior durable for agents and QA.
+**Goal:** Make Ideal behavior durable for agents and QA.
 
-**Work:** Update [recording-to-transcript](../scenarios/recording-to-transcript.md), [TESTING.md](../../TESTING.md) § recording, [ARCHITECTURE.md](../../ARCHITECTURE.md) / [DECISIONS.md](../../DECISIONS.md) if the mix pipeline changes; close related product follow-up.
+**Work:** Update [recording-to-transcript](../scenarios/recording-to-transcript.md), [TESTING.md](../../TESTING.md) § recording, [ARCHITECTURE.md](../../ARCHITECTURE.md) / [DECISIONS.md](../../DECISIONS.md) when finalize path ships; close `PP-2026-07-28-004` when Ideal exit met.
 
-**Status:** pending
+**Status:** pending (scenario already points at initiative for evolving finalize)
 
 ---
 
 ## Priority rules (when tradeoffs appear)
 
 1. **Never** ship a change that improves “sounds nicer in quiet remote-only” but **drops or muffles** overlapping user speech enough to lose transcript content (P0 > P1).
-2. Prefer **fallback to synced plain mix** over a failing AEC that corrupts the only WAV.
+2. Prefer a **safe finalize fallback** over a path that can delete or corrupt the only WAV.
 3. Prefer **post-stop** processing over realtime CPU load unless realtime is proven cheap and necessary.
-4. Headphones tip may appear as optional help copy later; it is **not** a phase exit criterion.
+4. **Do not** treat “tell user to wear headphones” as Ideal exit; headphone **detection** for dual-path is in-scope engineering.
+5. Prefer **dual-path (3′)** over AEC integrate unless PO reopens AEC+mix after WebRTC evidence.
 
 ---
 
@@ -187,12 +175,13 @@ system (program) ─────────────────────
 
 | Slice | Scope | Gate |
 | --- | --- | --- |
-| `recording-mix-sync` | Phase 0 notes + Phase 1 Swift sync (+ keep/split raw for QA) | Matrix A–D: no multi-second double |
-| `recording-mix-aec-spike` | Phase 3 offline prototype only (no product default) | A–C on fixtures; CPU note |
-| `recording-mix-aec` | Phase 3 integrated + fallback | Full matrix A–E + CPU |
+| `recording-mix-sync` | Phase 0 notes + Phase 1 Swift sync (+ keep/split raw for QA) | Matrix A–D: no multi-second double — **shipped** |
+| `recording-mix-aec-spike` | Phase 3 offline Speex prototype only | A–C listen + CPU — **QA pass w/ follow-ups**; Speex not for default |
+| `recording-mix-dual-path` | Phase 3′ detection + mic-only / headphones mix+level | Full matrix A–E + detection edge notes |
+| `recording-mix-aec` | Phase 3 AEC integrate (backup Ideal only) | Only if PO rejects dual-path or needs AEC fallback |
 | `recording-mix-polish` | Phase 4 + Phase 5 docs | Listening + scenario |
 
-Phase 2 duck spike only if PO asks for a temporary mitigation before AEC.
+Phase 2 duck spike only if PO asks.
 
 ---
 
@@ -203,12 +192,16 @@ Phase 2 duck spike only if PO asks for a temporary mitigation before AEC.
 | 2026-07-28 | Root cause framed as system-on-both-tracks + timeline skew; own voice not doubled. |
 | 2026-07-28 | Ideal = clean dual source for transcript + listening; no paid AEC; no headphones-as-fix. |
 | 2026-07-28 | Ordered path: diagnostics → sync → (duck optional) → reference AEC → polish. VPIO not primary. |
-| 2026-07-28 | Phase 0+1 QA: pass for sync slice — consistent fixed-delay double on speakers (transcript OK); Ideal clean remote still needs Phase 3 AEC. Overlap mic buried + headphones mic quiet → follow-ups. |
+| 2026-07-28 | Phase 3 starts with offline AEC spike (`recording-mix-aec-spike`); integrate is a later slice. Phase 2 duck still not product default. |
+| 2026-07-28 | Spike tool: `scripts/aec-spike.py` + Homebrew SpeexDSP (ctypes). CPU ~150× realtime (arm64). |
+| 2026-07-29 | Speex cancel **not** proven on speakers fixtures. **Ideal direction changed:** dual-path finalize — no headphones → **mic-only**; headphones → **mic+system with mic level matched to remote**. AEC integrate deprioritized (`PP-2026-07-29-001`, `002`). Next slice: `recording-mix-dual-path`. |
 
 ---
 
 ## Pointers elsewhere
 
-- Discoverability wish: `PP-2026-07-28-004` in [`.ai/state/product-followups.md`](../../.ai/state/product-followups.md)
+- Umbrella bug: `PP-2026-07-28-004` in [`.ai/state/product-followups.md`](../../.ai/state/product-followups.md)
+- Dual-path Ideal: `PP-2026-07-29-001`; Speex result: `PP-2026-07-29-002`
+- Speakers bleed after sync: `PP-2026-07-28-005`; overlap level: `PP-006`; headphones mic quiet: `PP-007`
 - One-line ROADMAP pointer under **Audio & transcription quality**
 - Per-slice history: [docs/iterations/](../iterations/)
