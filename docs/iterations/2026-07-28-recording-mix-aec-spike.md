@@ -1,9 +1,9 @@
 # Iteration: Recording Mix AEC Spike (Phase 3 offline)
 
-**Status:** active
+**Status:** shipped
 **Date started:** 2026-07-28
-**Date completed:**
-**Commit:**
+**Date completed:** 2026-07-29
+**Commit:** `102bac4`
 
 ## Approved Scope
 
@@ -50,8 +50,8 @@
 | Review ready → Review | Codex | loop 2: 0 High, 0 Medium, 0 Low new — R1–R3 verified fixed | done |
 | Triage / auto-fix | review-triage | loop 2 clean; review gate clean → supervisor-qa | done |
 | Supervisor QA | supervisor-qa | plan + human **passed with follow-ups** 2026-07-29 (mic-only insight; Speex no-cancel) | done |
-| Commit prep | commit-manager | prep 2026-07-29; awaiting human commit approval | pending |
-| Retrospective | iteration-retrospective | — | pending |
+| Commit prep | commit-manager | commit `102bac4` created 2026-07-29 | done |
+| Retrospective | iteration-retrospective | completed 2026-07-29; next planning → product-analyst (`recording-mix-dual-path`) | done |
 
 ## Implementation Phase
 
@@ -298,14 +298,73 @@ AEC inside Record, ducking, mix polish, headphones-as-fix, perfect Ideal silence
 
 ## Metrics
 
-| Metric | Value |
-| --- | --- |
-| Review loops | 2 |
-| Human decisions | 2 (Phase 3 + Option A) |
-| High / Medium / Low findings | 0 / 1 / 2 (all fixed) |
-| QA outcome | passed (with follow-ups) |
-| Outcome | |
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Review loops | 2 | observed | ledger / current-cycle |
+| Human decisions | 5 | observed | Phase 3; Option A; QA pass w/ follow-ups; dual-path Ideal; commit |
+| High / Medium / Low findings | 0 / 1 / 2 (all fixed) | observed | review-findings.json |
+| QA outcome | passed (with follow-ups) | observed | ledger |
+| Outcome | shipped | observed | commit `102bac4` + this retrospective |
 
 ## Retrospective
 
-_Pending._
+# Iteration Retrospective — Recording Mix AEC Spike (Phase 3 offline)
+
+## Outcome
+
+- **Status:** shipped
+- **Commit:** `102bac4811169ce41f4c98e29267ab2155df8693` (`102bac4`)
+- **QA:** passed (with follow-ups)
+
+## Metrics
+
+| Metric | Value | Source type | Evidence |
+| --- | --- | --- | --- |
+| Elapsed time | ~same calendar day evening → next midnight (2026-07-28 → 07-29) | estimated | chat + commit timestamp |
+| Agent turns | ~20 skill/step turns | estimated | implement → review → triage → fix → re-review → triage → QA plan → keep-raw/TCC → listen → Ideal docs → commit → retrospective |
+| Approx token use | not measured | estimated | no tooling report |
+| Review loops | 2 | observed | ledger / current-cycle |
+| High findings | 0 | observed | review-findings.json |
+| Medium findings | 1 | observed | review-findings.json (R1 fixed) |
+| Low findings | 2 | observed | review-findings.json (R2–R3 fixed) |
+| Human decisions | 5 | observed | Phase 3; Option A; QA verdict; dual-path Ideal; commit |
+| QA outcome | passed (with follow-ups) | observed | ledger |
+| Outcome | shipped | observed | commit `102bac4` + this retrospective |
+
+## Rework Analysis
+
+- **What caused rework:** Review loop 1 Medium R1 (`--ref-delay-ms` contaminated mix compares) + Lows (help text, DEVELOPMENT typo). QA friction: first spike attempt used product `.wav` (one stream) instead of keep-raw dual `.m4a`; direct `Contents/MacOS/Scribe` broke TCC Settings; needed `open --env SCRIBE_KEEP_RAW_RECORDING=1`.
+- **What avoided rework:** Scope kept AEC out of product Record; auto-fix R1–R3 without ask; pass-with-follow-ups when Speex failed Ideal hypothesis but tool/CPU succeeded; PO dual-path Ideal captured in initiative + PP-* instead of forcing Speex integrate.
+- **Human routine effort:** High for audio listen matrix A/B/C + permissions/keep-raw unblock; routine for commit approval. More product judgment than CSS slices (Ideal reframe).
+
+## Repeated Failure Analysis
+
+| Pattern | Evidence | Repeated? | Recommended response |
+| --- | --- | --- | --- |
+| Dev Record TCC / wrong launch identity | Contents/MacOS binary → Settings won’t open; fixed via `open --env` on `.app` | yes (echoes sync-slice TCC lesson) | docs already updated; keep `open --env` in DEVELOPMENT/TESTING |
+| QA plan assumed wrong input artifact | PO passed `.wav` to `--input`; dual `.m4a` required | new / likely for keep-raw tools | supervisor-qa: first step = “green light” file type + stream count before listen |
+| Phase/Ideal wording vs spike library proof | Speex no-cancel ≠ slice fail; Ideal moved to dual-path | related to sync-slice Phase vs Ideal | supervisor-qa: separate “tool/CPU exit” vs “library proves Ideal” rows |
+| Auto-fix Medium/Low without ask | R1–R3 | yes (desired) | none |
+
+## Process Recommendations
+
+1. For offline tooling QA that needs keep-raw dual-track: Supervisor QA plans must start with a **file gate** (`.m4a` + ≥2 audio streams) and the **working keep-raw launch** (`open --env SCRIBE_KEEP_RAW_RECORDING=1 ./dist/Scribe.app`) — not `Contents/MacOS/*` and not product `.wav`.
+2. For library spikes: label QA criteria as **spike exit** (tool runs, CPU, no product regression) vs **Ideal proof** (library achieves product outcome) so a negative library result can still be pass-with-follow-ups without PO confusion.
+
+## Debt / Planned Work Updates
+
+- **Debt register:** no new Open Debt
+- **Planned process work:** unchanged (recommendations above are operational; already partially in DEVELOPMENT/TESTING)
+- **Product follow-ups captured:** yes — `PP-2026-07-29-001` (dual-path Ideal), `PP-2026-07-29-002` (Speex no-cancel); `PP-004`…`007` updated toward dual-path
+
+## Next Planning Input
+
+Use `product-analyst` (then `roadmap-planner`). **Primary:** `recording-mix-dual-path` (Phase 3′ — no headphones → mic-only; headphones → mic+system with mic level match; detection + fallbacks). **Deprioritize:** Speex/AEC integrate unless PO reopens backup Ideal. Secondary: UX `PP-001`…`003`.
+
+## State Updates
+
+- Ledger: retrospective completed; status shipped; metrics finalized
+- Current cycle: `phase=shipped`, `retrospective=done`, `handoff.next_role=none`, commit hash retained
+- Structured review-findings.json: metrics aligned (0/1/2 all fixed)
+- Debt register: unchanged
+
